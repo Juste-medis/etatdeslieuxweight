@@ -44,6 +44,11 @@ const imageFileFilter = (req, file, cb) => {
         return res.redirect('back');
     }
 
+    if (file.size > 5 * 1024 * 1024) { // 5 MB limit
+        req.flash('error', `File size exceeds the limit of 5 MB.`);
+        return res.redirect('back');
+    }
+
 };
 
 // File filter function for images

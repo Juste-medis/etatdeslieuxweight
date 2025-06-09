@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandat pour État des Lieux - Jatai</title>
+    <style type="text/css">
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333333;
+            line-height: 1.6;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .email-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .email-header {
+            padding: 30px;
+            text-align: center;
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .logo {
+            max-height: 50px;
+            width: auto;
+        }
+
+        .email-title {
+            margin: 15px 0 5px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .badge {
+            background-color: #ffffff;
+            color: #ff9800;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .content-block {
+            padding: 25px;
+        }
+
+        .info-card {
+            background-color: #f8f9fa;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .info-title {
+            color: #ff9800;
+            font-weight: 600;
+            margin-top: 0;
+        }
+
+        .access-code {
+            font-size: 24px;
+            letter-spacing: 3px;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #fff8e1;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .footer {
+            padding: 20px;
+            background-color: #f1f1f1;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        @media screen and (max-width: 600px) {
+            .email-container {
+                padding: 10px;
+            }
+
+            .content-block {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="email-card">
+            <div class="email-header">
+                <img src="{{logoUrl}}" class="logo" alt="Jatai">
+                <h1 class="email-title">Votre Mandat pour l'État des Lieux</h1>
+                <div class="badge">DOCUMENT OFFICIEL</div>
+            </div>
+
+            <div class="content-block">
+                <p>Bonjour {{accessGivenTo.firstname}},</p>
+                <p>Vous avez été désigné(e) comme <strong>mandataire officiel</strong> pour réaliser l'état des lieux du
+                    bien situé à :</p>
+
+                <div class="info-card">
+                    <h3 class="info-title">📍 Adresse du bien</h3>
+                    <p>{{propertyDetails.address}}</p>
+                    {{#if propertyDetails.complement}}<p>Complément: {{propertyDetails.complement}}</p>{{/if}}
+                    {{#if propertyDetails.floor}}<p>Étage: {{propertyDetails.floor}}</p>{{/if}}
+                </div>
+
+                <div class="info-card">
+                    <h3 class="info-title">🔑 Votre accès exclusif</h3>
+                    <p>Voici votre code d'accès personnel pour l'application Jatai :</p>
+                    <div class="access-code">{{accessCode}}</div>
+                    <p>Ce code sera nécessaire pour :</p>
+                    <ul>
+                        <li>Valider votre identité</li>
+                        <li>Accéder à la procuration</li>
+                        <li>Signer l'état des lieux</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <h3 class="info-title">📱 Comment procéder ?</h3>
+                    <ol>
+                        <li>Téléchargez l'application Jatai État des Lieux</li>
+                        <li>Créez votre compte avec cette adresse email : <strong>{{email}}</strong></li>
+                        <li>Entrez votre code d'accès ci-dessus</li>
+                        <li>Suivez les instructions pour valider votre identité</li>
+                        <li>Accédez à la procuration signée électroniquement</li>
+                    </ol>
+                </div>
+
+                <div style="background-color: #fff8e1; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                    <h3 style="color: #ff9800; margin-top: 0;">⚠️ Important</h3>
+                    <p>En tant que mandataire, vous engagez votre responsabilité pour :</p>
+                    <ul>
+                        <li>La représentation légale du propriétaire</li>
+                        <li>L'exactitude des constatations</li>
+                        <li>La validité des signatures</li>
+                    </ul>
+                </div>
+
+                <p>Pour toute question concernant votre mandat, contactez-nous à <a
+                        href="mailto:contact@jatai.fr">contact@jatai.fr</a></p>
+            </div>
+
+            <div class="footer">
+                <p>Cet email contient des informations confidentielles - Ne pas transférer</p>
+                <p><strong>Jatai - Solution d'état des lieux numérique</strong></p>
+                <p>📞 +33 1 23 45 67 89 | 🌐 <a href="https://jatai.fr">www.jatai.fr</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

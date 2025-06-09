@@ -1,0 +1,1430 @@
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const FileSchema = new Schema({
+  shield: String,
+  name: String,
+  location: String,
+  author: { type: Schema.ObjectId, ref: 'users' },
+  size: Number,
+  type: String,
+},
+  {
+    timestamps: true
+  });
+
+module.exports = Image = mongoose.model('files', FileSchema);
+const mongoose = require('mongoose');
+
+const LoginSchema = mongoose.Schema({
+    name: {
+        type: String,
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    contact: {
+        type: Number,
+    },
+    avatar: {
+        type: String,
+    },
+    is_admin: {
+        type: Number,
+        default: 0
+    }
+},
+    {
+        timestamps: true
+    });
+
+const login = mongoose.model('login', LoginSchema);
+module.exports = login;const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const CleDePorteSchema = new Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    type: {
+        type: String,
+        required: false
+    },
+    comment: {
+        type: String,
+        required: false
+    },
+    location: {
+        type: String,
+        required: false
+    },
+    serialNumber: {
+        type: String,
+        required: false
+    },
+    count: {
+        type: Number,
+        required: false,
+        default: 1
+    }, order: {
+        type: Number,
+        default: 1,
+        trim: true
+    },
+    order: {
+        type: Number,
+        required: false,
+        default: 0
+    },
+    dateCreated: {
+        type: Date,
+        required: false
+    },
+    dateUpdated: {
+        type: Date,
+        required: false
+    },
+    meta: {
+        type: Schema.Types.Mixed,
+        default: {}
+    },
+    photos: {
+        type: [{
+            type: String,
+        }],
+        default: []
+    }
+}, {
+    timestamps: true
+});
+
+const CleDePorteModel = mongoose.model('cledeportes', CleDePorteSchema);
+
+module.exports = CleDePorteModel;const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const CompteurSchema = new Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    type: {
+        type: String,
+        required: false
+    },
+    serialNumber: {
+        type: String,
+        required: false
+    },
+    location: {
+        type: String,
+        required: false
+    },
+    initialReading: {
+        type: Number,
+        required: false
+    },
+    heurespleines: {
+        type: Number,
+        required: false
+    },
+    initialReadingHp: {
+        type: Number,
+        required: false
+    },
+    initialReadingHc: {
+        type: Number,
+        required: false
+    },
+    currentReadingHp: {
+        type: Number,
+        required: false
+    },
+    currentReadingHc: {
+        type: Number,
+        required: false
+    },
+
+    heurescreuses: {
+        type: Number,
+        required: false
+    },
+    currentReading: {
+        type: Number,
+        required: false
+    },
+
+
+    unit: {
+        type: String,
+        required: false
+    },
+    count: {
+        type: Number,
+        required: false,
+        default: 1
+    },
+    order: {
+        type: Number,
+        required: false,
+        default: 0
+    },
+    lastChecked: {
+        type: Date,
+        required: false
+    }, order: {
+        type: Number,
+        default: 1,
+        trim: true
+    },
+    meta: {
+        type: Schema.Types.Mixed,
+        default: {}
+    },
+    comment: {
+        type: String,
+        required: false
+    },
+    photos: {
+        type: [{
+            type: String,
+        }],
+        default: []
+    }
+}, {
+    timestamps: true
+});
+
+const CompteurModel = mongoose.model('compteurs', CompteurSchema);
+
+module.exports = CompteurModel;const mongoose = require('mongoose');
+
+const currencyTimezoneSchema = mongoose.Schema({
+
+    currency: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    timezone: {
+        type: String,
+        required: true,
+        trim: true
+    }
+    
+},
+    {
+        timestamps: true
+    }
+);
+
+module.exports = mongoose.model('currencyTimezone', currencyTimezoneSchema);const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const FileAccessSchema = mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    fileId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'files',
+        required: true
+    },
+    accessType: {
+        type: [String],
+        enum: ['read', 'write', 'delete', 'update'],
+        required: true
+    }
+},
+    {
+        timestamps: true
+    }
+);
+
+module.exports = mongoose.model('fileaccess', FileAccessSchema);;const mongoose = require("mongoose");
+
+const ForgotPasswordOtpSchema = new mongoose.Schema({
+    email: {
+        type: String,
+        required: true
+    },
+    otp: {
+        type: Number,
+        required: true
+    },
+    isVerified: {
+        type: Number,
+        default: 0
+    }
+},
+    { timestamps: true }
+);
+
+module.exports = mongoose.model("forgotPasswordOpt", ForgotPasswordOtpSchema);const mongoose = require('mongoose');
+
+const MailSchema = mongoose.Schema({
+
+    host: {
+        type: String,
+        trim:true,
+        required: true
+    },
+    port: {
+        type: String,
+        trim:true,
+        required: true
+    },
+    mail_username: {
+        type: String,
+        trim:true,
+        required: true
+    },
+    mail_password: {
+        type: String,
+        trim:true,
+        required: true
+    },
+    encryption: {
+        type: String,
+        trim:true,
+        required: true
+    },
+    senderEmail: {
+        type: String,
+        trim:true,
+        required: true
+    }
+
+},
+    {
+        timestamps: true
+    }
+);
+
+const mailModel = mongoose.model('smpts', MailSchema);
+
+module.exports = mailModel;const mongoose = require("mongoose");
+
+const notificationSchema = new mongoose.Schema({
+
+    title: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    recipient_user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user'
+    },
+    recipient: {
+        type: String,
+        trim: true
+    },
+    message: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    is_read: {
+        type: Boolean,
+        default: false,
+        trim: true
+    }
+
+},
+    {
+        timestamps: true
+    }
+);
+
+module.exports = mongoose.model("notification", notificationSchema);const mongoose = require('mongoose');
+
+const OrganizerSchema = new mongoose.Schema({
+
+    avatar: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    organizer: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    email: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    password: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    status: {
+        type: String,
+        enum: ["Publish", "UnPublish"],
+        default: "Publish",
+        trim: true
+    }
+
+},
+    {
+        timestamps: true
+    }
+);
+
+const organizer = mongoose.model('organizer', OrganizerSchema);
+
+module.exports = organizer;const mongoose = require("mongoose");
+
+const otpSchema = new mongoose.Schema({
+
+    email: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    otp: {
+        type: Number,
+        required: true,
+        trim: true
+    },
+    expires: {
+        type: Date,
+        default: Date.now(),
+    },
+    isVerified: {
+        type: Boolean,
+        default: false,
+    },
+    verifiedAt: {
+        type: Date,
+    },
+},
+    { timestamps: true }
+);
+module.exports = mongoose.model("otp", otpSchema);const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const OwnerSchema = mongoose.Schema({
+    order: {
+        type: Number,
+        default: 1,
+        trim: true
+    },
+
+    lastname: String,
+    firstname: String,
+    denomination: String,
+    type: { type: String, enum: ['physique', 'morale'] },
+    representant: { type: Schema.Types.ObjectId, ref: 'owner' },
+    email: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    avatar: {
+        type: String,
+        trim: true
+    },
+    dob: {
+        type: Date,
+        required: true,
+    },
+    placeofbirth: String,
+    address: String,
+    phone: {
+        type: String,
+        trim: true
+    },
+    gender: {
+        type: String,
+        enum: ["female", "male"],
+        default: "male",
+        trim: true
+    },
+    photos: {
+        type: [{
+            type: String,
+        }],
+        default: []
+    },
+    comment: {
+        type: String
+    },
+    is_active: {
+        type: Boolean,
+        default: true
+    },
+    meta: {
+        type: Schema.Types.Mixed,
+        default: {},
+    },
+},
+    {
+        timestamps: true
+    }
+);
+
+const owner = mongoose.model('owners', OwnerSchema);
+
+module.exports = owner;const mongoose = require("mongoose");
+
+const paymentMethodSchema = new mongoose.Schema({
+
+    stripe_is_enable: {
+        type: Number,
+        default: 0
+    },
+    stripe_mode: {
+        type: String,
+        enum: ["testMode", "liveMode"],
+        default: "testMode"
+    },
+    stripe_test_mode_publishable_key: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    stripe_test_mode_secret_key: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    stripe_live_mode_publishable_key: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    stripe_live_mode_secret_key: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    razorpay_is_enable: {
+        type: Number,
+        default: 0
+    },
+    razorpay_mode: {
+        type: String,
+        enum: ["testMode", "liveMode"],
+        default: "testMode"
+    },
+    razorpay_test_mode_key_id: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    razorpay_test_mode_key_secret: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    razorpay_live_mode_key_id: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    razorpay_live_mode_key_secret: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    paypal_is_enable: {
+        type: Number,
+        default: 0
+    },
+    paypal_mode: {
+        type: String,
+        enum: ["testMode", "liveMode"],
+        default: "testMode"
+    },
+    paypal_test_mode_merchant_id: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    paypal_test_mode_tokenization_key: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    paypal_test_mode_public_key: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    paypal_test_mode_private_key: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    paypal_live_mode_merchant_id: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    paypal_live_mode_tokenization_key: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    paypal_live_mode_public_key: {
+        type: String,
+        default: "",
+        trim: true
+    },
+    paypal_live_mode_private_key: {
+        type: String,
+        default: "",
+        trim: true
+    }
+
+},
+    {
+        timestamps: true
+    }
+);
+
+module.exports = mongoose.model('paymentgateways', paymentMethodSchema);const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const InventoryPieceSchema = mongoose.Schema({
+    order: {
+        type: Number,
+        default: 1,
+        trim: true
+    },
+    name: {
+        type: String,
+        required: false
+    },
+    type: {
+        type: String,
+        required: false
+    },
+    area: {
+        type: Number,
+        required: false
+    },
+    count: {
+        type: Number,
+        required: false,
+        default: 0
+    },
+    order: {
+        type: Number,
+        required: false,
+        default: 0
+    },
+    meta: {
+        type: Schema.Types.Mixed,
+        default: {}
+    },
+    things: {
+        type: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'things',
+        }],
+        default: []
+    },
+    photos: {
+        type: [{
+            type: String,
+        }],
+        default: []
+    },
+    comment: {
+        type: String,
+        required: false
+    },
+},
+    {
+        timestamps: true
+    }
+);
+
+const piecemodel = mongoose.model('pieces', InventoryPieceSchema);
+
+module.exports = piecemodel;const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+var QRCode = require('qrcode')
+var randomstring = require("randomstring");
+
+const ProcurationSchema = mongoose.Schema({
+    author: {
+        type: Schema.Types.ObjectId,
+        ref: 'users',
+        required: true,
+    },
+    owners: [{
+        type: Schema.Types.ObjectId,
+        ref: 'owners',
+    }],
+    accesgivenTo: [{
+        type: Schema.Types.ObjectId,
+        ref: 'tenants',
+    }],
+    accessCode: {
+        type: String,
+        unique: true,
+    },
+    qrcode: {
+        type: String,
+        unique: true,
+    },
+    exitenants: [{
+        type: Schema.Types.ObjectId,
+        ref: 'tenants',
+    }],
+    entrantenants: [{
+        type: Schema.Types.ObjectId,
+        ref: 'tenants',
+    }],
+    propertyDetails: {
+        type: Schema.Types.ObjectId,
+        ref: 'properties',
+    },
+    dateOfProcuration: {
+        type: Date,
+        required: true,
+    },
+    estimatedDateOfReview: {
+        type: Date,
+        required: true,
+    },
+    document_address: String,
+    review_type: String,
+    entranDocumentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'files',
+    },
+    sortantDocumentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'files',
+    },
+    meta: {
+        type: Schema.Types.Mixed,
+        default: {},
+    },
+},
+    {
+        timestamps: true
+    }
+);
+const generateqrCode = async function (doc) {
+    if (!doc.qrcode && doc.qrcode != '') {
+        const code = randomstring.generate({ length: 8, charset: 'alphanumeric', capitalization: 'uppercase' });
+        const qrData = `JET-${code}`;
+        try {
+            const qrcode = await QRCode.toDataURL(qrData, { errorCorrectionLevel: 'H', margin: 2, scale: 10 });
+
+            await mongoose.model('procurations').findByIdAndUpdate(doc._id, { accessCode: qrData, qrcode: qrcode }, { new: true });
+        } catch (err) {
+            console.error('Erreur génération QR Code:', err);
+        }
+    }
+}
+ProcurationSchema.post('save', generateqrCode);
+ProcurationSchema.post('findOneAndUpdate', generateqrCode);
+ProcurationSchema.post('findByIdAndUpdate', generateqrCode);
+
+const procurationmodel = mongoose.model('procurations', ProcurationSchema);
+
+module.exports = procurationmodel;const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const PropertySchema = mongoose.Schema({
+    address: {
+        type: String,
+        required: true
+    },
+    complement: {
+        type: String,
+        default: ''
+    },
+    floor: {
+        type: String,
+        default: ''
+    },
+    surface: {
+        type: String,
+        required: true
+    },
+    roomCount: {
+        type: Number,
+        required: true
+    },
+    furnitured: {
+        type: Boolean,
+        default: false
+    },
+    box: {
+        type: String,
+        default: ''
+    },
+    cellar: {
+        type: String,
+        default: ''
+    },
+    garage: {
+        type: String,
+        default: ''
+    },
+    parking: {
+        type: String,
+        default: ''
+    },
+    heatingType: {
+        type: String,
+        default: 'gas'
+    },
+    heatingMode: {
+        type: String,
+        default: 'individual'
+    },
+    hotWaterType: {
+        type: String,
+        default: 'electric'
+    },
+    hotWaterMode: {
+        type: String,
+        default: 'individual'
+    },
+    is_active: {
+        type: Boolean,
+        default: true
+    },
+    meta: {
+        type: Schema.Types.Mixed,
+        default: {},
+    },
+
+},
+    {
+        timestamps: true
+    }
+);
+ 
+const property = mongoose.model('properties', PropertySchema);
+
+module.exports = property;  const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+var QRCode = require('qrcode')
+var randomstring = require("randomstring");
+
+const ReviewAccessSchema = mongoose.Schema({
+    user: { type: String, required: true, },
+    review: { type: Schema.Types.ObjectId, ref: 'reviews', required: true, },
+    accessCode: {
+        type: String,
+        unique: true,
+        sparse: true,     // important if you want to allow multiple `null` values
+        default: null
+    },
+    qrcode: { type: String, unique: true, },
+    expiryDate: { type: Date },
+    meta: {
+        type: Schema.Types.Mixed,
+        default: {},
+    },
+},
+    {
+        timestamps: true
+    }
+);
+const generateqrCode = async function (doc) {
+    if (!doc.qrcode && doc.qrcode != '') {
+        const code = randomstring.generate({ length: 8, charset: 'alphanumeric', capitalization: 'uppercase' });
+        const qrData = `JET-${code}`;
+        try {
+            const qrcode = await QRCode.toDataURL(qrData, { errorCorrectionLevel: 'H', margin: 2, scale: 10 });
+            console.log(code);
+
+            await mongoose.model('reviewaccess').findByIdAndUpdate(doc._id, { accessCode: qrData, qrcode: qrcode }, { new: true });
+        } catch (err) {
+            console.error('Erreur génération QR Code:', err);
+        }
+    }
+}
+ReviewAccessSchema.post('save', generateqrCode);
+ReviewAccessSchema.post('findOneAndUpdate', generateqrCode);
+ReviewAccessSchema.post('findByIdAndUpdate', generateqrCode);
+
+const procurationmodel = mongoose.model('reviewaccess', ReviewAccessSchema);
+
+module.exports = procurationmodel;const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+var QRCode = require('qrcode')
+const config = require("../config/config");
+
+
+require('./pieceModel')
+require('./compteurModel')
+require('./cledeporteModel')
+require('./thingModel')
+
+const ReviewSchema = mongoose.Schema({
+    author: {
+        type: Schema.Types.ObjectId,
+        ref: 'users',
+        required: true,
+    },
+    mandataire: {
+        type: Schema.Types.ObjectId,
+        ref: 'tenants',
+        required: false,
+    },
+    qrcode: {
+        type: String,
+        unique: true,
+    },
+    owners: [{
+        type: Schema.Types.ObjectId,
+        ref: 'owners',
+    }],
+    exitenants: [{
+        type: Schema.Types.ObjectId,
+        ref: 'tenants',
+    }],
+    entrantenants: [{
+        type: Schema.Types.ObjectId,
+        ref: 'tenants',
+    }],
+
+    pieces: [{
+        type: Schema.Types.ObjectId,
+        ref: 'pieces',
+    }],
+    cledeportes: [{
+        type: Schema.Types.ObjectId,
+        ref: 'cledeportes',
+    }],
+    compteurs: [{
+        type: Schema.Types.ObjectId,
+        ref: 'compteurs',
+    }],
+    photos: {
+        type: [{
+            type: String,
+        }],
+        default: []
+    },
+
+
+    propertyDetails: {
+        type: Schema.Types.ObjectId,
+        ref: 'properties',
+    },
+
+    document_address: String,
+    review_type: String,
+    entranDocumentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'files',
+    },
+    procuration: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'procurations',
+        default: null,
+    },
+    status: {
+        type: String,
+        default: "draft",
+    },
+    sortantDocumentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'files',
+    },
+
+    dateOfRealisation: {
+        type: Date,
+    },
+    meta: {
+        type: Schema.Types.Mixed,
+        default: {},
+    },
+},
+    {
+        timestamps: true
+    }
+);
+
+// Middleware post-save pour génération du QR Code
+
+const generateqrCode = async function (doc) {
+    if (!doc.qrcode && doc.qrcode != '') {
+        const qrData = `${config.appUrl}/etat-des-lieux/${doc._id}`;
+
+        try {
+            const qrcode = await QRCode.toDataURL(qrData, {
+                errorCorrectionLevel: 'H',
+                margin: 2,
+                scale: 10
+            });
+
+            await mongoose.model('reviews').findByIdAndUpdate(doc._id, { qrcode });
+        } catch (err) {
+            console.error('Erreur génération QR Code:', err);
+        }
+    }
+}
+ReviewSchema.post('save', generateqrCode);
+ReviewSchema.post('findOneAndUpdate', generateqrCode);
+ReviewSchema.post('findByIdAndUpdate', generateqrCode);
+
+module.exports = mongoose.model('reviews', ReviewSchema);const mongoose = require('mongoose');
+
+const SponsorSchema = new mongoose.Schema({
+    avatar: {
+        type: String,
+        required: true
+    },
+    sponsor: {
+        type: String,
+        required: true
+    },
+    status: {
+        type: String,
+        enum: ["Publish", "UnPublish"],
+        default: "Publish",
+        trim: true
+    }
+},
+{
+    timestamps: true
+});
+
+const Sponsor = mongoose.model('sponsor', SponsorSchema);
+
+module.exports = Sponsor;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const TenantSchema = mongoose.Schema({
+    lastname: String,
+    firstname: String,
+    denomination: String,
+    type: { type: String, enum: ['physique', 'morale'], default: 'physique' },
+    representant: { type: Schema.Types.ObjectId, ref: 'tenants' },
+    order: {
+        type: Number,
+        default: 1,
+        trim: true
+    }, email: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    avatar: {
+        type: String,
+        trim: true
+    },
+    dob: {
+        type: Date,
+        required: true,
+    },
+    placeofbirth: String,
+    address: String,
+    phone: {
+        type: String,
+        trim: true
+    },
+    gender: {
+        type: String,
+        enum: ["Female", "Male"],
+        default: "Male",
+        trim: true
+    },
+    comment: {
+        type: String
+    },
+    is_active: {
+        type: Boolean,
+        default: true
+    },
+    photos: {
+        type: [{
+            type: String,
+        }],
+        default: []
+    },
+    meta: {
+        type: Schema.Types.Mixed,
+        default: {},
+    },
+},
+    {
+        timestamps: true
+    }
+);
+module.exports = mongoose.model('tenants', TenantSchema);const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const Thingchema = mongoose.Schema({
+    order: {
+        type: Number,
+        default: 1,
+        trim: true
+    },
+    name: {
+        type: String,
+        required: true
+    },
+    type: {
+        type: String,
+        required: false
+    },
+    brand: {
+        type: String,
+        required: false
+    },
+    model: {
+        type: String,
+        required: false
+    },
+    serialNumber: {
+        type: String,
+        required: false
+    },
+    condition: {
+        type: String,
+        required: false
+    },
+    location: {
+        type: String,
+        required: false
+    },
+    testingStage: {
+        type: String,
+        required: false
+    },
+    description: {
+        type: String,
+        required: false
+    },
+    photos: {
+        type: [{
+            type: String,
+         }],
+        default: []
+    },
+    warranty: {
+        type: String,
+        required: false
+    },
+    comment: {
+        type: String,
+        required: false
+    },
+    order: {
+        type: Number,
+        required: false,
+        default: 0
+    },
+    count: {
+        type: Number,
+        required: false,
+        default: 1
+    },
+    dateAcquired: {
+        type: Date,
+        required: false
+    },
+    dateDisposed: {
+        type: Date,
+        required: false
+    },
+    dateInspected: {
+        type: Date,
+        required: false
+    },
+    dateRepaired: {
+        type: Date,
+        required: false
+    },
+    dateServiced: {
+        type: Date,
+        required: false
+    },
+    dateMaintained: {
+        type: Date,
+        required: false
+    },
+    dateReplaced: {
+        type: Date,
+        required: false
+    },
+    dateUpgraded: {
+        type: Date,
+        required: false
+    },
+    dateDowngraded: {
+        type: Date,
+        required: false
+    },
+    dateRecalled: {
+        type: Date,
+        required: false
+    }
+
+},
+    {
+        timestamps: true
+    }
+);
+
+const thingmodel = mongoose.model('things', Thingchema);
+
+module.exports = thingmodel;const mongoose = require('mongoose');
+
+const TicketSchema = mongoose.Schema({
+
+    bookeddate: {
+        type: String,
+        required: true
+    },
+    ticket_number: {
+        type: String,
+        require: true,
+        trim: true
+    },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user'
+    },
+    eventId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'event'
+    },
+    total_ticket: {
+        type: Number,
+        require: true,
+        trim: true
+    },
+    price: {
+        type: Number,
+        required: true,
+        trim: true
+    },
+    subtotal: {
+        type: Number,
+        required: true,
+        trim: true
+    },
+    coupon_code: {
+        type: String,
+        require: true,
+        trim: true
+    },
+    coupon_amount: {
+        type: Number,
+        required: true,
+        trim: true
+    },
+    tax: {
+        type: Number,
+        required: true,
+        trim: true
+    },
+    tax_amount: {
+        type: Number,
+        required: true,
+        trim: true
+    },
+    total_amount: {
+        type: Number,
+        required: true,
+        trim: true
+    },
+    payment_method: {
+        type: String,
+        enum: ['Cash On Delivery', 'Paypal', 'Stripe', 'Razorpay'],
+        trim: true
+    },
+    payment_status: {
+        type: String,
+        enum: ['Successful', 'Failed', 'Pending'],
+        trim: true
+    },
+    transaction_id: {
+        type: String,
+        trim: true
+    },
+    status: {
+        type: String,
+        enum: ['Upcoming', 'Past'],
+        default: "Upcoming",
+        trim: true
+    },
+    cancellation_info: [{
+        cancel_date: {
+            type: String,
+            trim: true
+        },
+        total_cancel_ticket: {
+            type: Number,
+            trim: true
+        },
+        cancel_reason: {
+            type: String,
+            trim: true
+        },
+        refund_amount: {
+            type: Number,
+            trim: true
+        },
+        refund_notes: {
+            type: String,
+            trim: true
+        }
+    }],
+    total_cancelled_ticket: {
+        type: Number,
+        trim: true,
+        default: 0
+    },
+    total_remaining_ticket: {
+        type: Number,
+        trim: true,
+        default: 0
+    },
+    total_remaining_tickets_to_scan: {
+        type: Number,
+        trim: true,
+        default: 0
+    },
+    total_scanned_tickets: {
+        type: Number,
+        trim: true,
+        default: 0
+    }
+},
+    {
+        timestamps: true
+    }
+);
+
+const ticket = mongoose.model('ticket', TicketSchema);
+
+module.exports = ticket;const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const UserSchema = mongoose.Schema({
+    firstName: String,
+    lastName: String,
+    level: {
+        type: String,
+        default: 'standard',
+    },
+    type: {
+        type: String,
+        default: 'tenant',
+    },
+    placeOfBirth: {
+        type: String,
+        default: '',
+    },
+    reason: {
+        type: String,
+        default: 'legal_person',
+    },
+    imageUrl: {
+        type: String,
+        trim: true
+    },
+    email: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    country_code: {
+        type: String,
+        trim: true,
+        default: '33',
+    },
+    phone: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    country: {
+        type: String,
+        default: 'France',
+    },
+    gender: {
+        type: String,
+        enum: ["Female", "Male"],
+        default: "Female",
+        trim: true
+    },
+    dob: {
+        type: String
+    },
+    about: {
+        type: String
+    },
+    interestCategoryId: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'category',
+        trim: true
+    }],
+
+    is_active: {
+        type: Boolean,
+        default: true
+    },
+    verifiedAt: {
+        type: Date,
+        default: null
+    },
+    meta: {
+        type: Schema.Types.Mixed,
+        default: {},
+    },
+},
+    {
+        timestamps: true
+    }
+);
+
+module.exports = mongoose.model('user', UserSchema);const mongoose = require("mongoose");
+
+const userDeviceSchema = new mongoose.Schema({
+
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users',
+        required: true
+    },
+    registrationToken: {
+        type: String,
+        required: true
+    },
+    deviceId: {
+        type: String,
+        required: true
+    }
+    
+},
+    {
+        timestamps: true
+    }
+);
+
+module.exports = mongoose.model('userNotification', userDeviceSchema);
+

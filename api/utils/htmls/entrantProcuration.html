@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            height: 80px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 18px;
+            text-align: center;
+            text-decoration: underline;
+            margin-bottom: 30px;
+        }
+
+        .address-block {
+            margin-bottom: 30px;
+        }
+
+        .signature-block {
+            margin-top: 50px;
+        }
+
+        .signature-line {
+            width: 300px;
+            border-top: 1px solid #333;
+            margin: 40px 0 10px;
+        }
+
+        .footer {
+            font-size: 12px;
+            text-align: center;
+            margin-top: 50px;
+            color: #666;
+        }
+
+        .text-underline {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <img src="https://jatai.fr/wp-content/uploads/2024/09/cropped-Copy-of-Jatai.png" class="logo" alt="Logo">
+        <h1>PROCURATION POUR ÉTAT DES LIEUX</h1>
+    </div>
+
+    <div class="address-block">
+        <p><strong>Nom et prénom du mandant (Bailleur):</strong><br>
+            ${owner.firstname} ${owner.lastname}</p>
+
+        <p><strong>Adresse complète:</strong><br>
+            ${owner.address}</p>
+
+        <p><strong>Coordonnées:</strong><br>
+            ${owner.representantphone || 'Non spécifié'} | ${owner.representantemail}</p>
+    </div>
+
+    <div class="address-block">
+        <p><strong>Locataire entrant:</strong><br>
+            ${tenant.firstname} ${tenant.lastname}<br>
+            Né(e) le ${new Date(tenant.dob).toLocaleDateString('fr-FR')} à ${tenant.placeofbirth}<br>
+            Domicilié(e) à ${tenant.address}</p>
+    </div>
+
+    <p>Madame, Monsieur,</p>
+
+    <p>Ne pouvant assister le <span class="text-underline">${date}</span> à l'état des lieux concernant mon logement
+        situé au :</p>
+
+    <p><strong>${property.address}</strong><br>
+        ${property.complement || ''}<br>
+        ${property.floor} - ${property.surface}m² (${property.roomCount} pièces)</p>
+
+    <p>Je soussigné(e) <strong>${owner.firstname} ${owner.lastname}</strong>, né(e) le ${new
+        Date(owner.dob).toLocaleDateString('fr-FR')} et demeurant au ${owner.address}, donne, par la présente, pouvoir à
+        :</p>
+
+    <p><strong>${tenant.firstname} ${tenant.lastname}</strong>, né(e) à ${tenant.placeofbirth} le ${new
+        Date(tenant.dob).toLocaleDateString('fr-FR')}, demeurant à ${tenant.address}, pour me représenter lors de cet
+        état des lieux.</p>
+
+    <p>À cet effet, cette personne pourra signer, pour moi et en mon nom, tout formulaire et/ou document nécessaire à la
+        bonne exécution de cet état des lieux.</p>
+
+    <div class="signature-block">
+        <p>Fait à ${data.document_address || 'Paris'}, le ${new Date().toLocaleDateString('fr-FR')}</p>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 50px;">
+            <div>
+                <div class="signature-line"></div>
+                <p>Signature du Bailleur<br>
+                    ${owner.firstname} ${owner.lastname}</p>
+            </div>
+
+            <div>
+                <div class="signature-line"></div>
+                <p>Signature du locataire entrant<br>
+                    ${tenant.firstname} ${tenant.lastname}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Document établi par Rocket Deliveries - Ne peut être dissocié du contrat de location</p>
+    </div>
+</body>
+
+</html>

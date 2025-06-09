@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procuration État des Lieux - Jatai</title>
+    <style type="text/css">
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333333;
+            line-height: 1.6;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .email-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .email-header {
+            padding: 30px;
+            text-align: center;
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .logo {
+            max-height: 50px;
+            width: auto;
+        }
+
+        .email-title {
+            margin: 15px 0 5px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .content-block {
+            padding: 25px;
+        }
+
+        .step-card {
+            background-color: #f8f9fa;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .step-title {
+            color: #ff9800;
+            font-weight: 600;
+            margin-top: 0;
+        }
+
+        .security-badge {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        .app-badge {
+            display: inline-block;
+            margin: 10px;
+            width: 120px;
+        }
+
+        .footer {
+            padding: 20px;
+            background-color: #f1f1f1;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        @media screen and (max-width: 600px) {
+            .email-container {
+                padding: 10px;
+            }
+
+            .content-block {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="email-card">
+            <div class="email-header">
+                <img src="{{ logoUrl }}" class="logo" alt="Jatai">
+                <h1 class="email-title">État des Lieux par Procuration</h1>
+                <div class="security-badge">PROCÉDURE SÉCURISÉE</div>
+            </div>
+
+            <div class="content-block">
+                <p>Bonjour,</p>
+                <p>Dans le cadre de votre entrée/sortie du logement situé au
+                    <strong>{{propertyDetails.address}}</strong>, nous vous informons que l'état des lieux sera réalisé
+                    via notre solution Jatai avec le système de procurations croisées.
+                </p>
+
+                <div class="step-card">
+                    <h3 class="step-title">🔁 Fonctionnement des procurations croisées</h3>
+                    <p>Le bailleur a choisi de déléguer la réalisation de l'état des lieux :</p>
+                    <ul>
+                        <li>Le locataire sortant représente le bailleur pour l'état des lieux d'entrée</li>
+                        <li>Le locataire entrant représente le bailleur pour l'état des lieux de sortie</li>
+                    </ul>
+                </div>
+
+                <div class="step-card">
+                    <h3 class="step-title">📲 Référent désigné</h3>
+                    <p>Le bailleur a nommé <strong>
+
+                            {{#ifEquals accessGivenTo.type 'morale'}}
+                            {{accessGivenTo.denomination}}
+                            {{else}}
+                            {{accessGivenTo.firstname}} {{accessGivenTo.lastname}}
+                            {{/ifEquals}}
+
+                        </strong> comme référent principal pour l'accès à l'application Jatai.</p>
+                    <p><em>Un seul accès sera activé, mais vous compléterez ensemble l'état des lieux de manière
+                            contradictoire.</em></p>
+                </div>
+
+                <div class="step-card">
+                    <h3 class="step-title">🖋️ Étapes à suivre</h3>
+                    <ol>
+                        <li>Téléchargez l'application mobile Jatai</li>
+                        <div style="text-align: center;">
+                            <a href="https://apps.apple.com/fr/app/jatai-état-des-lieux/idXXXXXX" class="app-badge">
+                                <img src="https://jataietatdeslieu.adidome.com/uploads/siteqrcode.svg"
+                                    alt="Télécharger sur l'App Store" width="120">
+                            </a>
+                            <a href="https://play.google.com/store/apps/details?id=fr.jatai" class="app-badge">
+                                <img src="https://jataietatdeslieu.adidome.com/uploads/siteqrcode.svg"
+                                    alt="Disponible sur Google Play" width="120">
+                            </a>
+                        </div>
+                        <li>Créez un compte locataire</li>
+                        <li>Validez votre identité (pièce d'identité + selfie)</li>
+                        <li>Signez la procuration électronique</li>
+                        <li>Complétez l'état des lieux ensemble lors du rendez-vous</li>
+                    </ol>
+                </div>
+
+                <div style="background-color: #fff8e1; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                    <h3 style="color: #ff9800; margin-top: 0;">🔐 Sécurité juridique garantie</h3>
+                    <ul>
+                        <li>Signature électronique qualifiée</li>
+                        <li>QR code anti-fraude</li>
+                        <li>Horodatage certifié</li>
+                        <li>Archivage légal (conforme loi ALUR)</li>
+                        <li>Valeur probante en cas de litige</li>
+                    </ul>
+                </div>
+
+                <p>Pour toute question, notre équipe support est disponible :</p>
+                <p><strong>📩 contact@jatai.fr</strong> | <strong>🌐 www.jatai.fr</strong></p>
+            </div>
+
+            <div class="footer">
+                <p>Merci de votre confiance,</p>
+                <p><strong>L'équipe Jatai</strong></p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

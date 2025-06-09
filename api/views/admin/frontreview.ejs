@@ -1,0 +1,115 @@
+<!-- layouts:/header -->
+<%- include('../layouts/header.ejs') %>
+  <style>
+    body#kt_app_body {
+      overflow-y: hidden !important;
+    }
+  </style>
+  <!--begin::Root-->
+  <div class="d-flex flex-column flex-root" id="kt_app_root">
+
+    <div class="d-flex flex-column flex-lg-row flex-column-fluid">
+      <div class="d-flex flex-column flex-lg-row-fluid py-10">
+        <!--begin::Content-->
+        <div class="d-flex flex-center flex-column flex-column-fluid">
+          <div class="text-center mb-10">
+            <img src="https://jataietatdeslieu.adidome.com/api/uploads/logo-bgless.png" class="logo" alt="Logo"
+              style="width:300px;height:90px; object-fit: contain;">
+          </div>
+          <div class="card m-3" style=" max-width: 456px; ">
+            <div class=" p-10 p-lg-15 mx-auto">
+              <form class="form w-100" method="post">
+
+                <div class="text-center mb-10">
+                  <div class="symbol symbol-50px symbol-circle user-select-none">
+                    <div style="background-color: #f38d0741;" class="symbol-label "><i class="ki-solid ki-file"
+                        style="color: #F38B07; font-size: 30px;"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-center mb-10">
+                  <h1 class="text-center mb-3" style="font-weight: 500;">État des lieux de sortie</h1>
+                </div>
+
+                <div class="text-center mb-10">
+                  <div class="d-flex w-100 justify-content-between align-items-center">
+                    <span style="color: gray; font-size: 14px; text-align: left;">
+                      Date de réalisation
+                    </span>
+                    <div class="p-2" style="text-align: right;">
+                      <span style="font-size: 15px;color: black;text-align: right;"><%- review ? review.date :""
+                          %></span>
+                    </div>
+                  </div>
+                  <div class="d-flex w-100 justify-content-between mt-3 align-items-center">
+                    <span style="color: gray; font-size: 14px; text-align: left;">
+                      Adresse du bien
+                    </span>
+                    <div class="p-2" style="text-align: right;">
+                      <span style="font-size: 15px;color: black; text-align: right;"><%- review ? review.address :""
+                          %></span>
+                    </div>
+                  </div>
+
+
+                </div>
+
+                <div class="text-center">
+
+
+
+
+
+
+
+                  <% if (review && review.status==="draft" ) { %>
+                    <div class="mb-5">
+                      <p class="text-center mb-5">Si vous êtes concerné par cet état des lieux, veuillez le compléter
+                        via notre application mobile :</p>
+                      <div class="d-flex justify-content-center gap-3">
+                        <a href="https://apps.apple.com/app/your-app-id" class="btn btn-light"
+                          style="display: flex; align-items: center; gap: 5px; flex-direction: column;">
+                          <img src="https://jataietatdeslieu.adidome.com/uploads/siteqrcode.svg" alt="App Store"
+                            height="40">
+                          <span>
+                            Ios
+                          </span>
+                        </a>
+                        <a style="display: flex; align-items: center; gap: 5px; flex-direction: column;"
+                          href="https://play.google.com/store/apps/details?id=your.app.id" class="btn btn-light">
+                          <img src="https://jataietatdeslieu.adidome.com/uploads/siteqrcode.svg" alt="Play Store"
+                            height="40">
+                          <span>
+                            Android
+                          </span>
+                        </a>
+                      </div>
+                    </div>
+                    <% } else { %>
+                      <a type="submit" class="btn btn-lg w-100 mb-5" style="background-color: #F38B07; color: white;"
+                        href="<%- review ? review.downloadLink : '' %>">
+                        <span class="indicator-label">Télécharger</span>
+                      </a>
+                      <% } %>
+                        <!--end::Submit button-->
+
+                </div>
+                <!--end::Actions-->
+              </form>
+              <!--end::Form-->
+            </div>
+            <!--end::Wrapper-->
+          </div>
+        </div>
+        <!--end::Content-->
+
+      </div>
+      <!--end::Body-->
+    </div>
+    <!--end::Authentication - Sign-in-->
+  </div>
+  <!--end::Root-->
+
+
+  <!-- layouts:/footer -->
+  <%- include('../layouts/footer.ejs') %>

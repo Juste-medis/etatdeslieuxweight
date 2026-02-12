@@ -10,19 +10,19 @@ if (global.localmachine != "remote2") {
 module.exports = {
   port,
   dbName: process.env.DB_NAME,
-  secret: process.env.JWT_SECRET_KEY || 'kzehbvizhbvzjhe',
-  supportEmail: 'contact@jatai.fr',
+  secret: process.env.JWT_SECRET_KEY || '',
+  supportEmail: '',
   nodemailer: {
-    from: `contact@jatai.fr`,
+    from: ``,
   },
   nodemailerTransport: {
     service: undefined,
-    host: 'smtp-mail.outlook.com',
+    host: '',
     port: 587,
     secure: false,
     auth: {
-      user: 'contact@jatai.fr',
-      pass: 'wmvsnnlbfxzhrxxz',
+      user: '',
+      pass: '',
     },
   },
   rootUser: {

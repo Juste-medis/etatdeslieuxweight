@@ -1,7 +1,7 @@
 # JATAI État des lieux
 
 <p align="center">
-	<img src="reviewapp/assets/app_icons/logoplein.png" alt="Ecran splash" width="220" /> 
+	<img src="reviewapp/assets/app_icons/logoplein.png" alt="Ecran splash" width="220" style="border-radius: 200px;" /> 
 </p>
 
 
@@ -9,6 +9,53 @@ Plateforme complète pour gérer les états des lieux immobiliers :
 - API Node.js/Express + MongoDB (dossier `api/`) avec authentification, paiements Stripe, génération de PDF, notifications, envoi de mails et uploads de fichiers.
 - Deux applications Flutter : `reviewapp/` (app locataire/propriétaire) et `reviewadmin/` (back-office web/desktop/mobile).
 - Mini serveur d’exemple à la racine (fichier `server.js`) principalement utilisé par les tests Mocha.
+
+## MonEtat — État des Lieux
+Solution intelligente de gestion immobilière assistée par IA, pensée 100% offline-first.
+
+- Flutter (apps mobile et web)
+- Node.js / Express
+- YOLO v10 (vision par ordinateur)
+- Python (pipeline data)
+- Power BI (dashboards)
+- MongoDB (stockage)
+
+### 🔑 Identifiants de démonstration
+| Rôle | Email | Mot de passe |
+| --- | --- | --- |
+| Vanessa | vanessaseban@adidomedis.cloud | 123456 |
+| Romuald | mucoper@gmail.com | 123456 |
+| Tom | tomgrimaud@adidomedis.cloud | 123456 |
+| Administrateur | contact@adidomedis.cloud | tHRuUjWRChFGjZD00Q4W7MwXe |
+
+⚠️ Compte de démonstration : les données peuvent être réinitialisées périodiquement.
+
+### Description générale
+MonEtat est une suite complète pour réaliser et exploiter des états des lieux : application mobile Flutter pour le terrain et plateforme web d’administration. Les données (biens, pièces, équipements, photos, utilisateurs) sont consolidées pour produire des rapports, des comparatifs et des assistances IA.
+
+- Offline-first : synchronisation différée côté mobile.
+- Backend Node.js/MongoDB pour la scalabilité et la performance.
+- IA YOLO v10 pour détecter anomalies et qualifier les équipements depuis les photos terrain.
+- Power BI pour transformer les données collectées en insights (vétusté, coûts de maintenance, tableaux de bord dynamiques).
+
+### Intelligence Artificielle & Data
+- Vision par ordinateur (YOLO v10) : détection des dégradations, inventaire automatique des équipements, suggestion d’état (Neuf, Bon, Usé).
+- Prédiction et assistance : inventaires types selon la pièce, suggestions de commentaires issues de l’historique.
+- Data et BI : pipeline complet jusqu’à Power BI pour la vétusté, la prévision des coûts et les dashboards managers.
+
+### Interface mobile (Flutter)
+- Ergonomie terrain optimisée, prise de photos guidée, contrôle offline/online, synchronisation silencieuse.
+
+### Dashboard et analytique
+- Tableaux de bord consolidés, comparaisons d’états d’entrée/sortie, suivi des tickets et export PDF.
+
+### Fonctionnalités clés
+- Mode 100% offline : stockage local (SQLite/Hive) et synchro automatique dès que le réseau revient.
+- Pipeline de données : collecte structurée → nettoyage (Python) → MongoDB → Power BI.
+- Comparaison d’états : affichage côte à côte pour repérer instantanément les nouvelles dégradations.
+- Fiabilité et sécurité : API Node.js sécurisée, JWT, horodatage des états pour valeur probante.
+- Génération PDF : rapports complets, signés et envoyés par email aux parties prenantes.
+- Scalabilité : backend prêt pour montée en charge, déploiement Ubuntu avec PM2/forever.
 
 ## Aperçu visuel
 

@@ -1,11 +1,17 @@
 // 🐦 Flutter imports:
+import 'dart:async';
+
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:feather_icons/feather_icons.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/utls.dart';
-import 'package:jatai_etatsdeslieux/app/core/network/rest_apis.dart';
-import 'package:jatai_etatsdeslieux/app/widgets/dialogs/confirm_dialog.dart';
-import 'package:jatai_etatsdeslieux/main.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/french_translations.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/utls.dart';
+import 'package:mon_etatsdeslieux/app/core/network/rest_apis.dart';
+import 'package:mon_etatsdeslieux/app/core/static/model_keys.dart';
+import 'package:mon_etatsdeslieux/app/models/notification_model.dart';
+import 'package:mon_etatsdeslieux/app/models/review.dart';
+import 'package:mon_etatsdeslieux/app/pages/pages.dart';
+import 'package:mon_etatsdeslieux/app/widgets/dialogs/confirm_dialog.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 // 📦 Package imports:
@@ -21,6 +27,7 @@ import '../../../../providers/providers.dart';
 import '../../../../widgets/widgets.dart';
 import '../language_dropdown/_language_dropdown.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 part '_notification_icon_button.dart';
 part '_toggle_theme.dart';
@@ -35,28 +42,19 @@ class TopBarWidget extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final lang = l.S.of(context);
     return AppBar(
-      leading: rf.ResponsiveValue<Widget?>(
-        context,
-        conditionalValues: [
-          rf.Condition.largerThan(
-            name: BreakpointName.MD.name,
-            value: null,
-          ),
-        ],
-        defaultValue: IconButton(
-          onPressed: onMenuTap,
-          icon: Tooltip(
-            // message: 'Open Navigation menu',
-            message: lang.openNavigationMenu,
-            waitDuration: const Duration(milliseconds: 350),
-            child: const Icon(Icons.menu),
-          ),
+      leading: IconButton(
+        onPressed: onMenuTap,
+        icon: Tooltip(
+          // message: 'Open Navigation menu',
+          message: lang.openNavigationMenu,
+          waitDuration: const Duration(milliseconds: 350),
+          child: const Icon(Icons.menu),
         ),
-      ).value,
+      ),
       toolbarHeight: rf.ResponsiveValue<double?>(
         context,
         conditionalValues: [
-          rf.Condition.largerThan(name: BreakpointName.SM.name, value: 70)
+          rf.Condition.largerThan(name: BreakpointName.SM.name, value: 70),
         ],
       ).value,
       surfaceTintColor: Colors.transparent,

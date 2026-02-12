@@ -1,15 +1,19 @@
 // 🐦 Flutter imports:
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-// 📦 Package imports:
-import 'package:feather_icons/feather_icons.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/utls.dart';
-import 'package:jatai_etatsdeslieux/app/core/network/rest_apis.dart';
-import 'package:jatai_etatsdeslieux/app/core/static/model_keys.dart';
-import 'package:jatai_etatsdeslieux/app/pages/authentication/components/components.dart';
-import 'package:jatai_etatsdeslieux/main.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/copole.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/french_translations.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/utls.dart';
+import 'package:mon_etatsdeslieux/app/core/network/rest_apis.dart';
+import 'package:mon_etatsdeslieux/app/core/static/model_keys.dart';
+import 'package:mon_etatsdeslieux/app/pages/authentication/components/components.dart';
+import 'package:mon_etatsdeslieux/app/pages/shell_route_wrapper/components/_components.dart';
+import 'package:mon_etatsdeslieux/app/providers/_theme_provider.dart';
+import 'package:mon_etatsdeslieux/main.dart';
+import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
 import '../../../dev_utils/dev_utils.dart';
@@ -31,47 +35,61 @@ class _SigninViewState extends State<SigninView> {
 
   TextEditingController emailCont = TextEditingController();
   TextEditingController passwordCont = TextEditingController();
+  bool isLoading = false;
 
   void registerUser() async {
     Jks.context = context;
     hideKeyboard(context);
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
-
-      appStore.setLoading(true);
+      setState(() {
+        isLoading = true;
+      });
 
       Map<String, dynamic> request = {
         UserKeys.email: emailCont.text.trim(),
         UserKeys.password: passwordCont.text.trim(),
       };
 
-      await loginUser(request).then((res) async {
-        if (res.data!.verifiedAt == null) {
-          context.go(
-            '/otp',
-            extra: {
-              "email": res.data!.email,
-              "userId": res.data!.iid,
-              UserKeys.password: request[UserKeys.password],
-            },
-          );
-        } else {
-          await saveUserData(res.data!, token: res.token);
-          context.go(
-            '/dashboard',
-            extra: res.data,
-          );
-        }
-      }).catchError((e) {
-        my_inspect(e);
-        // toast(e.toString());
-      });
-      appStore.setLoading(false);
+      await loginUser(request)
+          .then((res) async {
+            setState(() {
+              isLoading = false;
+            });
+            if (res.data?.verifiedAt == null) {
+              context.go(
+                '/otp',
+                extra: {
+                  "email": res.data!.email,
+                  "userId": res.data!.iid,
+                  UserKeys.password: request[UserKeys.password],
+                },
+              );
+            } else {
+              await initializeApp(res.data!, res.token);
+              context.go('/dashboard', extra: res.data);
+            }
+          })
+          .catchError((e) {
+            if (e.toString() == "no_internet") {
+              Jks.languageState!.showAppNotification(
+                message:
+                    "Vous êtes hors ligne. Veuillez vérifier votre connexion Internet."
+                        .tr,
+              );
+            } else {}
+            setState(() {
+              isLoading = false;
+            });
+            my_inspect(e);
+          });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    Jks.context = context;
+
     final lang = l.S.of(context);
     final _theme = Theme.of(context);
 
@@ -96,209 +114,275 @@ class _SigninViewState extends State<SigninView> {
                 child: SafeArea(
                   child: Column(
                     children: [
-                      if (!_desktopView)
-                        AuthHeader(
-                          screenHeight: _screenHeight,
-                          screenWidth: _screenWidth,
+                      //si ce n'est pas la vue desktop et que le clavier n'est pas ouvert
+                      authHeader(
+                        context,
+                        screenHeight: _screenHeight,
+                        screenWidth: _screenWidth,
+                        desktopView: _desktopView,
+                        themeswitcher: Consumer<AppThemeProvider>(
+                          builder: (context, appTheme, child) => ThemeToggler(
+                            isDarkMode: appTheme.isDarkTheme,
+                            onChanged: appTheme.toggleTheme,
+                          ).center(),
                         ),
-                      if (!_desktopView) 80.height else 100.height,
+                      ),
                       Flexible(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 800),
                           child: Center(
-                              child: Form(
-                            key: formKey,
-                            autovalidateMode: AutovalidateMode.disabled,
-                            child: SingleChildScrollView(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    lang.welcome,
-                                    style: _theme.textTheme.headlineSmall
-                                        ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
+                            child: Form(
+                              key: formKey,
+                              autovalidateMode: AutovalidateMode.disabled,
+                              child: SingleChildScrollView(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (!_desktopView)
+                                      20.height
+                                    else
+                                      100.height,
 
-                                  Text.rich(
-                                    TextSpan(
-                                      text: lang.signIn,
+                                    Text(
+                                      lang.welcome,
+                                      style: _theme.textTheme.headlineSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                     ),
-                                    style:
-                                        _theme.textTheme.labelLarge?.copyWith(
-                                      color: _theme.colorScheme.onSecondary,
+                                    const SizedBox(height: 10),
+
+                                    Text.rich(
+                                      TextSpan(text: lang.signIn),
+                                      style: _theme.textTheme.labelLarge
+                                          ?.copyWith(),
                                     ),
-                                  ),
-                                  const SizedBox(height: 16),
+                                    const SizedBox(height: 16),
 
-                                  // Email Field
-                                  TextFieldLabelWrapper(
-                                    //labelText: 'Email',
-                                    labelText: lang.email,
+                                    // Email Field
+                                    TextFieldLabelWrapper(
+                                      //labelText: 'Email',
+                                      labelText: lang.email,
 
-                                    inputField: TextFormField(
-                                      controller: emailCont,
-                                      validator: (value) {
-                                        return requiredforminput(
-                                            value, lang.pleaseEnterYourEmail);
-                                      },
-                                      decoration: InputDecoration(
-                                        //hintText: 'Enter your email address',
-                                        hintText: lang.enterYourEmailAddress,
+                                      inputField: TextFormField(
+                                        controller: emailCont,
+                                        validator: (value) {
+                                          return requiredforminput(
+                                            value,
+                                            lang.pleaseEnterYourEmail,
+                                          );
+                                        },
+                                        decoration: InputDecoration(
+                                          //hintText: 'Enter your email address',
+                                          hintText: lang.enterYourEmailAddress,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 20),
+                                    const SizedBox(height: 20),
 
-                                  // Password Field
-                                  TextFieldLabelWrapper(
-                                    //labelText: 'Password',
-                                    labelText: lang.password,
-                                    inputField: TextFormField(
-                                      controller: passwordCont,
-                                      obscureText: !showPassword,
-                                      validator: (value) {
-                                        return checkpassword(
-                                          value,
-                                          lang.pleaseEnterYourPassword,
-                                          lang.passmustbeatleastsixcharaters,
-                                        );
-                                      },
-                                      decoration: InputDecoration(
-                                        //hintText: 'Enter your password',
-                                        hintText: lang.enterYourPassword,
-                                        suffixIcon: IconButton(
-                                          onPressed: () => setState(
-                                            () => showPassword = !showPassword,
-                                          ),
-                                          icon: Icon(
-                                            showPassword
-                                                ? FeatherIcons.eye
-                                                : FeatherIcons.eyeOff,
+                                    // Password Field
+                                    TextFieldLabelWrapper(
+                                      //labelText: 'Password',
+                                      labelText: lang.password,
+                                      inputField: TextFormField(
+                                        controller: passwordCont,
+                                        obscureText: !showPassword,
+                                        validator: (value) {
+                                          return checkpassword(
+                                            value,
+                                            lang.pleaseEnterYourPassword,
+                                            lang.passmustbeatleastsixcharaters,
+                                          );
+                                        },
+                                        decoration: InputDecoration(
+                                          //hintText: 'Enter your password',
+                                          hintText: lang.enterYourPassword,
+                                          suffixIcon: IconButton(
+                                            onPressed: () => setState(
+                                              () =>
+                                                  showPassword = !showPassword,
+                                            ),
+                                            icon: Icon(
+                                              showPassword
+                                                  ? Icons.visibility
+                                                  : Icons.visibility_off,
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 20),
+                                    const SizedBox(height: 20),
 
-                                  // Remember Me / Forgot Password
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Flexible(
-                                        child: Text.rich(
-                                          TextSpan(
-                                            children: [
-                                              WidgetSpan(
-                                                alignment:
-                                                    PlaceholderAlignment.middle,
-                                                child: SizedBox.square(
-                                                  dimension: 16,
-                                                  child: Checkbox(
-                                                    value: rememberMe,
-                                                    onChanged: (value) =>
-                                                        setState(
-                                                      () => rememberMe = value!,
-                                                    ),
-                                                    visualDensity:
-                                                        const VisualDensity(
-                                                      horizontal: -4,
-                                                      vertical: -2,
+                                    // Remember Me / Forgot Password
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Flexible(
+                                          child: Text.rich(
+                                            TextSpan(
+                                              children: [
+                                                WidgetSpan(
+                                                  alignment:
+                                                      PlaceholderAlignment
+                                                          .middle,
+                                                  child: SizedBox.square(
+                                                    dimension: 16,
+                                                    child: Checkbox(
+                                                      value: rememberMe,
+                                                      onChanged: (value) =>
+                                                          setState(
+                                                            () => rememberMe =
+                                                                value!,
+                                                          ),
+                                                      visualDensity:
+                                                          const VisualDensity(
+                                                            horizontal: -4,
+                                                            vertical: -2,
+                                                          ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                              const WidgetSpan(
-                                                child: SizedBox(width: 6),
-                                              ),
-                                              TextSpan(
-                                                // text: 'Remember Me',
-                                                text: lang.rememberMe,
-                                                mouseCursor:
-                                                    SystemMouseCursors.click,
-                                                recognizer:
-                                                    TapGestureRecognizer()
-                                                      ..onTap = () => setState(
-                                                            () => rememberMe =
-                                                                !rememberMe,
-                                                          ),
-                                              ),
-                                            ],
+                                                const WidgetSpan(
+                                                  child: SizedBox(width: 6),
+                                                ),
+                                                TextSpan(
+                                                  // text: 'Remember Me',
+                                                  text: lang.rememberMe,
+                                                  mouseCursor:
+                                                      SystemMouseCursors.click,
+                                                  recognizer:
+                                                      TapGestureRecognizer()
+                                                        ..onTap = () =>
+                                                            setState(
+                                                              () => rememberMe =
+                                                                  !rememberMe,
+                                                            ),
+                                                ),
+                                              ],
+                                            ),
+                                            style: _theme.textTheme.labelLarge
+                                                ?.copyWith(
+                                                  color: _theme
+                                                      .checkboxTheme
+                                                      .side
+                                                      ?.color,
+                                                ),
+                                            textAlign: TextAlign.center,
                                           ),
-                                          style: _theme.textTheme.labelLarge
-                                              ?.copyWith(
-                                            color: _theme
-                                                .checkboxTheme.side?.color,
-                                          ),
-                                          textAlign: TextAlign.center,
                                         ),
-                                      ),
 
-                                      // Forgot Password
-                                      Text.rich(
-                                        TextSpan(
-                                          //text: 'Forgot Password?',
-                                          text: lang.forgotPassword,
-                                          mouseCursor: SystemMouseCursors.click,
-                                          recognizer: TapGestureRecognizer()
-                                            ..onTap = () =>
-                                                _handleForgotPassword(context),
-                                        ),
-                                        style: _theme.textTheme.labelLarge
-                                            ?.copyWith(
-                                          color: _theme.primaryColor,
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  50.height,
-                                  Text.rich(
-                                    TextSpan(
-                                      // text: 'Need an account? ',
-                                      text: lang.needAnAccount,
-                                      children: [
-                                        TextSpan(
-                                          // text: 'Sign up',
-                                          text: "  ${lang.signUp}",
+                                        // Forgot Password
+                                        Text.rich(
+                                          TextSpan(
+                                            //text: 'Forgot Password?',
+                                            text: lang.forgotPassword,
+                                            mouseCursor:
+                                                SystemMouseCursors.click,
+                                            recognizer: TapGestureRecognizer()
+                                              ..onTap = () =>
+                                                  _handleForgotPassword(
+                                                    context,
+                                                    emailCont.text.trim(),
+                                                  ),
+                                          ),
                                           style: _theme.textTheme.labelLarge
                                               ?.copyWith(
-                                            color: _theme.colorScheme.primary,
-                                          ),
-                                          recognizer: TapGestureRecognizer()
-                                            ..onTap = () {
-                                              context.push(
-                                                '/authentication/signup',
-                                              );
-                                            },
+                                                color: _theme.primaryColor,
+                                              ),
                                         ),
                                       ],
                                     ),
-                                    style:
-                                        _theme.textTheme.labelLarge?.copyWith(
-                                      color: _theme.checkboxTheme.side?.color,
+                                    25.height,
+                                    Text.rich(
+                                      TextSpan(
+                                        // text: 'Need an account? ',
+                                        text: lang.needAnAccount,
+                                        children: [
+                                          TextSpan(
+                                            // text: 'Sign up',
+                                            text: "  ${lang.signUp}",
+                                            style: _theme.textTheme.labelLarge
+                                                ?.copyWith(
+                                                  color: _theme
+                                                      .colorScheme
+                                                      .primary,
+                                                ),
+                                            recognizer: TapGestureRecognizer()
+                                              ..onTap = () {
+                                                context.push(
+                                                  '/authentication/signup',
+                                                );
+                                              },
+                                          ),
+                                        ],
+                                      ),
+                                      style: _theme.textTheme.labelLarge
+                                          ?.copyWith(
+                                            color: _theme
+                                                .checkboxTheme
+                                                .side
+                                                ?.color,
+                                          ),
+                                    ).center(),
+                                    20.height,
+                                    // Submit Button
+                                    SizedBox(
+                                      width: double.maxFinite,
+                                      child: ElevatedButton(
+                                        onPressed: isLoading
+                                            ? null
+                                            : () {
+                                                registerUser();
+                                              },
+                                        child: Text(lang.signIn),
+                                      ),
                                     ),
-                                  ).center(),
-                                  50.height,
-                                  // Submit Button
-                                  SizedBox(
-                                    width: double.maxFinite,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        registerUser();
-                                      },
-                                      child: Text(lang.signIn),
+                                    20.height,
+                                    Container(
+                                      width: double.maxFinite,
+                                      margin: const EdgeInsets.only(bottom: 16),
+                                      child: OutlinedButton(
+                                        onPressed: () {
+                                          emailCont.text =
+                                              "vanessaseban@adidomedis.cloud";
+                                          passwordCont.text = "123456";
+                                        },
+                                        child: const Text("Vanessa"),
+                                      ),
                                     ),
-                                  )
-                                ],
+                                    Container(
+                                      width: double.maxFinite,
+                                      margin: const EdgeInsets.only(bottom: 16),
+                                      child: OutlinedButton(
+                                        onPressed: () {
+                                          emailCont.text = "mucoper@gmail.com";
+                                          passwordCont.text = "123456";
+                                        },
+                                        child: const Text("Romuald"),
+                                      ),
+                                    ),
+                                    Container(
+                                      width: double.maxFinite,
+                                      margin: const EdgeInsets.only(bottom: 16),
+                                      child: OutlinedButton(
+                                        onPressed: () {
+                                          emailCont.text =
+                                              "tomgrimaud@adidomedis.cloud";
+                                          passwordCont.text = "123456";
+                                        },
+                                        child: const Text("Tom"),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          )),
+                          ),
                         ),
                       ),
                     ],
@@ -316,8 +400,9 @@ class _SigninViewState extends State<SigninView> {
                 ),
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image:
-                        AssetImage('assets/images/static_images/welcome.jpg'),
+                    image: AssetImage(
+                      'assets/images/static_images/welcome.jpg',
+                    ),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -344,11 +429,18 @@ class _SigninViewState extends State<SigninView> {
     );
   }
 
-  void _handleForgotPassword(BuildContext context) async {
+  void _handleForgotPassword(BuildContext context, String? enteredEmail) async {
+    // context!.push(
+    //   '/resetpassword',
+    //   extra: {
+    //     "email": "mucoper@gmail.com",
+    //   },
+    // );
+    // return;
     final _result = await showDialog(
       context: context,
       builder: (context) {
-        return const ForgotPasswordDialog();
+        return ForgotPasswordDialog(enteredEmail: enteredEmail);
       },
     );
     devLogger(_result.toString());
@@ -356,59 +448,78 @@ class _SigninViewState extends State<SigninView> {
 }
 
 class ForgotPasswordDialog extends StatelessWidget {
-  const ForgotPasswordDialog({super.key});
+  final String? enteredEmail;
+
+  const ForgotPasswordDialog({super.key, this.enteredEmail});
 
   @override
   Widget build(BuildContext context) {
     final _theme = Theme.of(context);
     final lang = l.S.of(context);
+    String email = enteredEmail ?? '';
+    GlobalKey<FormState> formKey = GlobalKey<FormState>();
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Dialog(
-        insetPadding: const EdgeInsets.all(16),
+        insetPadding: const EdgeInsets.all(12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520),
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 34),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  lang.forgotPassword,
-                  //'Forgot Password?',
-                  style: _theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  lang.enterYourEmailWeWillSendYouALinkToResetYourPassword,
-                  //'Enter your email, we will send you a link to Reset your password',
-                  style: _theme.textTheme.bodyLarge?.copyWith(),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                TextFieldLabelWrapper(
-                  // labelText: 'Email',
-                  labelText: lang.email,
-                  inputField: TextFormField(
-                    decoration: InputDecoration(
-                      //hintText: 'Enter your email address',
-                      hintText: lang.enterYourEmailAddress,
+            child: Form(
+              key: formKey,
+              autovalidateMode: AutovalidateMode.disabled,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    lang.forgotPassword,
+                    style: _theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.maxFinite,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    //child: const Text('Send'),
-                    child: Text(lang.send),
+                  const SizedBox(height: 10),
+                  editUserField(
+                    title: "Votre adresse email".tr,
+                    email: true,
+                    initialvalue: enteredEmail,
+                    onChanged: (text) {
+                      email = text;
+                    },
+                    required: true,
                   ),
-                )
-              ],
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.maxFinite,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        try {
+                          if (formKey.currentState!.validate()) {
+                            formKey.currentState!.save();
+                            simulateScreenTap();
+                            forgotPassword({"email": email})
+                                .then((value) {
+                                  if (value.status == true) {
+                                    Jks.context!.push(
+                                      '/resetpassword',
+                                      extra: {"email": email},
+                                    );
+                                  }
+                                })
+                                .catchError((e) {
+                                  myprint(e);
+                                });
+                          }
+                        } catch (e) {
+                          myprint(e);
+                        }
+                      },
+                      child: Text(lang.send),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

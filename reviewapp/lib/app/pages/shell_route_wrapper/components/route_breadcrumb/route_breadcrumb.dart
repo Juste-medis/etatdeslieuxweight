@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 // 📦 Package imports:
 import 'package:go_router/go_router.dart';
-import 'package:iconly/iconly.dart';
 import 'package:responsive_framework/responsive_framework.dart' as rf;
 
 // 🌎 Project imports:
@@ -78,11 +77,11 @@ class RouteBreadcrumbWidget extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(right: 6),
                   child: GestureDetector(
-                    onTap: () => context.go('/dashboard/ecommerce-admin'),
+                    onTap: () => context.go('/'),
                     child: MouseRegion(
                       cursor: SystemMouseCursors.click,
                       child: Icon(
-                        IconlyLight.home,
+                        Icons.home,
                         size: rf.ResponsiveValue<double?>(
                           context,
                           conditionalValues: [

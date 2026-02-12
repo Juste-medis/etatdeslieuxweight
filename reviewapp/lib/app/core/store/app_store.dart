@@ -1,5 +1,5 @@
-import 'package:jatai_etatsdeslieux/app/core/helpers/constants/constant.dart';
-import 'package:jatai_etatsdeslieux/app/core/theme/theme.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/constants/constant.dart';
+import 'package:mon_etatsdeslieux/app/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:nb_utils/nb_utils.dart';
 
@@ -65,6 +65,10 @@ class AppStore {
 
   Map<String, dynamic>? meta;
 
+  Map<String, dynamic>? balence;
+
+  Map<String, dynamic>? settings;
+
   String? about;
 
   String? level;
@@ -84,12 +88,6 @@ class AppStore {
     if (!isInitializing) await setValue(USER_TYPE, val);
   }
 
-  Future<void> setpurchaseString(String val,
-      {bool isInitializing = false}) async {
-    purchaseString = val;
-    if (!isInitializing) await setValue(USER_PS, val);
-  }
-
   Future<void> setAddress(String val, {bool isInitializing = false}) async {
     address = val;
     if (!isInitializing) await setValue(ADDRESS, val);
@@ -98,11 +96,6 @@ class AppStore {
   Future<void> setLoginType(String val, {bool isInitializing = false}) async {
     loginType = val;
     if (!isInitializing) await setValue(LOGIN_TYPE, val);
-  }
-
-  Future<void> setDisplayname(String val, {bool isInitializing = false}) async {
-    displayname = val;
-    if (!isInitializing) await setValue(INQUIRY_EMAIL, val);
   }
 
   Future<void> set_id(String val, {bool isInitializing = false}) async {
@@ -115,21 +108,9 @@ class AppStore {
     if (!isInitializing) await setValue(TOKEN, val);
   }
 
-  Future<void> setCurrencySymbol(String val,
-      {bool isInitializing = false}) async {
-    currencySymbol = val;
-    if (!isInitializing) await setValue(CURRENCY_COUNTRY_SYMBOL, val);
-  }
-
   Future<void> setUserDob(String val, {bool isInitializing = false}) async {
     userDob = val;
     if (!isInitializing) await setValue(DOB, val);
-  }
-
-  Future<void> setCurrencyCountryId(String val,
-      {bool isInitializing = false}) async {
-    currencyCountryId = val;
-    if (!isInitializing) await setValue(CURRENCY_COUNTRY_ID, val);
   }
 
   Future<void> setUId(String val, {bool isInitializing = false}) async {
@@ -157,8 +138,10 @@ class AppStore {
     if (!isInitializing) await setValue(LAST_NAME, val);
   }
 
-  Future<void> setplaceOfBirth(String val,
-      {bool isInitializing = false}) async {
+  Future<void> setplaceOfBirth(
+    String val, {
+    bool isInitializing = false,
+  }) async {
     placeOfBirth = val;
     if (!isInitializing) await setValue("placeOfBirth", val);
   }
@@ -168,8 +151,10 @@ class AppStore {
     if (!isInitializing) await setValue(USERNAME, val);
   }
 
-  Future<void> setCurrentAddress(String val,
-      {bool isInitializing = false}) async {
+  Future<void> setCurrentAddress(
+    String val, {
+    bool isInitializing = false,
+  }) async {
     currentAddress = val;
     if (!isInitializing) await setValue(CURRENT_ADDRESS, val);
   }
@@ -208,7 +193,17 @@ class AppStore {
 
   Future<void> setMeta(Map<String, dynamic>? val) async {
     meta = val;
-    await setValue(AGE_RANGE, val);
+    await setValue(META, val);
+  }
+
+  Future<void> setSettings(Map<String, dynamic>? val) async {
+    settings = val;
+    await setValue(APP_SETTINGS, val);
+  }
+
+  Future<void> setBalence(Map<String, dynamic>? val) async {
+    balence = val;
+    await setValue(USER_BALENCE, val);
   }
 
   Future<void> setAbout(String? val) async {
@@ -243,6 +238,7 @@ class AppStore {
 
   Future<void> setDarkMode(bool val) async {
     isDarkMode = val;
+    await setValue(IS_DARK_MODE, val);
 
     if (isDarkMode) {
       textPrimaryColorGlobal = Colors.white;

@@ -30,7 +30,7 @@ function errorHandler(err, req, res, next) {
     helplog(err, req, res, 500);
     return res
         .status(500)
-        .json({ message: "An error occured ! Sorry. 😢", code: 500 });
+        .json({ message: "Une erreur est survenue, veuillez réessayer plus tard", code: 500 });
 }
 function helplog(err, req, res, code) {
     console.log("💡💡💡", {

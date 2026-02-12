@@ -6,7 +6,8 @@ import 'package:collection/collection.dart';
 import 'package:expansion_widget/expansion_widget.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/french_translations.dart';
+import 'package:mon_etatsdeslieux/app/core/static/model_keys.dart';
 import 'package:responsive_framework/responsive_framework.dart' as rf;
 
 // 🌎 Project imports:
@@ -28,7 +29,6 @@ class SideBarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _theme = Theme.of(context);
     return Drawer(
       clipBehavior: Clip.none,
       width: iconOnly
@@ -57,7 +57,8 @@ class SideBarWidget extends StatelessWidget {
                   showBottomBorder: true,
                   onTap: () {
                     rootScaffoldKey.currentState?.closeDrawer();
-                    context.go('/dashboard/ecommerce-admin');
+                    Jks.checkingAuth = false;
+                    context.go('/');
                   },
                 ),
               ),
@@ -67,9 +68,9 @@ class SideBarWidget extends StatelessWidget {
             rf.ResponsiveRowColumnItem(
               columnFit: FlexFit.tight,
               child: ScrollConfiguration(
-                behavior: ScrollConfiguration.of(context).copyWith(
-                  scrollbars: false,
-                ),
+                behavior: ScrollConfiguration.of(
+                  context,
+                ).copyWith(scrollbars: false),
                 child: SingleChildScrollView(
                   child: rf.ResponsiveRowColumn(
                     layout: rf.ResponsiveRowColumnType.COLUMN,
@@ -77,28 +78,29 @@ class SideBarWidget extends StatelessWidget {
                     columnPadding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
                       // Top Menus
-                      ..._topMenus.map(
-                        (menu) {
-                          final _selectedInfo = _isSelected(context, menu);
-                          return rf.ResponsiveRowColumnItem(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsetsDirectional.only(bottom: 16),
-                              child: SidebarMenuItem(
-                                iconOnly: iconOnly,
-                                menuTile: menu,
-                                groupName: menu.name,
-                                isSelected: _selectedInfo.$1,
-                                selectedSubmenu: _selectedInfo.$2,
-                                onTap: () => _handleNavigation(context, menu),
-                                onSubmenuTap: (value) => _handleNavigation(
-                                    context, menu,
-                                    submenu: value),
+                      ..._topMenus.map((menu) {
+                        final _selectedInfo = _isSelected(context, menu);
+                        return rf.ResponsiveRowColumnItem(
+                          child: Padding(
+                            padding: const EdgeInsetsDirectional.only(
+                              bottom: 16,
+                            ),
+                            child: SidebarMenuItem(
+                              iconOnly: iconOnly,
+                              menuTile: menu,
+                              groupName: menu.name,
+                              isSelected: _selectedInfo.$1,
+                              selectedSubmenu: _selectedInfo.$2,
+                              onTap: () => _handleNavigation(context, menu),
+                              onSubmenuTap: (value) => _handleNavigation(
+                                context,
+                                menu,
+                                submenu: value,
                               ),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      }),
                     ],
                   ),
                 ),
@@ -115,8 +117,9 @@ class SideBarWidget extends StatelessWidget {
     SidebarItemModel menu,
   ) {
     final isSubmenu = menu.sidebarItemType == SidebarItemType.submenu;
-    final currentRoute =
-        GoRouter.of(context).routerDelegate.currentConfiguration.fullPath;
+    final currentRoute = GoRouter.of(
+      context,
+    ).routerDelegate.currentConfiguration.fullPath;
 
     final isSelectedMenu = currentRoute.startsWith(
       menu.navigationPath!.toLowerCase().trim(),
@@ -169,8 +172,9 @@ class SideBarWidget extends StatelessWidget {
       return;
     }
 
-    final _currentPath =
-        GoRouter.of(context).routerDelegate.currentConfiguration.fullPath;
+    final _currentPath = GoRouter.of(
+      context,
+    ).routerDelegate.currentConfiguration.fullPath;
     if (_currentPath == _route) return;
 
     context.go(_route);
@@ -220,7 +224,9 @@ class SidebarMenuItem extends StatelessWidget {
                   enabled: false,
                   child: Container(
                     margin: const EdgeInsetsDirectional.symmetric(
-                        horizontal: 12, vertical: 8),
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -230,32 +236,35 @@ class SidebarMenuItem extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        Icon(MdiIcons.chevronDown),
+                        Icon(
+                          Icons.close_rounded,
+                          size: 20,
+                          color: _theme.textTheme.bodyLarge?.color,
+                        ),
                       ],
                     ),
                   ),
                 ),
 
               // Submenus
-              ...?menuTile.submenus?.map(
-                (submenu) {
-                  return _CustomIconOnlySubmenu<SidebarSubmenuModel>(
-                    value: submenu,
-                    child: Padding(
-                      padding:
-                          const EdgeInsetsDirectional.symmetric(horizontal: 12),
-                      child: _buildSubmenu(
-                        context,
-                        submenu,
-                        onChanged: (value) {
-                          Navigator.pop(context, value);
-                          onSubmenuTap?.call(value);
-                        },
-                      ),
+              ...?menuTile.submenus?.map((submenu) {
+                return _CustomIconOnlySubmenu<SidebarSubmenuModel>(
+                  value: submenu,
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.symmetric(
+                      horizontal: 12,
                     ),
-                  );
-                },
-              ),
+                    child: _buildSubmenu(
+                      context,
+                      submenu,
+                      onChanged: (value) {
+                        Navigator.pop(context, value);
+                        onSubmenuTap?.call(value);
+                      },
+                    ),
+                  ),
+                );
+              }),
             ],
             child: _buildMenu(context, onTap: null),
           ),
@@ -273,12 +282,9 @@ class SidebarMenuItem extends StatelessWidget {
           child: Column(
             children: [
               ...?menuTile.submenus?.map(
-                (submenu) => _buildSubmenu(
-                  context,
-                  submenu,
-                  onChanged: onSubmenuTap,
-                ),
-              )
+                (submenu) =>
+                    _buildSubmenu(context, submenu, onChanged: onSubmenuTap),
+              ),
             ],
           ),
         ),
@@ -311,9 +317,7 @@ class SidebarMenuItem extends StatelessWidget {
         alignment: AlignmentDirectional.center,
         decoration: ShapeDecoration(
           color: isSelected ? _theme.colorScheme.primary : null,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         padding: EdgeInsetsDirectional.only(start: iconOnly ? 8 : 16, end: 8),
         child: Row(
@@ -353,13 +357,13 @@ class SidebarMenuItem extends StatelessWidget {
 
                       // Trailing Icon
                       Icon(
-                        isExpanded ? MdiIcons.chevronDown : Icons.chevron_right,
+                        isExpanded ? Icons.expand_more : Icons.chevron_right,
                         color: isSelected ? _selectedPrimaryColor : null,
                       ),
                     ],
                   ),
                 ),
-              )
+              ),
           ],
         ),
       ),
@@ -379,9 +383,7 @@ class SidebarMenuItem extends StatelessWidget {
       color: Colors.transparent,
       child: ListTile(
         onTap: () => onChanged?.call(submenu),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         tileColor:
             _isSelectedSubmenu ? _selectedPrimaryColor.withOpacity(0.20) : null,
         title: Text(submenu.name),
@@ -392,10 +394,7 @@ class SidebarMenuItem extends StatelessWidget {
           size: _isSelectedSubmenu ? 16 : 14,
         ),
         minLeadingWidth: 0,
-        visualDensity: const VisualDensity(
-          horizontal: -4,
-          vertical: -2,
-        ),
+        visualDensity: const VisualDensity(horizontal: -4, vertical: -2),
         titleTextStyle: _theme.textTheme.bodyMedium?.copyWith(
           color: _isSelectedSubmenu ? _selectedPrimaryColor : null,
           fontWeight: FontWeight.w500,

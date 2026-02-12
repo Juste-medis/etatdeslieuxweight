@@ -1,5 +1,5 @@
 // AUTO-GENERATED - NE PAS MODIFIER MANUELLEMENT
-import 'package:jatai_etatsdeslieux/generated/l10n.dart' as l;
+import 'package:mon_etatsdeslieux/generated/l10n.dart' as l;
 
 extension FrenchToLocalized on String {
   /// Traduit une valeur française vers la langue actuelle
@@ -11,9 +11,9 @@ extension FrenchToLocalized on String {
         return l.S.current.roomInventoriesDescription;
       case 'Pièce':
         return l.S.current.room;
-      case 'Inventaires des éléments':
+      case 'Inventaire des éléments':
         return l.S.current.itemInventories;
-      case 'Inventaires des pièces':
+      case 'Inventaire des pièces':
         return l.S.current.roomInventories;
       case 'Séjour-Salon':
         return l.S.current.livingRoom;
@@ -151,9 +151,9 @@ extension FrenchToLocalized on String {
         return l.S.current.and;
       case 'Procurations':
         return l.S.current.procurations;
-      case 'Inventaires':
+      case 'Inventaire':
         return l.S.current.inventories;
-      case 'Je veux effectuer moi-même mon état des lieux ou bien je suis mandaté pour l\'effectuer':
+      case 'Je veux effectuer moi-même mon état des lieux ou je suis mandaté pour l\'effectuer':
         return l.S.current.selfreview;
       case 'Je veux déléguer mes états des lieux à mes locataires pour qu\'ils effectuent en simultané un EDL d\'entrée ainsi qu\'un EDL de sortie':
         return l.S.current.delegateedl;
@@ -225,7 +225,7 @@ extension FrenchToLocalized on String {
         return l.S.current.tenant;
       case 'Vérification OTP':
         return l.S.current.otpverification;
-      case 'Nous avons envoyé un code au ':
+      case 'Nous avons envoyé un code à ':
         return l.S.current.wesendandotpto;
       case 'Entrez-le pour confirmer votre adresse avant de continuer':
         return l.S.current.entertoconfirm;
@@ -409,7 +409,9 @@ extension FrenchToLocalized on String {
         return l.S.current.uIUXDesignReview;
       case 'Rédigez des paragraphes d\'introduction et de section captivants pour votre blog.':
         return l
-            .S.current.writeEngagingIntroductionSectionParagraphsForYourBlog;
+            .S
+            .current
+            .writeEngagingIntroductionSectionParagraphsForYourBlog;
       case 'Idées d\'entreprise':
         return l.S.current.businessIdeas;
       case 'Rédaction d\'articles de blog':
@@ -524,7 +526,9 @@ extension FrenchToLocalized on String {
         return l.S.current.isTheSourceCodeForTheGeneratorAvailable;
       case 'Puis-je télécharger le logiciel du générateur et l\'exécuter sur mon propre ordinateur ?':
         return l
-            .S.current.canIDownloadTheGeneratorSoftwareAndRunItOnMyOwnComputer;
+            .S
+            .current
+            .canIDownloadTheGeneratorSoftwareAndRunItOnMyOwnComputer;
       case 'D\'autres informations peuvent-elles être ajoutées à une facture ?':
         return l.S.current.canOtherInfoBeAddedToAnInvoice;
       case 'Comment choisir les gagnants d\'une loterie ou d\'un tirage au sort ?':
@@ -534,7 +538,9 @@ extension FrenchToLocalized on String {
       case 'Que dois-je faire si je rencontre des problèmes techniques ?':
         return l.S.current.whatShouldIDoIfIEncounterTechnicalIssues;
       case 'Le code source de notre générateur est bailleur et non disponible publiquement, mais nous fournissons une documentation détaillée et un support pour comprendre nos algorithmes.':
-        return l.S.current
+        return l
+            .S
+            .current
             .ourGeneratorSourceCodeIsProprietaryAndNotPubliclyAvailable;
       case 'Nous combinons des méthodes matérielles et logicielles, y compris des algorithmes cryptographiques, pour garantir l\'aléatoire. Des tests statistiques réguliers vérifient l\'intégrité et l\'imprévisibilité de nos nombres.':
         return l.S.current.weCombineHardwareAndSoftwareMethods;
@@ -837,7 +843,9 @@ extension FrenchToLocalized on String {
       case 'Cette ligne de texte apparaîtra soulignée':
         return l.S.current.thisLineOfTextWillRenderAsUnderlined;
       case 'Cette ligne de texte est destinée à être traitée comme un ajout au document.':
-        return l.S.current
+        return l
+            .S
+            .current
             .thisLineOfTextIsMeantToBeTreatedAsAnAdditionToTheDocument;
       case 'Ceci est un paragraphe. Il se distingue du texte standard.':
         return l.S.current.thisIsAParagraphItStandsOutFromRegularText;
@@ -1060,7 +1068,9 @@ extension FrenchToLocalized on String {
       case 'Ouvrir ce menu de sélection':
         return l.S.current.openThisSelectMenu;
       case 'Le Lorem Ipsum est simplement du faux texte employé dans la composition et la mise en page avant impression. Le Lorem Ipsum est le faux texte standard de l\'imprimerie depuis les années 1500, quand un imprimeur anonyme assembla ensemble des morceaux de texte pour réaliser un livre spécimen de polices de texte.':
-        return l.S.current
+        return l
+            .S
+            .current
             .loremIpsumIsSimplyDummyTextOfThePrintingAndTypesettingIndustry;
       case 'Un':
         return l.S.current.one;
@@ -1163,10 +1173,14 @@ extension FrenchToLocalized on String {
       case 'Principal':
         return l.S.current.lead;
       case 'Bien sûr ! Voici un code de base pour une application de compteur utilisant le framework Flutter de Dart':
-        return l.S.current
+        return l
+            .S
+            .current
             .sureHereABasicCodeForAnCounterAppUsingDartFlutterFramework;
       case 'Ce code utilise la méthode setState pour mettre à jour l\'état de la variable \'count\' et actualiser l\'interface utilisateur':
-        return l.S.current
+        return l
+            .S
+            .current
             .thisCodeUsesTheSetStateMethodToUpdateCountVariableStateAndUpdateTheUI;
       case 'Nom du document':
         return l.S.current.documentName;
@@ -1247,7 +1261,9 @@ extension FrenchToLocalized on String {
       case 'Vitesse':
         return l.S.current.speed;
       case 'Créez une histoire de 5 phrases sur "Sharky", un super-héros requin qui brosse les dents':
-        return l.S.current
+        return l
+            .S
+            .current
             .makeUpA5SentenceStoryAboutSharkyAToothBrushingSharkSuperhero;
       case 'Certainement ! Pour vous fournir un texte UX plus pertinent et efficace pour un plan d\'abonnement, j\'aurais besoin de détails spécifiques. Cependant, je peux vous offrir un exemple générique. Veuillez adapter ce qui suit en fonction des spécificités de votre produit ou service':
         return l.S.current.certainlyToProvideYouWithMoreRelevant;
@@ -1255,14 +1271,18 @@ extension FrenchToLocalized on String {
         return l.S.current.subscriptionPlanTitlePremiumMembership;
       case 'Débloquez un monde d\'avantages exclusifs avec notre adhésion Premium. Profitez d\'un accès illimité, de privilèges de pré-sortie et d\'analyses personnalisées conçues spécialement pour vous':
         return l
-            .S.current.unlockAWorldOfExclusiveBenefitsWithOurPremiumMembership;
+            .S
+            .current
+            .unlockAWorldOfExclusiveBenefitsWithOurPremiumMembership;
       case '1. Section d\'introduction':
         return l.S.current.introductionSection;
       case 'Débloquez un monde d\'avantages exclusifs':
         return l.S.current.unlockAWorldOfExclusiveBenefits;
       case 'Passez à notre adhésion Premium pour une expérience inégalée. Profitez d\'une multitude de fonctionnalités premium conçues pour améliorer votre parcours [Produit/Service]':
         return l
-            .S.current.upgradeToOurPremiumMembershipForAnnparalleledExperience;
+            .S
+            .current
+            .upgradeToOurPremiumMembershipForAnnparalleledExperience;
       case '2. Points forts des fonctionnalités':
         return l.S.current.featuresHighlights;
       case '3. Informations tarifaires':
@@ -1300,7 +1320,9 @@ extension FrenchToLocalized on String {
       case 'Rejoignez [Votre entreprise] Premium et vivez [Produit/Service] comme jamais auparavant. Abonnez-vous maintenant pour débloquer un nouveau niveau d\'excellence':
         return l.S.current.joinYourCompanyPremiumAndExperience;
       case 'Pas satisfait ? Nous offrons une garantie de remboursement de 30 jours. Sans poser de questions':
-        return l.S.current
+        return l
+            .S
+            .current
             .notSatisfiedWeOfferA30DayMoneyBackGuaranteeNoQuestionsAsked;
       case 'N\'hésitez pas à personnaliser ce texte en fonction de la voix de votre marque, des fonctionnalités spécifiques et des détails tarifaires':
         return l.S.current.feelFreeToCustomizeThisCopyAccordingToYourBrandVoice;
@@ -1546,7 +1568,9 @@ extension FrenchToLocalized on String {
         return l.S.current.theInformationWeCollectHelpsUsEnhanceOurServices;
       case 'Nous ne vendons ni ne louons vos informations personnelles à des tiers. Cependant, nous pouvons partager vos données avec des partenaires de confiance qui nous aident à exploiter et améliorer nos services. Ces partenaires sont soigneusement sélectionnés et sont tenus de respecter nos normes de confidentialité strictes, garantissant que vos informations restent sécurisées et confidentielles.':
         return l
-            .S.current.weDoNotSellOrRentYourPersonalInformationToThirdParties;
+            .S
+            .current
+            .weDoNotSellOrRentYourPersonalInformationToThirdParties;
       case 'Nous mettons en œuvre des mesures de sécurité appropriées pour protéger vos informations personnelles contre tout accès, altération ou divulgation non autorisé. Malgré nos efforts, aucune transmission de données sur Internet ne peut être garantie comme étant totalement sécurisée.':
         return l.S.current.weImplementAppropriateSecurityMeasures;
       case 'Vous avez le droit d\'accéder, de corriger ou de supprimer vos informations personnelles. Vous pouvez également vous opposer à certaines pratiques de collecte de données. Pour plus de détails sur la manière d\'exercer ces droits, veuillez nous contacter.':
@@ -1592,7 +1616,9 @@ extension FrenchToLocalized on String {
       case 'Nous pouvons mettre à jour ces conditions générales périodiquement pour refléter les changements dans nos services ou les exigences légales. Lorsque des mises à jour sont effectuées, nous publierons les conditions révisées sur cette page avec une nouvelle date d\'effet. Il est de votre responsabilité de revoir ces conditions régulièrement pour rester informé des changements. L\'utilisation continue de nos services après la publication de tout changement constitue une acceptation de ces changements. Si vous n\'acceptez pas les conditions révisées, vous devez cesser d\'utiliser nos services. Nous vous encourageons à consulter fréquemment cette page pour vous assurer que vous êtes au courant des dernières conditions.':
         return l.S.current.weMayUpdateTheseTermsAndConditionsPeriodically;
       case 'Si vous avez des questions ou des préoccupations concernant ces conditions générales, n\'hésitez pas à nous contacter. Vous pouvez nous joindre via les coordonnées fournies sur notre site Web, qui incluent des adresses e-mail, des numéros de téléphone et des adresses physiques. Nous nous engageons à répondre à vos demandes et à résoudre tout problème que vous pourriez avoir en temps opportun. Vos commentaires sont importants pour nous, et nous nous efforçons de fournir un support rapide et efficace. Veuillez vous assurer de fournir des coordonnées exactes afin que nous puissions répondre à vos demandes de manière appropriée.':
-        return l.S.current
+        return l
+            .S
+            .current
             .ifYouHaveAnyQuestionsOrConcernsRegardingTheseTermsAndConditions;
       case 'Vu':
         return l.S.current.viewed;
@@ -1801,10 +1827,14 @@ extension FrenchToLocalized on String {
       case 'Créer des équipes pour collaborer sur des designs':
         return l.S.current.createTeamsToCollaborateOnDesigns;
       case 'Idéal pour les particuliers ayant besoin de fonctionnalités avancées et d\'outils pour le travail client.':
-        return l.S.current
+        return l
+            .S
+            .current
             .idealForIndividualsWhoWhoNeedAdvancedFeaturesAndToolsForClientWork;
       case 'Idéal pour les entreprises ayant besoin de services personnalisés et de sécurité pour de grandes équipes.':
-        return l.S.current
+        return l
+            .S
+            .current
             .idealForBusinessesWhoNeedPersonalizedServicesAndSecurityForLargeTeams;
       case 'Gains Totaux':
         return l.S.current.totalEarning;
@@ -1923,7 +1953,9 @@ extension FrenchToLocalized on String {
       case '2024':
         return l.S.current.year;
       case 'Lorem Ipsum est simplement du faux texte employé dans la composition et la mise en page avant impression. Lorem Ipsum est le faux texte standard de l\'imprimerie depuis les années 1500, quand un imprimeur anonyme assembla ensemble des morceaux de texte pour réaliser un livre spécimen de polices de texte. Il n\'a pas fait que survivre cinq siècles, mais s\'est aussi adapté à la bureautique informatique, sans que son contenu n\'en soit modifié. Il a été popularisé dans les années 1960 grâce à la vente de feuilles Letraset contenant des passages du Lorem Ipsum, et, plus récemment, par son inclusion dans des applications de mise en page de texte, comme Aldus PageMaker.\nContrairement à une opinion répandue, le Lorem Ipsum n\'est pas simplement du texte aléatoire. Il trouve ses racines dans une oeuvre de la littérature latine classique datant de 45 av. J.-C., le rendant vieux de 2000 ans. Un professeur du Hampden-Sydney College, en Virginie, s\'est intéressé à un des mots latins les plus obscurs, consectetur, extrait d\'un passage du Lorem Ipsum, et en étudiant tous les usages de ce mot dans la littérature classique, découvrit la source incontestable du Lorem Ipsum.\nL\'extrait standard de Lorem Ipsum utilisé depuis le XVIè siècle est reproduit ci-dessous pour les curieux. Les sections 1.10.32 et 1.10.33 du "De Finibus Bonorum et Malorum" de Cicéron sont aussi reproduites dans leur version originale, accompagnée de la traduction anglaise de H. Rackham (1914).':
-        return l.S.current
+        return l
+            .S
+            .current
             .loremIpsumIsSimplyDummyTextOfThePrintingAndTypesettingIndustry2;
       case 'Puissant':
         return l.S.current.powerful;

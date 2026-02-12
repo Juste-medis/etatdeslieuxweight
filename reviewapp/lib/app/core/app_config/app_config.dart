@@ -1,13 +1,30 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/constants/constant.dart';
+import 'package:nb_utils/nb_utils.dart';
+
+String rawsettings = getStringAsync(APP_SETTINGS);
+
+var settings = rawsettings.isNotEmpty
+    ? jsonDecode(rawsettings) as Map<String, dynamic>
+    : {};
 
 abstract class AppConfig {
-  static const appName = 'Jatai Etat des Lieux';
+  AppConfig._();
+
+  static final appName = settings['appName'] ?? 'Jatai État des Lieux';
   static const appIcon = 'assets/app_icons/app_icon_main.png';
   static const logowhite = 'assets/app_icons/logowhite.png';
   static const organizationName = 'Jatai';
-  static const DOMAIN_URL = 'https://jataietatdeslieu.adidome.com';
-// const debug_host = 'http://192.168.12.1:5000';
-  static const debug_host = 'https://jataietatdeslieu.adidome.com';
+  static final String domainUrl =
+      (settings['appUrl'] as String?) ??
+      'https://etatdeslieux.adidomedis.cloud';
 
-  static const BASE_URL = '${kReleaseMode ? DOMAIN_URL : debug_host}/api/';
+  // const debugHost = 'http://192.168.12.1:5000';
+  static const String debugHost = 'http://localhost:5000';
+
+  static final String baseUrl = '${kReleaseMode ? domainUrl : domainUrl}/api/';
+
+  static final String simplebaseUrl = kReleaseMode ? domainUrl : domainUrl;
 }

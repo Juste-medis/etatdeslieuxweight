@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>État des Lieux Complété - Jatai</title>
+    <style type="text/css">
+        /* Base styles */
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333333;
+            line-height: 1.6;
+        }
+
+        /* Responsive email container */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Card styling */
+        .email-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Header styling */
+        .email-header {
+            padding: 30px 30px 20px;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+
+        .title-section {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .email-title {
+            margin: 0;
+            color: #ff9800;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        /* Content styling */
+        .email-content {
+            padding: 0 30px 30px;
+        }
+
+        .property-details {
+            background-color: #fff8e1;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 6px;
+        }
+
+        .property-title {
+            margin: 0 0 10px 0;
+            color: #ff9800;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .property-text {
+            margin: 0;
+            color: #555555;
+            font-size: 16px;
+        }
+
+        .status-section {
+            background-color: #e8f5e9;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 6px;
+        }
+
+        .status-title {
+            margin: 0 0 10px 0;
+            color: #2e7d32;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* Footer styling */
+        .email-footer {
+            padding: 20px 30px;
+            border-top: 1px solid #eeeeee;
+            background-color: #fafafa;
+        }
+
+        /* Button styling */
+        .action-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #ff9800;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .download-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #ff9800;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        /* Responsive adjustments */
+        @media screen and (max-width: 600px) {
+            .email-container {
+                padding: 10px;
+            }
+
+            .email-header,
+            .email-content,
+            .email-footer {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="email-card">
+            <!-- Header with logo -->
+            <div class="email-header">
+                <div class="logo-container">
+                    <img src="{{logoUrl}}" alt="Jatai" class="logo"
+                        style="height: 40px; margin-bottom: 10px; object-fit: contain;">
+                </div>
+
+                <div class="title-section">
+                    <h1 class="email-title">État des Lieux Complété</h1>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <div class="email-content">
+                <p style="font-size: 16px;">Bonjour,</p>
+
+                <p style="font-size: 16px;">Nous avons le plaisir de vous informer que l'état des lieux pour le bien
+                    suivant a été complété avec succès :</p>
+
+                <!-- Property details card -->
+                <div class="property-details">
+                    <h3 class="property-title">Détails du bien</h3>
+                    <p class="property-text">{{propertyDetails.address}}</p>
+                    {{#if propertyDetails.complement}}
+                    <p class="property-text" style="margin-top: 10px;">{{propertyDetails.complement}}</p>
+                    {{/if}}
+                </div>
+
+                <!-- Status section -->
+                <div class="status-section">
+                    <h3 class="status-title">État des Lieux Finalisé</h3>
+                    <p style="margin: 0; color: #2e7d32; font-size: 16px;">
+                        ✅ L'état des lieux a été signé et validé par toutes les parties concernées.
+                    </p>
+                </div>
+
+                <p style="font-size: 16px;">
+                    Le document complet est maintenant disponible en téléchargement. Vous pouvez le conserver pour vos
+                    archives et le présenter en cas de besoin.
+                </p>
+
+                <!-- Download button -->
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{{actionUrl}}" class="download-button">🖹 Télécharger le document</a>
+                </div>
+
+                {{!-- <p style="font-size: 16px;">
+                    <strong>Informations importantes :</strong><br>
+                    • Date de finalisation : {{completionDate}}<br>
+                    • Signé par : {{participants}}<br>
+                    • Référence du document : {{documentReference}}
+                </p> --}}
+
+                <p style="font-size: 16px;">
+                    Si vous rencontrez des difficultés pour télécharger le document, vous pouvez copier-coller ce lien
+                    dans votre navigateur :<br>
+                    <small style="color: #777777; word-break: break-all;">{{actionUrl}}</small>
+                </p>
+            </div>
+
+            <!-- Footer -->
+            <div class="email-footer">
+                <p style="margin: 0; font-size: 14px;">Cordialement,</p>
+                <p style="margin: 5px 0 0 0; color: #ff9800; font-weight: 600;">L'équipe Jatai</p>
+
+                <!-- Contact info -->
+                <div style="margin-top: 20px; font-size: 13px; color: #777777;">
+                    <p style="margin: 5px 0;">Contact : contact@jatai.fr</p>
+                    <p style="margin: 5px 0;">Site web : <a href="https://jatai.fr"
+                            style="color: #ff9800; text-decoration: none;">jatai.fr</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,43 +1,75 @@
-module.exports = {
-    generateEntrantProcurationHTML: (data, fortenant, signature) => {
-        const owners = data.owners;
-        let { meta: signatures } = data;
+const config = require("../../config/config");
+const { authorname } = require("../utils");
 
+module.exports = {
+    generateEntrantProcurationHTML: (data, fortenant) => {
+        const owners = data.owners;
+        let { signatures, doccument_city } = data.meta || {};
 
         const tenants = [fortenant == "entrant" ? data.entrantenants[0] : data.exitenants[0]];
+        const Theothertenants = [fortenant == "entrant" ? data.exitenants[0] : data.entrantenants[0]];
         const property = data.propertyDetails;
         const date = new Date(data.estimatedDateOfReview).toLocaleDateString('fr-FR');
         const today = new Date().toLocaleDateString('fr-FR');
+        const multiowners = owners.length > 1;
+        const multitenants = tenants.length > 1;
 
-        const ownerText = owners.length > 1 ?
-            `Nous soussignés: ${owners.map((owner, i) => `<strong>${owner.denomination ? `${owner.denomination} [représenté(e) par ${owner.representant.firstname} ${owner.representant.lastname}]` : `${owner.firstname} ${owner.lastname}`}</strong> <span>Né(e) le <strong>${new Date(owner.dob).toLocaleDateString('fr-FR')}</strong> à <strong>${owner.placeofbirth ?? owner.representant.placeofbirth}</strong> <span>Domicilié(e) à <strong>${owner.address}</strong></span>`).join('<br /><br />et ')} ` :
-            `Je soussigné(e) ${owners[0].denomination ? `${owners[0].denomination} [représenté(e) par ${owners[0].representant.firstname} ${owners[0].representant.lastname}]` : `${owners[0].firstname} ${owners[0].lastname}`}  <span>Né(e) le <strong>${new Date(owners[0].dob).toLocaleDateString('fr-FR')}</strong> à <strong>${owners[0].placeofbirth ?? owners[0].representant.placeofbirth}</strong> <span>Domicilié(e) à <strong>${owners[0].address}</strong></span>`;
+        const authorPresentText = (owner) => {
+            if (owner.type == "morale") {
+                return `<strong>${authorname(owner.representant)}</strong> <span>Né(e) le <strong>${new Date(owner.dob).toLocaleDateString('fr-FR')}</strong> à <strong>${owner.placeofbirth ?? owner.representant.placeofbirth}</strong> <span>représentant la société <strong>${authorname(owner)}</strong></span> <span>domicilié(e) au <strong>${owner.address}</strong></span>`
+            } else {
+                return `<strong>${authorname(owner)}</strong> <span>Né(e) le <strong>${new Date(owner.dob).toLocaleDateString('fr-FR')}</strong> à <strong>${owner.placeofbirth ?? owner.representant.placeofbirth}</strong> <span>demeurant au <strong>${owner.address}</strong></span>`
+            }
+        };
+
+        const ownerText = multiowners ?
+            `Nous soussignés: ${owners.map((owner, i) => authorPresentText(owner)).join(' et ')} ` :
+            `Je soussigné(e) ${authorPresentText(owners[0])}`;
 
         // Gestion du singulier/pluriel pour les locataires
-        const tenantText = tenants.length > 1 ?
-            `${tenants.map(t => `${t.firstname} ${t.lastname}`).join(' et ')}` :
-            `${tenants[0].firstname} ${tenants[0].lastname}`;
+        const tenantText = multitenants ?
+            `${tenants.map(t => authorPresentText(t)).join(' et ')}` :
+            `${authorPresentText(tenants[0])}`;
 
         // Gestion du "mon/notre" logement 
-        const propertyPossessive = owners.length > 1 ? 'notre' : 'mon';
+        const propertyPossessive = multiowners ? 'notre' : 'mon';
 
         // Construction des blocs Bailleurs
-        const ownersHTML = owners.map(owner => `
-            <div class="owner-address-block">
-                <strong>${owners.length > 1 ? 'Mandant' : 'Mandant'}: ${owner.denomination ? `${owner.denomination} [représenté(e) par ${owner.representant.firstname} ${owner.representant.lastname}]` : `${owner.firstname} ${owner.lastname}`}</strong>
-                 <span>${owner.address}</span>
-                <span>${owner.phone ? `${owner.phone} | ` : ''}${owner.email}</span>
+        const ownersHTML = owners.map(owner =>
+            owner.type == "morale" ?
+                `<div class="owner-address-block">
+                <strong>Mandant: ${authorname(owner)}</strong>
+                <span>Domicilié(e) au ${owner.address}</span>
+                <span>Représenté(e) par ${authorname(owner.representant)}</span>
+                <span>Né(e) le ${new Date(owner.representant.dob).toLocaleDateString('fr-FR')} à ${owner.representant.placeofbirth}</span>
+            </div>
+        `
+                :
+
+                `<div class="owner-address-block">
+                <strong>Mandant: ${authorname(owner)}</strong>
+                 <span>Demeurant à ${owner.address}</span>
+                <span>Né(e) le ${new Date(owner.dob).toLocaleDateString('fr-FR')} à ${owner.placeofbirth}</span>
             </div>
         `).join('');
 
         // Construction des blocs locataires
-        const tenantsHTML = tenants.map(tenant => `
+        const tenantsHTML = tenants.map(tenant =>
+            tenant.type == "morale" ? `<div class="tenant-address-block">
+                <strong>${authorname(tenant)}</strong>
+                <span>Domicilié(e) au ${tenant.address}</span>
+                <span>Représenté(e) par ${authorname(tenant.representant)}</span>
+                <span>Né(e) le ${new Date(tenant.representant.dob).toLocaleDateString('fr-FR')} à ${tenant.representant.placeofbirth}</span>
+            </div> ` :
+                `
             <div class="tenant-address-block">
-                <strong>${tenant.firstname} ${tenant.lastname}</strong>
+                <strong>${authorname(tenant)}</strong>
                  <span>Né(e) le ${new Date(tenant.dob).toLocaleDateString('fr-FR')} à ${tenant.placeofbirth}</span>
-                <span>Domicilié(e) à ${tenant.address}</span>
-            </div>
-        `).join('');
+                <span>Demeurant à ${tenant.address}</span>
+            </div> `
+
+
+        ).join('');
 
         return `<!DOCTYPE html>
 <html>
@@ -67,9 +99,8 @@ module.exports = {
             margin-bottom: 30px;
         }
         .logo {
-            height: 100px;
-            object-fit: contain;
-            width: 200px;
+             object-fit: contain;
+            width: 130px;
             margin-bottom: 15px;
         }
         .maintitle {
@@ -111,21 +142,22 @@ module.exports = {
          }
         .signature-item {
             margin-bottom: 30px;
-            width: ${owners.length > 1 ? '45%' : '45%'};
-            height: 230px;
-            display: flex;
+            width: ${multiowners ? '45%' : '45%'};
+             display: flex;
             flex-direction: column;
-            justify-content: space-between;                 
-        }
+         }
+            .selfie-photo{ width: 300px; height: 300px; object-fit: cover; border-radius: 6px; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="header-block">
         <div class="titleblock">
-            <span class="maintitle">PROCURATION POUR ÉTAT DES LIEUX</span>
+            <span class="maintitle">
+            ${fortenant == "entrant" ? "Procuration pour état des lieux de sortie" : "Procuration pour état des lieux d'entrée"}
+            </span>
             <span>Procuration contradictoire à annexer au contrat de location dont il ne peut être dissocié.</span>
         </div>
-        <img src="https://jatai.fr/wp-content/uploads/2024/09/cropped-Copy-of-Jatai.png" class="logo" alt="Logo">
+        <img src="${config.appUrl}/assets/media/logos/rocketdeliveries.png" class="logo" alt="Logo">
     </div>
      ${ownersHTML} 
      <div style="display:flex;justify-content: space-between; ">
@@ -136,39 +168,62 @@ module.exports = {
     
     <p>Madame, Monsieur,</p>
 
-    <p>Ne pouvant ${owners.length > 1 ? 'nous' : 'me'} présenter le <span class="text-underline">${date}</span> à l'état des lieux ${fortenant != "entrant" ? "d'entrée" : "de sortie"} concernant ${propertyPossessive} logement situé au :</p>
+    <p>Ne pouvant ${multiowners ? 'nous' : 'me'} présenter le <span class="text-underline">${date}</span> à l'état des lieux ${fortenant != "entrant" ? "de sortie" : "d'entrée"} concernant ${propertyPossessive} logement situé au :</p>
 
-    <p><strong>${property.address}</strong><br>
-    ${property.complement || ''}<br>
-    ${property.floor} - ${property.surface}m² (${property.roomCount} pièces)</p>
-
-            <p class="body-text">${ownerText} <br /><br />${owners.length > 1 ? 'donnons' : 'donne'} par la présente, pouvoir à
+<p><strong>${property.address}</strong><br>
+    ${property.complement ? `<strong>Complément :</strong> ${property.complement}<br>` : ""}
+    ${property.floor ? `<strong>Étage :</strong> ${property.floor}<br>` : ""}
+    <strong>Surface :</strong> ${property.surface}m² (${property.roomCount} pièces)<br>
+    ${property.box ? `<strong>Box :</strong> ${property.box}<br>` : ""}
+    ${property.cellar ? `<strong>Cave :</strong> ${property.cellar}<br>` : ""}
+    ${property.garage ? `<strong>Garage :</strong> ${property.garage}<br>` : ""}
+    ${property.parking ? `<strong>Parking :</strong> ${property.parking}<br>` : ""}
+</p>
+            <p class="body-text">${ownerText} <br /><br />${multiowners ? 'donnons' : 'donne'} par la présente, pouvoir à
                     :</p>
 
-                <p class="body-text"><strong>${tenantText}</strong>, ${tenants.length > 1 ? 'nés' : 'né(e)'} à
-                    ${tenants.map(t => t.placeofbirth).join('<strong> et </strong>')}, le${tenants.length > 1 ? 's' :
-                ''} ${tenants.map(t => new Date(t.dob).toLocaleDateString('fr-FR')).join('<strong> et </strong>')},
-                    demeurant à ${tenants.map(t => t.address).join('<strong> et </strong>')}, pour ${owners.length > 1 ?
+                <p class="body-text"> ${tenantText} , pour ${multiowners ?
                 'nous' : 'me'} représenter lors de cet état des lieux.</p>
 
 
-    <p>À cet effet, cette${tenants.length > 1 ? 's personne' : ' personne'} pourra${tenants.length > 1 ? 'ont' : ''} signer, pour ${owners.length > 1 ? 'notre' : 'mon'} compte et en ${owners.length > 1 ? 'notre' : 'mon'} nom, tout formulaire et/ou document nécessaire à la bonne exécution de cet état des lieux.</p>
+    <p>À cet effet, cette${multitenants ? 's personne' : ' personne'} pourra${multitenants ? 'ont' : ''} signer, pour ${multiowners ? 'notre' : 'mon'} compte et en ${multiowners ? 'notre' : 'mon'} nom, tout formulaire et/ou document nécessaire à la bonne exécution de cet état des lieux.</p>
+        <p>Fait à <strong>${data.document_address || 'Paris'}</strong>, le ${today}</p>
 
     <div class="signature-block">
-        <span>Fait à ${data.document_address || 'Paris'}, le ${today}</span>
 
-        <div class="signatures-container">
-            ${owners.map((owner) => {
-                    return `
-            <div class="signature-item">
-                ${(signatures && signatures?.signatures?.[owner._id]) ? `<img src="data:image/png;base64,${signatures?.signatures?.[owner._id]?.path}" />` : "<span></span>"}
-                <div>
-                    <div class="signature-line"></div>
-                    <p>Signature du${owners.length > 1 ? ' mandant' : ' mandant'}<br>
-                    ${owner.denomination ? `${owner.denomination} [représenté(e) par ${owner.representant.firstname} ${owner.representant.lastname}]` : `${owner.firstname} ${owner.lastname}`}</p>
-                </div>  
+        <div class="signatures-container"> 
+            ${owners.map((tenant) => {
+                    tenant._id = tenant._id?.toString()
+
+                    return `<div class="signature-item"> 
+                 <div style="display: flex; flex-direction: column; margin-bottom: 10px;">
+                    <strong>Signature du ${multiowners ? 'mandant' : 'mandant'}</strong>
+                    <span>${authorname(tenant)}</span>
+                </div>
+                               ${signatures?.[tenant._id] ? `<span class="signature-date"><strong>Bon pour pouvoir</strong></span>` : ""}
+ ${(signatures && signatures?.[tenant._id]) ? `<img src="data:image/png;base64,${signatures?.[tenant._id]?.path}" />` : "<span></span>"}
+                ${signatures?.[tenant._id] ? `<span class="signature-date">Signé le <strong>${tenant ? new Date(signatures?.[tenant._id]?.timestamp).toLocaleDateString('fr-FR') : ''}</strong></span>` : ""}
+
+                <div class="selfiephotos"> ${tenant.meta?.[data._id]?.photos ? tenant.meta?.[data._id]?.photos.map((p) => { return `<img src="${config.appUrl}/${p}" alt="Selfie photo"  class="selfie-photo" />` }) : ""} </div>
             </div>
-            `}).join('')} 
+            `}).join('')}  
+
+            ${[...tenants].map((tenant) => {
+                        tenant._id = tenant._id?.toString()
+
+                        return `<div class="signature-item"> 
+                 <div style="display: flex; flex-direction: column; margin-bottom: 10px;">
+                    <strong>Mandataire </strong>
+                    <span>${authorname(tenant)}</span>
+                </div>
+                         ${signatures?.[tenant._id] ? `<span class="signature-date"><strong>Bon pour acceptation</strong></span>` : ""}
+       ${(signatures && signatures?.[tenant._id]) ? `<img src="data:image/png;base64,${signatures?.[tenant._id]?.path}" />` : "<span></span>"}
+                ${signatures?.[tenant._id] ? `<span class="signature-date">Signé le <strong>${tenant ? new Date(signatures?.[tenant._id]?.timestamp).toLocaleDateString('fr-FR') : ''}</strong></span>` : ""}
+
+                <div class="selfiephotos"> ${tenant.meta?.[data._id]?.photos ? tenant.meta?.[data._id]?.photos.map((p) => { return `<img src="${config.appUrl}/${p}" alt="Selfie photo"  class="selfie-photo" />` }) : ""} </div>
+            </div>
+            `}).join('')}   
+
         </div>
     </div> 
 </body>

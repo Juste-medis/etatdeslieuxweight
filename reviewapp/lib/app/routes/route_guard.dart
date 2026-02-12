@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jatai_etatsdeslieux/app/providers/providers.dart';
+import 'package:mon_etatsdeslieux/app/core/static/model_keys.dart';
+import 'package:mon_etatsdeslieux/app/providers/providers.dart';
 import 'package:provider/provider.dart';
 
 class RouteGuard {
   static Future<String?> redirect(
-      BuildContext context, GoRouterState state) async {
+    BuildContext context,
+    GoRouterState state,
+  ) async {
     final authProvider = Provider.of<AppThemeProvider>(context, listen: false);
     final isLoggedIn = authProvider.token != null;
-    final isAuthRoute = state.matchedLocation == "/" ||
+    final isAuthRoute =
+        state.matchedLocation == "/" ||
+        state.matchedLocation.startsWith('/resetpassword') ||
         state.matchedLocation.startsWith('/authentication') ||
         state.matchedLocation.startsWith('/otp');
 
@@ -19,6 +24,7 @@ class RouteGuard {
 
     // If user is logged in but trying to access auth route
     if (isLoggedIn && isAuthRoute) {
+      Jks.checkingAuth = false;
       return '/';
     }
 

@@ -3,20 +3,21 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-// 📦 Package imports:
-import 'package:feather_icons/feather_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/constants/constant.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/field_styles/field_styles.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/copole.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/utls.dart';
-import 'package:jatai_etatsdeslieux/app/core/network/rest_apis.dart';
-import 'package:jatai_etatsdeslieux/app/core/static/model_keys.dart';
-import 'package:jatai_etatsdeslieux/app/models/_user_model.dart';
-import 'package:jatai_etatsdeslieux/app/pages/authentication/components/components.dart';
-import 'package:jatai_etatsdeslieux/main.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/constants/constant.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/field_styles/field_styles.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/copole.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/utls.dart';
+import 'package:mon_etatsdeslieux/app/core/network/rest_apis.dart';
+import 'package:mon_etatsdeslieux/app/core/static/model_keys.dart';
+import 'package:mon_etatsdeslieux/app/models/_user_model.dart';
+import 'package:mon_etatsdeslieux/app/pages/authentication/components/components.dart';
+import 'package:mon_etatsdeslieux/app/pages/shell_route_wrapper/components/_components.dart';
+import 'package:mon_etatsdeslieux/app/providers/_theme_provider.dart';
+import 'package:mon_etatsdeslieux/main.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
 import '../../../generated/l10n.dart' as l;
@@ -61,20 +62,22 @@ class _SignupViewState extends State<SignupView> {
         UserKeys.country: country,
         "country_code": countryCode,
       };
-      await createUser(request).then((res) async {
-        await saveUserData(User(email: res.data!.email), token: res.token);
-        context.push(
-          '/otp',
-          extra: {
-            "email": res.data!.email,
-            "userId": res.data!.iid,
-            UserKeys.password: request[UserKeys.password],
-          },
-        );
-      }).catchError((e) {
-        my_inspect(e);
-        // toast(e.toString());
-      });
+      await createUser(request)
+          .then((res) async {
+            await saveUserData(User(email: res.data!.email), token: res.token);
+            context.push(
+              '/otp',
+              extra: {
+                "email": res.data!.email,
+                "userId": res.data!.iid,
+                UserKeys.password: request[UserKeys.password],
+              },
+            );
+          })
+          .catchError((e) {
+            my_inspect(e);
+            // toast(e.toString());
+          });
       appStore.setLoading(false);
     }
   }
@@ -89,10 +92,12 @@ class _SignupViewState extends State<SignupView> {
     final _screenHeight = MediaQuery.sizeOf(context).height;
     final _dropdownStyle = AcnooDropdownStyle(context);
     final _item = countryCodes.entries
-        .map((item) => DropdownMenuItem<String>(
-              value: item.value.dialCode,
-              child: buildDropdownForPhode(context, item: item),
-            ))
+        .map(
+          (item) => DropdownMenuItem<String>(
+            value: item.value.dialCode,
+            child: buildDropdownForPhode(context, item: item),
+          ),
+        )
         .toList();
 
     return GestureDetector(
@@ -111,33 +116,41 @@ class _SignupViewState extends State<SignupView> {
                 child: SafeArea(
                   child: Column(
                     children: [
-                      if (!_desktopView)
-                        AuthHeader(
-                          screenHeight: _screenHeight,
-                          screenWidth: _screenWidth,
+                      authHeader(
+                        context,
+                        screenHeight: _screenHeight,
+                        screenWidth: _screenWidth,
+                        desktopView: _desktopView,
+                        themeswitcher: Consumer<AppThemeProvider>(
+                          builder: (context, appTheme, child) => ThemeToggler(
+                            isDarkMode: appTheme.isDarkTheme,
+                            onChanged: appTheme.toggleTheme,
+                          ).center(),
                         ),
-                      80.height,
-                      if (_desktopView)
+                      ),
+                      if (_desktopView) ...[
+                        100.height,
                         Text.rich(
                           TextSpan(
                             //text: 'Already have an account? ',
                             text: "Votre Etat des lieux",
                             children: [
                               TextSpan(
-                                text: " Pas cher",
+                                text: " propulsé par Jatai",
                                 style: _theme.textTheme.labelLarge?.copyWith(
                                   color: _theme.colorScheme.primary,
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 45,
+                                  fontSize: 40,
                                 ),
                               ),
                             ],
                           ),
                           style: _theme.textTheme.labelLarge?.copyWith(
                             fontWeight: FontWeight.w700,
-                            fontSize: 45,
+                            fontSize: 40,
                           ),
                         ).paddingSymmetric(horizontal: 20),
+                      ],
 
                       // Sign up form
                       Flexible(
@@ -151,10 +164,8 @@ class _SignupViewState extends State<SignupView> {
                                 Text(
                                   lang.signUp,
                                   //'Sign up',
-                                  style:
-                                      _theme.textTheme.headlineSmall?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  style: _theme.textTheme.headlineSmall
+                                      ?.copyWith(fontWeight: FontWeight.w700),
                                 ),
                                 const SizedBox(height: 16),
                                 Form(
@@ -174,8 +185,10 @@ class _SignupViewState extends State<SignupView> {
                                               hintText: lang.enterYourLastName,
                                             ),
                                             validator: (value) {
-                                              return requiredforminput(value,
-                                                  lang.pleaseEnterYourLastName);
+                                              return requiredforminput(
+                                                value,
+                                                lang.pleaseEnterYourLastName,
+                                              );
                                             },
                                           ),
                                         ),
@@ -188,8 +201,10 @@ class _SignupViewState extends State<SignupView> {
                                               hintText: lang.enterYourFirstName,
                                             ),
                                             validator: (value) {
-                                              return requiredforminput(value,
-                                                  lang.pleaseEnterYourFirstName);
+                                              return requiredforminput(
+                                                value,
+                                                lang.pleaseEnterYourFirstName,
+                                              );
                                             },
                                           ),
                                         ),
@@ -206,8 +221,10 @@ class _SignupViewState extends State<SignupView> {
                                               hintText: lang.enterEmailAddress,
                                             ),
                                             validator: (value) {
-                                              return requiredforminput(value,
-                                                  lang.pleaseEnterYourEmail);
+                                              return requiredforminput(
+                                                value,
+                                                lang.pleaseEnterYourEmail,
+                                              );
                                             },
                                           ),
                                         ),
@@ -218,52 +235,65 @@ class _SignupViewState extends State<SignupView> {
                                             keyboardType: TextInputType.number,
                                             inputFormatters: [
                                               FilteringTextInputFormatter
-                                                  .digitsOnly
+                                                  .digitsOnly,
                                             ],
                                             controller: phoneNumController,
                                             decoration: InputDecoration(
                                               prefixIcon:
                                                   DropdownButton2<String>(
-                                                underline:
-                                                    const SizedBox.shrink(),
-                                                isDense: true,
-                                                isExpanded: true,
-                                                style:
-                                                    _theme.textTheme.bodyMedium,
-                                                iconStyleData:
-                                                    _dropdownStyle.iconStyle,
-                                                dropdownStyleData:
-                                                    _dropdownStyle.dropdownStyle
-                                                        .copyWith(width: 150),
-                                                menuItemStyleData:
-                                                    _dropdownStyle
-                                                        .menuItemStyle,
-                                                value: countryCode,
-                                                items: _item,
-                                                onChanged: (String? value) {
-                                                  if (value == null) return;
-                                                  setState(() {
-                                                    countryCode = value;
-                                                    country = countryCodes
-                                                        .entries
-                                                        .firstWhere((entry) =>
-                                                            entry.value
-                                                                .dialCode ==
-                                                            value)
-                                                        .key;
-                                                  });
-                                                },
-                                              ).paddingOnly(
-                                                      left: 10, right: 10),
+                                                    underline:
+                                                        const SizedBox.shrink(),
+                                                    isDense: true,
+                                                    isExpanded: true,
+                                                    style: _theme
+                                                        .textTheme
+                                                        .bodyMedium,
+                                                    iconStyleData:
+                                                        _dropdownStyle
+                                                            .iconStyle,
+                                                    dropdownStyleData:
+                                                        _dropdownStyle
+                                                            .dropdownStyle
+                                                            .copyWith(
+                                                              width: 150,
+                                                            ),
+                                                    menuItemStyleData:
+                                                        _dropdownStyle
+                                                            .menuItemStyle,
+                                                    value: countryCode,
+                                                    items: _item,
+                                                    onChanged: (String? value) {
+                                                      if (value == null) return;
+                                                      setState(() {
+                                                        countryCode = value;
+                                                        country = countryCodes
+                                                            .entries
+                                                            .firstWhere(
+                                                              (entry) =>
+                                                                  entry
+                                                                      .value
+                                                                      .dialCode ==
+                                                                  value,
+                                                            )
+                                                            .key;
+                                                      });
+                                                    },
+                                                  ).paddingOnly(
+                                                    left: 10,
+                                                    right: 10,
+                                                  ),
                                               prefixIconConstraints:
-                                                  AcnooInputFieldStyles(context)
-                                                      .iconConstraints2,
+                                                  AcnooInputFieldStyles(
+                                                    context,
+                                                  ).iconConstraints2,
                                               hintText:
                                                   lang.enterYourPhoneNumber,
                                             ),
                                             validator: (value) {
-                                              return requiredforminput(value,
-                                                  lang.pleaseEnterYourPhoneNumber);
+                                              return requiredforminput(
+                                                value,
+                                                lang.pleaseEnterYourPhoneNumber,
+                                              );
                                             },
                                           ),
                                         ),
@@ -286,8 +316,9 @@ class _SignupViewState extends State<SignupView> {
                                                 ),
                                                 icon: Icon(
                                                   showPassword
-                                                      ? FeatherIcons.eye
-                                                      : FeatherIcons.eyeOff,
+                                                      ? Icons.visibility_rounded
+                                                      : Icons
+                                                            .visibility_off_rounded,
                                                 ),
                                               ),
                                             ),
@@ -299,35 +330,6 @@ class _SignupViewState extends State<SignupView> {
                                               );
                                             },
                                           ),
-                                        ),
-                                        20.height,
-
-                                        Row(
-                                          children: [
-                                            Text(
-                                              lang.iam,
-                                              style: _theme.inputDecorationTheme
-                                                  .floatingLabelStyle,
-                                            ),
-                                          ],
-                                        ),
-                                        8.height,
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            userRadio(
-                                              theme: _theme,
-                                              thevalue: "tenant",
-                                              label: lang.tenant,
-                                            ),
-                                            30.width,
-                                            userRadio(
-                                              theme: _theme,
-                                              thevalue: "owner",
-                                              label: lang.owner,
-                                            ),
-                                          ],
                                         ),
                                       ],
                                     ),
@@ -345,10 +347,7 @@ class _SignupViewState extends State<SignupView> {
                                     //child: const Text('Sign Up'),
                                     child: Text(lang.signUp),
                                   ),
-                                ).paddingSymmetric(
-                                  horizontal: 30,
-                                  vertical: 8,
-                                ),
+                                ).paddingSymmetric(horizontal: 30, vertical: 8),
                                 30.height,
                                 Text.rich(
                                   TextSpan(
@@ -360,8 +359,8 @@ class _SignupViewState extends State<SignupView> {
                                         text: " ${lang.signIn}",
                                         style: _theme.textTheme.labelLarge
                                             ?.copyWith(
-                                          color: _theme.colorScheme.primary,
-                                        ),
+                                              color: _theme.colorScheme.primary,
+                                            ),
                                         recognizer: TapGestureRecognizer()
                                           ..onTap = () {
                                             context.push(
@@ -395,8 +394,9 @@ class _SignupViewState extends State<SignupView> {
                 ),
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image:
-                        AssetImage('assets/images/static_images/welcome.jpg'),
+                    image: AssetImage(
+                      'assets/images/static_images/welcome.jpg',
+                    ),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -431,32 +431,28 @@ class _SignupViewState extends State<SignupView> {
             WidgetSpan(
               alignment: PlaceholderAlignment.middle,
               child: SizedBox.square(
-                  dimension: 16,
-                  child: Radio(
-                    value: thevalue,
-                    groupValue: userType,
-                    activeColor: theme.colorScheme.primary,
-                    fillColor:
-                        WidgetStateProperty.all(theme.colorScheme.primary),
-                    onChanged: userType == thevalue
-                        ? null
-                        : (String? value) {
-                            setState(() {
-                              userType = value!;
-                            });
-                          },
-                  )),
+                dimension: 16,
+                child: Radio(
+                  value: thevalue,
+                  groupValue: userType,
+                  activeColor: theme.colorScheme.primary,
+                  fillColor: WidgetStateProperty.all(theme.colorScheme.primary),
+                  onChanged: userType == thevalue
+                      ? null
+                      : (String? value) {
+                          setState(() {
+                            userType = value!;
+                          });
+                        },
+                ),
+              ),
             ),
-            const WidgetSpan(
-              child: SizedBox(width: 6),
-            ),
+            const WidgetSpan(child: SizedBox(width: 6)),
             TextSpan(
               text: label,
               mouseCursor: SystemMouseCursors.click,
               recognizer: TapGestureRecognizer()
-                ..onTap = () => setState(
-                      () => userType = thevalue,
-                    ),
+                ..onTap = () => setState(() => userType = thevalue),
             ),
           ],
         ),

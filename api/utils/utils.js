@@ -4,9 +4,18 @@ const config = require('../config/config');
 const { ObjectId } = require('mongodb');
 const otpModel = require("../models/otpModel");
 var randomstring = require("randomstring");
+const OwnerSchema = require("../models/ownerModel")
+const TenantSchema = require("../models/tenantModel")
 
 const moment = require("moment");
-const { sendOtpMail } = require('../services/sendmail');
+const { sendOtpMail, sendRessetpasswordOtpMail } = require('../services/sendmail');
+const settingModel = require("../models/settingModel");
+
+const LoginAttempt = require("../models/LoginAttemptModel");
+
+const MAX_ATTEMPTS = 5;
+const WINDOW_SECONDS = 15 * 60; // 15 minutes
+const ATTEMPT_TTL_SECONDS = WINDOW_SECONDS; // TTL pour compteur, on peut ajuster
 
 function numerizeObject(obj) {
     if (typeof obj !== 'object' || obj === null) {
@@ -27,6 +36,39 @@ function numerizeObject(obj) {
     return obj;
 }
 module.exports = {
+    isLockedLogin: async function (email, ip) {
+        const record = await LoginAttempt.findOne({ email, ip });
+        if (!record) return { locked: false, retryIn: 0 };
+
+        if (record.lockedUntil && record.lockedUntil > new Date()) {
+            const retryIn = Math.ceil((record.lockedUntil - Date.now()) / 1000);
+            return { locked: true, retryIn };
+        }
+
+        return { locked: false, retryIn: 0 };
+    },
+    recordFailedAttempt: async function (email, ip) {
+        const record = await LoginAttempt.findOne({ email, ip });
+
+        // console.log(email, ip, record);
+
+
+        if (!record) {
+            return await LoginAttempt.create({ email, ip, attempts: 1 });
+        }
+
+        record.attempts += 1;
+
+        if (record.attempts >= MAX_ATTEMPTS) {
+            record.lockedUntil = new Date(Date.now() + ATTEMPT_TTL_SECONDS * 1000);
+        }
+
+        await record.save();
+        return record;
+    },
+    resetAttempts: async function (email, ip) {
+        await LoginAttempt.deleteOne({ email, ip });
+    },
     /**
      *
      * @param {shema} o1 fi
@@ -157,13 +199,6 @@ module.exports = {
         }
         return result;
     },
-    async generatemediaId(obj, prex = "") {
-        let id = obj._id.toString();
-
-        let result = `${obj.ID}`;
-
-        return (`${prex}${result}${(id.substring(0, id.length - (prex.length + result.length)))}`);
-    },
     isValidObjectId(id) {
         // Check if the id is a valid ObjectId
         if (typeof id !== 'string') {
@@ -198,7 +233,15 @@ module.exports = {
             length: 6,
             charset: 'numeric',
         });
-
+        // revoke previous otps
+        await otpModel.updateMany(
+            {
+                email: user.email,
+                isVerified: false,
+                isRevoked: false,
+            },
+            { $set: { isRevoked: true } }
+        );
         await otpModel.create({
             email: user.email,
             otp,
@@ -207,15 +250,12 @@ module.exports = {
 
         console.log("Generated OTP:", otp); // Log the generated OTP
 
-        // Send OTP to user's email (not implemented here)
-        // Example: await sendEmail(email, "Verify your account", `Your OTP is ${otp}`);
-
         switch (meethod) {
             case "email":
                 if (type == "signup")
-                    await sendOtpMail(otp, `${user.email}`, `${user.firstName}`, `../views/mail-templates/`);
-                else
-                    await sendEmail(email, "Reset your password", `Your OTP is ${otp}`);
+                    await sendOtpMail(otp, `${user.email}`, `${user.firstName}`);
+                else if (type == "passwordReset")
+                    await sendRessetpasswordOtpMail(otp, `${user.email}`, `${user.firstName}`);
                 break;
             case "sms":
                 await sendSMS(email, `Your OTP is ${otp}`);
@@ -233,8 +273,11 @@ module.exports = {
         let values = []
 
         if (!Array.isArray(key)) {
-            values = arr.map(obj => obj[key]);
-
+            arr.forEach(obj => {
+                if (obj[key] !== undefined) {
+                    values.push(obj[key]);
+                }
+            });
         } else {
             arr.forEach(obj => {
                 key.forEach(k => {
@@ -301,5 +344,236 @@ module.exports = {
             return type != "exit" ? "sortant" : "entran";
         }
         return type == "exit" ? "sortant" : "entran";
+    },
+    generateShield() {
+        const shield = randomstring.generate({ length: 120, charset: 'alphanumeric', capitalization: 'lowercase', });
+        return shield;
+    },
+    async personFillers(tenant, theScheme) {
+        if (tenant.type === 'physique') {
+            delete tenant.representant;
+            return await theScheme.create({ type: tenant.type, lastname: tenant.lastname, firstname: tenant.firstname, dob: tenant.dob, placeofbirth: tenant.placeofbirth, address: tenant.address, phone: tenant.phone, email: tenant.representant?.email ?? tenant.email });
+        } else if (tenant.type === 'morale') {
+
+            const representant = await theScheme.create({ type: "physique", lastname: tenant.representant.lastname, firstname: tenant.representant.firstname, dob: tenant.dob, placeofbirth: tenant.placeofbirth, phone: tenant.representant.phone, address: tenant.address, email: tenant.representant.email ?? tenant.email });
+            return await theScheme.create({ type: tenant.type, denomination: tenant.denomination, representant: representant._id, dob: tenant.dob, address: tenant.address, phone: tenant.phone, email: tenant.representant?.email ?? tenant.email });
+        }
+    },
+
+    getEstablishedDate(meta) {
+        return Object.values(meta?.signatures || {}).reduce((latest, sig) => {
+            const sigDate = new Date(sig.timestamp);
+            return !latest || sigDate > latest ? sigDate : latest;
+        }, null) ? module.exports.getFullDate(Object.values(meta?.signatures || {}).reduce((latest, sig) => {
+            const sigDate = new Date(sig.timestamp);
+            return !latest || sigDate > latest ? sigDate : latest;
+        }, null)) : '';
+    },
+
+    authorname(author) {
+        const capitalizeFirstLetter = (str) => {
+            if (!str) return '';
+            return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+        };
+
+        let result = author.type === "morale"
+            ? capitalizeFirstLetter(author.denomination || '')
+            : `${capitalizeFirstLetter(author.firstname || author.firstName || '')} ${capitalizeFirstLetter(author.lastname || author.lastName || '')}`.trim();
+
+        return result || "<>";
+    },
+
+    generateResponse: intent => {
+        // Generate a response based on the intent's status
+        switch (intent.status) {
+            case "requires_action":
+                // Card requires authentication
+                return {
+                    clientSecret: intent.client_secret,
+                    requiresAction: true,
+                    status: intent.status
+                }
+            case "requires_payment_method":
+                // Card was not properly authenticated, suggest a new payment method
+                return {
+                    error: "Your card was denied, please provide a new payment method"
+                }
+            case "succeeded":
+                // Payment is complete, authentication not required
+                // To cancel the payment after capture you will need to issue a Refund (https://stripe.com/docs/api/refunds).
+                console.log("💰 Payment received!")
+                return { clientSecret: intent.client_secret, status: intent.status }
+        }
+
+        return {
+            error: "Failed"
+        }
+    }, async getAuthorById(id) {
+
+        if (!id || !module.exports.isValidObjectId(id)) {
+            return null;
+        }
+
+        var tenant = await OwnerSchema.findById(id) ?? await TenantSchema.findById(id)
+        return {
+            id: tenant._id,
+            type: tenant.type,
+            name: module.exports.authorname(tenant),
+            email: tenant.email,
+            phone: tenant.phone,
+            address: tenant.address
+        };
+    }, async getDefaultPieceCopy() {
+
+    },
+    validateDatabyScheme: (theSheme, data, res) => {
+        const validationResult = theSheme.safeParse(data);
+
+        if (!validationResult.success) {
+            let messages = "Une erreur s'est produite lors de la validation des données du plan.";
+            if (validationResult.error?.message) {
+                messages = JSON.parse(validationResult.error.message);
+                messages = messages.reduce((acc, error) => {
+                    const fieldPath = error.path.join('.');
+                    acc[fieldPath] = error.message;
+                    return acc;
+                }, {});
+                res.status(400).json(messages);
+                return false;
+            }
+            throw messages;
+        }
+        return true;
+    },
+    AllvaluesNullorEmpyObject: (obj) => {
+        return Object.values(obj).every(x => x === null || x === "" || (typeof x === 'object' && Object.keys(x).length === 0));
+    },
+    ApplyCodeToPrice: (ammount, coupon) => {
+
+        let newAmmount = ammount;
+
+        if (Array.isArray(coupon)) {
+
+            coupon.forEach(c => {
+                if (c.type === 'percentage') {
+                    newAmmount = newAmmount - (newAmmount * c.discount / 100);
+                } else if (c.type === 'fixed') {
+                    newAmmount = newAmmount - (c.discount * 100);
+                } else if (c.type === 'free') {
+                    newAmmount = 0.0;
+                }
+            });
+        } else {
+
+            if (coupon.type === 'percentage') {
+                newAmmount = ammount - (ammount * coupon.discount / 100);
+            } else if (coupon.type === 'fixed') {
+                newAmmount = ammount - coupon.discount;
+            } else if (coupon.type === 'free') {
+                newAmmount = 0.0;
+            }
+        }
+        return newAmmount >= 0.0 ? newAmmount : 0.0;
+    },
+    getClientIp: (req) => {
+        // Priorité aux IP passées par le proxy
+        const forwarded =
+            req.headers['x-forwarded-for'] ||
+            req.headers['cf-connecting-ip'] ||
+            req.headers['x-real-ip'];
+
+        let ip = '';
+        if (forwarded) {
+            ip = (Array.isArray(forwarded) ? forwarded[0] : forwarded)
+                .split(',')[0]
+                .trim();
+        }
+
+        // Fallback si pas d’en-têtes
+        if (!ip) {
+            ip = req.ip || req.socket?.remoteAddress || req.connection?.remoteAddress || '';
+        }
+
+        // Normalisation
+        if (ip === '::1') return '127.0.0.1';
+        if (ip.startsWith('::ffff:')) return ip.slice(7);
+        return ip;
+    },
+
+    generateAccessCode: () => {
+        const code = randomstring.generate({ length: 8, charset: 'alphanumeric', capitalization: 'uppercase' });
+        const qrData = `JET-${code}`;
+        return qrData;
+    },
+    buildGsCommand: (input, output, quality = process.env.GS_QUALITY || 'prepress') => {
+        const base = [
+            '-sDEVICE=pdfwrite',
+            '-dCompatibilityLevel=1.7',
+            ...(quality === 'prepress' ? ['-dPDFSETTINGS=/prepress']
+                : quality === 'printer' ? ['-dPDFSETTINGS=/printer']
+                    : quality === 'ebook' ? ['-dPDFSETTINGS=/ebook']
+                        : ['-dPDFSETTINGS=/default']),
+            '-dEmbedAllFonts=true',
+            '-dSubsetFonts=true',
+            '-dCompressFonts=true',
+            '-dDetectDuplicateImages=true',
+            ...(quality === 'prepress' ? [
+                '-dDownsampleColorImages=false',
+                '-dDownsampleGrayImages=false',
+                '-dDownsampleMonoImages=false',
+            ] : [
+                '-dDownsampleColorImages=true', '-dColorImageDownsampleType=/Bicubic', '-dColorImageResolution=300',
+                '-dDownsampleGrayImages=true', '-dGrayImageDownsampleType=/Bicubic', '-dGrayImageResolution=300',
+                '-dDownsampleMonoImages=true', '-dMonoImageResolution=1200',
+            ]),
+            '-sColorConversionStrategy=LeaveColorUnchanged',
+            '-dAutoRotatePages=/None',
+            '-dNOPAUSE', '-dQUIET', '-dBATCH',
+            `-sOutputFile=${output}`,
+            input
+        ];
+        return `gs ${base.join(' ')}`;
+    },
+    writeToFile: async (data, path = "public/documents/temp/myconsole") => {
+        const fs = require('fs').promises;
+        try {
+            await fs.writeFile(path, data);
+        } catch (error) {
+            console.error(`Error writing to file at ${path}:`, error);
+        }
+    },
+    logfile: async (data, path = "logs/server.log") => {
+        const fs = require('fs').promises;
+        try {
+            await fs.mkdir(require('path').dirname(path), { recursive: true });
+            //[date] message
+            const message = `[${new Date().toISOString()}] ` + (typeof data === 'string' ? data : JSON.stringify(data));
+            await fs.appendFile(path, message.endsWith('\n') ? message : message + '\n');
+        } catch (error) {
+            console.error(`Error writing to file at ${path}:`, error);
+        }
+    },
+    getPaymentMethodDisplayName: (method) => {
+        const methods = config.paymentMethods;
+        return methods[method] || methods[Object.keys(methods)[0]];
+    },
+    getPlanName: (planKey) => {
+        switch (planKey) {
+            case "68abb489ac5240298a887669":
+                return 'Procurations + Etats des lieux';
+            case "68abb80942d054383a78498e":
+                return 'Etat des lieux simple';
+            default:
+                return 'Etat des lieux';
+        }
+    },
+    getUserDeviceInfo: (req) => {
+        const device = req.headers['x-access-device'] || req.headers['X-Access-Device'];
+        const userAgent = req.headers['user-agent'] || '';
+        const ip = module.exports.getClientIp(req);
+        return { userAgent, ipAddress: ip, device: device || '' };
     }
+
 };
+global.writeToFile = module.exports.writeToFile;
+global.logfile = module.exports.logfile;

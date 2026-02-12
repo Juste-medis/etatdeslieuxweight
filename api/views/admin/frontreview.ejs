@@ -13,7 +13,7 @@
         <!--begin::Content-->
         <div class="d-flex flex-center flex-column flex-column-fluid">
           <div class="text-center mb-10">
-            <img src="https://jataietatdeslieu.adidome.com/api/uploads/logo-bgless.png" class="logo" alt="Logo"
+            <img src="https://etatdeslieux.jatai.fr/api/uploads/logo-bgless.png" class="logo" alt="Logo"
               style="width:300px;height:90px; object-fit: contain;">
           </div>
           <div class="card m-3" style=" max-width: 456px; ">
@@ -69,16 +69,14 @@
                       <div class="d-flex justify-content-center gap-3">
                         <a href="https://apps.apple.com/app/your-app-id" class="btn btn-light"
                           style="display: flex; align-items: center; gap: 5px; flex-direction: column;">
-                          <img src="https://jataietatdeslieu.adidome.com/uploads/siteqrcode.svg" alt="App Store"
-                            height="40">
+                          <img src="https://etatdeslieux.jatai.fr/uploads/siteqrcode.svg" alt="App Store" height="40">
                           <span>
                             Ios
                           </span>
                         </a>
                         <a style="display: flex; align-items: center; gap: 5px; flex-direction: column;"
                           href="https://play.google.com/store/apps/details?id=your.app.id" class="btn btn-light">
-                          <img src="https://jataietatdeslieu.adidome.com/uploads/siteqrcode.svg" alt="Play Store"
-                            height="40">
+                          <img src="https://etatdeslieux.jatai.fr/uploads/siteqrcode.svg" alt="Play Store" height="40">
                           <span>
                             Android
                           </span>
@@ -86,12 +84,26 @@
                       </div>
                     </div>
                     <% } else { %>
-                      <a type="submit" class="btn btn-lg w-100 mb-5" style="background-color: #F38B07; color: white;"
-                        href="<%- review ? review.downloadLink : '' %>">
-                        <span class="indicator-label">Télécharger</span>
-                      </a>
-                      <% } %>
-                        <!--end::Submit button-->
+                      <% if (review && review.isByProcuration) { %>
+                        <div class="d-flex flex-column gap-3 mb-5">
+                          <a class="btn btn-lg w-100" style="background-color:#F38B07; color:white;"
+                            href="<%- review && review.entrantLink ? review.entrantLink : '' %>">
+                            <span class="indicator-label">Télécharger - Entrant</span>
+                          </a>
+                          <a class="btn btn-lg w-100" style="background-color:#F38B07; color:white;"
+                            href="<%- review && review.sortantLink ? review.sortantLink : '' %>">
+                            <span class="indicator-label">Télécharger - Sortant</span>
+                          </a>
+                        </div>
+                        <% } else { %>
+                          <a type="submit" class="btn btn-lg w-100 mb-5"
+                            style="background-color: #F38B07; color: white;"
+                            href="<%- review ? review.downloadLink : '' %>">
+                            <span class="indicator-label">Télécharger</span>
+                            <% } %>
+                          </a>
+                          <% } %>
+                            <!--end::Submit button-->
 
                 </div>
                 <!--end::Actions-->

@@ -1,30 +1,30 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/fuctions/_overlay_helper.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/copole.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/utls.dart';
-import 'package:jatai_etatsdeslieux/app/core/network/rest_apis.dart';
-import 'package:jatai_etatsdeslieux/app/core/static/model_keys.dart';
-import 'package:jatai_etatsdeslieux/app/pages/dashboard/pages/_ecommerce_admin_dashboard/wizards/procurations/date_of_review.dart';
-import 'package:jatai_etatsdeslieux/app/pages/dashboard/pages/_ecommerce_admin_dashboard/wizards/procurations/pdf_summary_summary.dart';
-import 'package:jatai_etatsdeslieux/app/widgets/dialogs/confirm_dialog.dart';
-import 'package:jatai_etatsdeslieux/main.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/copole.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/utls.dart';
+import 'package:mon_etatsdeslieux/app/core/network/rest_apis.dart';
+import 'package:mon_etatsdeslieux/app/core/static/model_keys.dart';
+import 'package:mon_etatsdeslieux/app/models/review.dart';
+import 'package:mon_etatsdeslieux/app/pages/dashboard/pages/_ecommerce_admin_dashboard/wizards/procurations/date_of_review.dart';
+import 'package:mon_etatsdeslieux/app/pages/dashboard/pages/_ecommerce_admin_dashboard/wizards/procurations/finalization_view.dart';
+import 'package:mon_etatsdeslieux/app/pages/dashboard/pages/_ecommerce_admin_dashboard/wizards/procurations/pdf_summary_summary.dart';
+import 'package:mon_etatsdeslieux/app/pages/dashboard/pages/_ecommerce_admin_dashboard/wizards/starter/complementary.dart';
+import 'package:mon_etatsdeslieux/app/pages/dashboard/pages/_ecommerce_admin_dashboard/wizards/starter/inventory_report.dart';
+import 'package:mon_etatsdeslieux/app/pages/dashboard/pages/_ecommerce_admin_dashboard/wizards/starter/locataires_infos.dart';
+import 'package:mon_etatsdeslieux/app/pages/dashboard/pages/_ecommerce_admin_dashboard/wizards/starter/sortan_locataire_address.dart';
+import 'package:mon_etatsdeslieux/app/pages/dashboard/pages/_ecommerce_admin_dashboard/wizards/starter/the_good.dart';
+import 'package:mon_etatsdeslieux/app/widgets/dialogs/confirm_dialog.dart';
+import 'package:mon_etatsdeslieux/main.dart';
 
 import 'package:nb_utils/nb_utils.dart';
-import 'proprietaire_informations.dart';
-import 'locataires_infos.dart';
-import 'package:jatai_etatsdeslieux/app/providers/providers.dart';
+import 'package:mon_etatsdeslieux/app/providers/providers.dart';
 import 'package:provider/provider.dart';
-import 'package:jatai_etatsdeslieux/generated/l10n.dart' as l;
+import 'package:mon_etatsdeslieux/generated/l10n.dart' as l;
 import 'procuration_signatures.dart';
-import 'the_good.dart';
 import 'pdf_summary_review.dart';
-import 'finalization_view.dart';
-import 'complementary.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/extensions/_build_context_extensions.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/french_translations.dart';
-import 'package:jatai_etatsdeslieux/app/core/theme/_app_colors.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/french_translations.dart';
+import 'package:mon_etatsdeslieux/app/core/theme/_app_colors.dart';
 
 class ProcurationFormWizard extends StatefulWidget {
   final Map? type;
@@ -51,62 +51,36 @@ class _ProcurationFormWizardState extends State<ProcurationFormWizard> {
     );
   }
 
-  void _submitForm(Map<String, dynamic> formData) {
-    // Process all collected data
-    final owners = [];
-    final tenants = [];
+  void goToHome() {
+    Jks.proccurationState.proccurations.clear();
+    Jks.proccurationState.fetchProccurations(refresh: true);
+    Navigator.pop(context);
+  }
 
-    formData.forEach((key, value) {
-      if (key.startsWith('owner')) {
-        // Parse owner data
-        final parts = key.split('_');
-        final ownerId = parts[0].replaceAll('owner', '');
-        final field = parts[1];
-
-        if (owners.length <= int.parse(ownerId)) {
-          owners.add({'id': ownerId});
-        }
-        owners[int.parse(ownerId)][field] = value;
-      }
-    });
-
-    // Create your final payload
-    final payload = {
-      'owners': owners,
-      'tenants': tenants,
-      'reviewType': formData['reviewType'],
-      'isMandated': formData['isMandated'],
+  @override
+  void initState() {
+    super.initState();
+    Jks.paymentState.paymentMade = "";
+    Jks.wizardNextStep = () {
+      _nextStep();
     };
+  }
 
-    debugPrint('Submitting: ${payload.toString()}');
-    // Call your API here
+  @override
+  void dispose() {
+    Jks.tenantApprovals = {};
+    super.dispose();
   }
 
   void saveprocuration(AppThemeProvider wizardState) async {
     var formData = wizardState.formValues;
-    // my_inspect(formData);
     wizardState.setloading(true);
-    var owners = extracthings(formData, "owner", wizardState);
-    var exitenants = extracthings(formData, "exittenant", wizardState);
-    var entrantenants = extracthings(formData, "entranttenant", wizardState);
-
     // Create your final payload
     final payload = {
-      'owners': owners,
-      'exitenants': exitenants,
-      'entrantenants': entrantenants,
-      'propertyDetails': {
-        'address': formData['property_address'],
-        'complement': formData['property_complement'],
-        'floor': formData['property_floor'],
-        'surface': formData['property_surface'],
-        'roomCount': formData['property_roomCount'],
-        'furnitured': formData['property_furnitured'],
-        'box': formData['property_box'],
-        'cellar': formData['property_cellar'],
-        'garage': formData['property_garage'],
-        'parking': formData['property_parking'],
-      },
+      'owners': wizardState.inventoryProprietaires,
+      'exitenants': wizardState.inventoryLocatairesSortant,
+      'entrantenants': wizardState.inventoryLocatairesEntrants,
+      'propertyDetails': wizardState.domaine.propertyDetails(),
       'documentDetails': {
         'address': formData['document_address'],
         'review_type': formData['review_type'],
@@ -115,40 +89,78 @@ class _ProcurationFormWizardState extends State<ProcurationFormWizard> {
         'accesgivenTo': formData['accesgivenTo'],
       },
       'complementaryDetails': {
-        'heatingType': formData['complementary_heatingType'],
-        'heatingMode': formData['complementary_heatingMode'],
-        'hotWaterType': formData['complementary_hotWaterType'],
-        'hotWaterMode': formData['complementary_hotWaterMode'],
+        'doccument_city': formData['doccument_city'],
+        'tenant_entry_date': formData['tenant_entry_date'] is String
+            ? formData['tenant_entry_date']
+            : formData['tenant_entry_date']?.toIso8601String(),
+        'comments': formData['comments'],
+        'security_smoke': formData['security_smoke'],
+        'security_smoke_functioning': formData['security_smoke_functioning'],
       },
     };
 
-    my_inspect(formData);
-    my_inspect(payload);
+    await createprocuration(payload)
+        .then((res) async {
+          if (res.status == true) {
+            var procuration = Procuration.fromJson(res.data);
 
-    // await createprocuration(payload).then((res) async {
-    //   if (res.status == true) {
-    //     wizardState.updateFormValue(
-    //         'entranDocumentId', res.data["entranDocumentId"]);
-    //     wizardState.updateFormValue(
-    //         'sortantDocumentId', res.data["sortantDocumentId"]);
-    //     wizardState.updateFormValue('procurationId', res.data["_id"]);
-    //     _nextStep();
-    //   }
-    // }).catchError((e) {
-    //   my_inspect(e);
-    //   // toast(e.toString());
-    // });
+            procuration.source = 'new';
+
+            Jks.proccurationState.seteditingProcuration(
+              procuration,
+              source: 'new',
+            );
+            Jks.proc = procuration.copyWith(source: 'saved');
+
+            wizardState.inventoryProprietaires = [...procuration.owners!];
+            wizardState.inventoryLocatairesEntrants = [
+              ...procuration.entrantenants!,
+            ];
+            wizardState.inventoryLocatairesSortant = [
+              ...procuration.exitenants!,
+            ];
+
+            wizardState.updateFormValue(
+              'entranDocumentId',
+              res.data["entranDocumentId"],
+            );
+            wizardState.updateFormValue(
+              'sortantDocumentId',
+              res.data["sortantDocumentId"],
+            );
+            wizardState.updateFormValue('procurationId', res.data["_id"]);
+            Jks.wizardState = wizardState;
+            Jks.paymentState.paymentMade = "";
+            Jks.proccurationState.fetchProccurations(
+              refresh: true,
+              type: "all",
+            );
+
+            for (final tenant in getAllProcurationAuthors(
+              Jks.wizardState,
+              ownerOnly: true,
+            )) {
+              Jks.tenantApprovals['${tenant.id}'] = GlobalKey<FormState>();
+            }
+
+            _nextStep(from: 'saveprocuration');
+          }
+        })
+        .catchError((e) {
+          my_inspect(e);
+          // toast(e.toString());
+        });
     wizardState.setloading(false);
   }
 
-  void _nextStep() async {
+  void _nextStep({String? from}) async {
     wizardState.updateFormValue("", "");
-    var owners = extracthings(wizardState.formValues, "owner", wizardState);
 
     if (wizardState.currentStep == WizardStep.values[0]) {
       final userEmail = appStore.userEmail;
-      bool isConnectedUserOwner =
-          owners.any((owner) => owner['representantemail'] == userEmail);
+      bool isConnectedUserOwner = wizardState.inventoryProprietaires.any(
+        (owner) => owner.email == userEmail,
+      );
       if (!isConnectedUserOwner) {
         await showAwesomeConfirmDialog(
           forceHorizontalButtons: true,
@@ -170,53 +182,259 @@ class _ProcurationFormWizardState extends State<ProcurationFormWizard> {
         return;
       }
     }
-    if (wizardState.currentStep == WizardStep.signatures) {
-      if (Jks.pSp!["content"] == null) {
+    if (wizardState.currentStep == WizardStep.locataireSortantAddress) {
+      bool _validateSignatures() {
+        for (final aythor in getAllProcurationAuthors(
+          wizardState,
+          ownerOnly: true,
+        )) {
+          final tenantKey = '${aythor.id}';
+          var labelname = authorname(aythor);
+
+          var isOwner = wizardState.inventoryProprietaires.any(
+            (owner) => owner.id == aythor.id,
+          );
+
+          final hasSignature = Jks.griffes![tenantKey] != null;
+          final isApproved =
+              Jks.tenantApprovals[tenantKey]?.currentState?.validate() ?? false;
+
+          final actionsCompleted = [hasSignature, isApproved];
+          final completedCount = actionsCompleted
+              .where((action) => action)
+              .length;
+
+          if (completedCount > 0 && completedCount < 2) {
+            List<String> missingActions = [];
+            if (!hasSignature) missingActions.add("signer");
+            if (!isApproved) missingActions.add("accepter les conditions");
+
+            String actionsText = "";
+            if (missingActions.length > 1) {
+              final lastAction = missingActions.removeLast();
+              actionsText = "${missingActions.join(", ")} et $lastAction";
+            } else if (missingActions.length == 1) {
+              actionsText = missingActions.first;
+            }
+
+            show_common_toast(
+              "$labelname doit $actionsText pour continuer".tr,
+              Jks.context!,
+            );
+            return false;
+          }
+          if (isOwner) {
+            wizardState.updateInventory(
+              proprietaires: wizardState.inventoryProprietaires.map((e) {
+                if (e.id == aythor.id) {
+                  e.meta!["hasSigned"] = hasSignature;
+                }
+                return e;
+              }).toList(),
+              liveupdate: false,
+            );
+          } else {
+            wizardState.updateInventory(
+              locatairesentry: wizardState.inventoryLocatairesEntrants.map((e) {
+                if (e.id == aythor.id) {
+                  e.meta!["hasSigned"] = hasSignature;
+                }
+                return e;
+              }).toList(),
+              locataires: wizardState.inventoryLocatairesSortant.map((e) {
+                if (e.id == aythor.id) {
+                  e.meta!["hasSigned"] = hasSignature;
+                }
+                return e;
+              }).toList(),
+              liveupdate: false,
+            );
+          }
+        }
+
+        return true;
+      }
+
+      var validateSignatures = _validateSignatures();
+      if (!validateSignatures) return;
+
+      // Check if all owners have signed
+      List<String> unsignedOwners = [], unsignedTenants = [];
+      for (var owner in wizardState.inventoryProprietaires) {
+        if (owner.meta == null || owner.meta!["hasSigned"] != true) {
+          String ownerName = authorname(owner);
+          if (ownerName.isEmpty) {
+            ownerName = owner.email ?? "Propriétaire inconnu";
+          }
+          unsignedOwners.add(ownerName);
+        }
+      }
+      for (var tenant in [
+        ...wizardState.inventoryLocatairesEntrants,
+        ...wizardState.inventoryLocatairesSortant,
+      ]) {
+        if (tenant.meta == null || tenant.meta!["hasSigned"] != true) {
+          String tenantName = authorname(tenant);
+          if (tenantName.isEmpty) {
+            tenantName = tenant.email ?? "Locataire inconnu";
+          }
+          unsignedTenants.add(tenantName);
+        }
+      }
+
+      if (unsignedOwners.isNotEmpty) {
+        String unsignedNames = unsignedOwners.join(
+          unsignedOwners.length == 2 ? " et " : ", ",
+        );
+        var plural = unsignedOwners.length > 1 ? "s" : "";
         final confirmed = await showAwesomeConfirmDialog(
           forceHorizontalButtons: true,
           cancelText: "Non".tr,
           confirmText: 'Oui'.tr,
           context: context,
-          title: 'Aucune signature apportée'.tr,
-          description: 'Souhaitez vous signer plus-tard ?'.tr,
+          description:
+              "Le$plural Bailleur$plural : $unsignedNames n'${unsignedOwners.length > 1 ? "ont" : "a"} pas signé"
+                  .tr,
+          title: 'Souhaitez vous signer plus-tard ?'.tr,
         );
         if (confirmed ?? false) {
-          _pageController.nextPage(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
+          if ((unsignedOwners.length !=
+                  wizardState.inventoryProprietaires.length) ||
+              (unsignedTenants.length !=
+                  (wizardState.inventoryLocatairesEntrants.length +
+                      wizardState.inventoryLocatairesSortant.length))) {
+          } else {
+            _pageController.nextPage(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+            return;
+          }
+        } else {
+          return;
+        }
+      }
+
+      var signer = await showModalBottomSheet(
+        context: Jks.context!,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
+        ),
+        builder: (context) => Wrap(
+          children: [
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              title: Text(
+                "Action irréversible",
+                style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                'Êtes-vous sûr de vouloir signer la procuration ? Cette action est irréversible et vous ne pourrez pas modifier les informations une fois signé.'
+                    .tr,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall!.copyWith(fontSize: 14),
+              ).paddingTop(12),
+            ).paddingTop(16),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context, false);
+                      },
+                      child: Text("Annuler".tr),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context, true);
+                      },
+                      child: Text("Signer".tr),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (signer != true) {
+        return;
+      }
+      wizardState.setloading(true);
+      // Create your final payload
+      Map<String, dynamic> payload = {
+        "procurationId": wizardState.formValues['procurationId'],
+      };
+      payload["tenantSignatures"] = {};
+      for (final tenant in getAllProcurationAuthors(wizardState)) {
+        if (Jks.griffes!["${tenant.id}"] != null) {
+          payload["tenantSignatures"]["${tenant.id}"] = base64Encode(
+            Jks.griffes!["${tenant.id}"],
           );
         }
-      } else {
-        // my_inspect(formData);
-        wizardState.setloading(true);
-        // Create your final payload
-
-        final payload = {
-          'signature': base64Encode(Jks.pSp!["content"]),
-          "procurationId": wizardState.formValues['procurationId']
-        };
-        await griffeprocuration(payload).then((res) async {
-          if (res.status == true) {
-            // wizardState.updateFormValue(
-            //     'entranDocumentId', res.data["entranDocumentId"]);
-            // wizardState.updateFormValue(
-            //     'sortantDocumentId', res.data["sortantDocumentId"]);
-            // _pageController.nextPage(
-            //   duration: const Duration(milliseconds: 300),
-            //   curve: Curves.easeInOut,
-            // );
-          }
-        }).catchError((e) {
-          my_inspect(e);
-          // toast(e.toString());
-        });
-        wizardState.setloading(false);
       }
+      await griffeprocuration(payload)
+          .then((res) async {
+            if (res.status == true) {
+              Jks.proccurationState.seteditingProcuration(
+                Jks.proccurationState.editingProccuration!.copyWith(
+                  meta: res.data["meta"],
+                ),
+              );
+
+              wizardState.updateFormValue(
+                'entranDocumentId',
+                res.data["entranDocumentId"],
+              );
+              wizardState.updateFormValue(
+                'sortantDocumentId',
+                res.data["sortantDocumentId"],
+              );
+              await showFullScreenSuccessDialog(
+                context,
+                title:
+                    'Votre Procuration est maintenant dans votre espace personnel.',
+                message:
+                    'Rendez-vous dans la section "Mes procurations" pour visualiser vos procurations. Un email a été envoyé aux signataires pour les notifier.'
+                        .tr,
+                okText: 'Continuer',
+                onOk: () {
+                  // goToHome();
+                  _pageController.nextPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                  return;
+                },
+              );
+              // goToHome();
+              _pageController.nextPage(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            }
+          })
+          .catchError((e) {
+            my_inspect(e);
+            wizardState.setloading(false);
+          });
+      wizardState.setloading(false);
       return;
     }
-
     if (wizardState.canGoNext ||
-        wizardState.currentStep == WizardStep.locataireSortantAddress) {
+        wizardState.currentStep == WizardStep.inventoryOfKeysCounters ||
+        wizardState.currentStep == WizardStep.inventoryOfRooms ||
+        wizardState.currentStep == WizardStep.pdfOffSummary) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -229,41 +447,54 @@ class _ProcurationFormWizardState extends State<ProcurationFormWizard> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final _lang = l.S.of(context);
     wizardState = context.watch<AppThemeProvider>();
+    bool canLeaveSafely =
+        wizardState.currentStep == WizardStep.values[7] ||
+        wizardState.currentStep == WizardStep.values[8] ||
+        wizardState.currentStep == WizardStep.values[9];
     return Consumer<AppThemeProvider>(
       builder: (context, lang, child) {
         WizardStep _currentStep = wizardState.currentStep;
-        Jks.context = context;
-
-        return PopScope(
-          onPopInvokedWithResult: (didPop, result) async {
-            if (didPop && result == null) {
-              if (_currentStep != WizardStep.values[0]) {
-                await showAwesomeConfirmDialog(
-                  context: context,
-                  title: "Annuler les modification".tr,
-                  description: "Êtes-vous sûr de vouloir annuler ?".tr,
-                  onpositive: () {
-                    context.popRoute();
-                  },
-                  onnegative: () {},
-                );
-                return; // Return true to allow the pop action
-              } else {
-                context.popRoute();
-              }
+        void beforeLeave() {
+          if (wizardState.currentStep != WizardStep.values[0]) {
+            showAwesomeConfirmDialog(
+              context: context,
+              title: "Annuler les modifications".tr,
+              description: "Êtes-vous sûr de vouloir annuler ?".tr,
+              persistantOnPositive: () {
+                simulateScreenTap();
+                Navigator.pop(context, true);
+              },
+              onnegative: () {},
+            );
+          } else {
+            try {
+              Navigator.pop(context, true);
+            } catch (e) {
+              myprint(e);
             }
+          }
+        }
+
+        Jks.context = context;
+        return PopScope(
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop && result == null && (!canLeaveSafely)) {
+              beforeLeave();
+            } else {}
           },
           child: Scaffold(
             backgroundColor: isDark ? black : white,
             body: Column(
               children: [
-                backbutton(() => {context.popRoute()}, title: "Procuration".tr),
-
-                // Progress indicator
+                if (!canLeaveSafely)
+                  backbutton(() {
+                    beforeLeave();
+                  }, title: "Procuration".tr),
                 LinearProgressIndicator(
                   value:
                       (_currentStep.index + 1) / (WizardStep.values.length - 1),
                 ),
+                // Text(wizardState.currentStep.name),
 
                 // Form content
                 Expanded(
@@ -275,34 +506,33 @@ class _ProcurationFormWizardState extends State<ProcurationFormWizard> {
                       setState(() {
                         wizardState.updateInventory(
                           step: WizardStep.values[index],
+                          liveupdate: false,
                         );
                       });
                     },
                     children: [
-                      KeepAliveWidget(
-                        child: Proprietary(wizardState: wizardState),
-                      ),
-                      KeepAliveWidget(
-                        child: LesLocataires(),
-                      ),
-                      KeepAliveWidget(
-                        child: TheGood(wizardState: wizardState),
-                      ),
-                      KeepAliveWidget(
-                        child: DateOfEtatDesLieux(wizardState: wizardState),
-                      ),
-                      KeepAliveWidget(
-                        child: Complementary(wizardState: wizardState),
-                      ),
-                      KeepAliveWidget(
-                        child: SumaryOfSummary(wizardState: wizardState),
-                      ),
-                      KeepAliveWidget(
-                        child: Signatures(wizardState: wizardState),
-                      ),
-                      KeepAliveWidget(
-                        child: PdfOffSummary(wizardState: wizardState),
-                      ),
+                      if (_currentStep != WizardStep.confirmation) ...[
+                        KeepAliveWidget(child: InventoryReport()),
+                        KeepAliveWidget(child: LocatairesInfos()),
+                        KeepAliveWidget(child: TheGood()),
+                        KeepAliveWidget(child: Complementary()),
+                        // KeepAliveWidget(
+                        //   child: LocataireSortantAddress(),
+                        // ),
+                        KeepAliveWidget(child: DateOfEtatDesLieux()),
+                        KeepAliveWidget(
+                          child: SumaryOfSummary(wizardState: wizardState),
+                        ),
+                        KeepAliveWidget(
+                          child: Signatures(wizardState: wizardState),
+                        ),
+                        KeepAliveWidget(
+                          child: PdfOffSummary(wizardState: wizardState),
+                        ),
+                      ] else
+                        ...List.generate(8, (index) {
+                          return const SizedBox.shrink();
+                        }),
                       KeepAliveWidget(
                         child: FinalizationView(wizardState: wizardState),
                       ),
@@ -316,18 +546,26 @@ class _ProcurationFormWizardState extends State<ProcurationFormWizard> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      OutlinedButton(
-                        onPressed: _prevStep,
-                        child: Text(_lang.previous),
-                      ),
+                      if (wizardState.formValues['procurationId'] == null ||
+                          _currentStep == WizardStep.values[5] ||
+                          _currentStep == WizardStep.values[7])
+                        OutlinedButton(
+                          onPressed: _prevStep,
+                          child: Text(_lang.previous),
+                        ),
                       const Spacer(),
-                      if (_currentStep != WizardStep.confirmation)
+                      if (_currentStep != WizardStep.pdfOffSummary)
                         ElevatedButton.icon(
                           onPressed: wizardState.loading
                               ? null
-                              : _currentStep == WizardStep.values[4]
-                                  ? () => saveprocuration(wizardState)
-                                  : _nextStep,
+                              : () {
+                                  if (_currentStep ==
+                                      WizardStep.inventoryOfRooms) {
+                                    saveprocuration(wizardState);
+                                  } else {
+                                    _nextStep();
+                                  }
+                                },
                           icon: wizardState.loading
                               ? const SizedBox.square(
                                   dimension: 20,
@@ -337,14 +575,16 @@ class _ProcurationFormWizardState extends State<ProcurationFormWizard> {
                                   ),
                                 )
                               : null,
-                          label: Text(_currentStep == WizardStep.values[4]
-                              ? _lang.save
-                              : _lang.next),
+                          label: Text(
+                            _currentStep == WizardStep.inventoryOfRooms
+                                ? _lang.save
+                                : _lang.next,
+                          ),
                         ),
-                      if (_currentStep == WizardStep.confirmation)
+                      if (_currentStep == WizardStep.pdfOffSummary)
                         ElevatedButton(
-                          onPressed: () => _submitForm(wizardState.formValues),
-                          child: Text(_lang.submit),
+                          onPressed: () => goToHome(),
+                          child: Text("Retourner à l'accueil".tr),
                         ),
                     ],
                   ),

@@ -25,5 +25,17 @@ sudo certbot certonly --nginx -d roar.adidome.com
 
 
 
-sudo ln -s /etc/nginx/sites-available/jataietatdeslieu.adidome.com /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/etatdeslieux.jatai.fr /etc/nginx/sites-enabled/
 sudo ln -s /etc/nginx/sites-available/stripe.jatai.fr /etc/nginx/sites-enabled/
+
+
+
+
+
+
+
+sudo apt update
+sudo apt install redis-server
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
+

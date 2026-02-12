@@ -46,7 +46,7 @@ const Thingchema = mongoose.Schema({
     photos: {
         type: [{
             type: String,
-         }],
+        }],
         default: []
     },
     warranty: {
@@ -105,6 +105,10 @@ const Thingchema = mongoose.Schema({
     },
     dateRecalled: {
         type: Date,
+        required: false
+    },
+    meta: {
+        type: Object,
         required: false
     }
 

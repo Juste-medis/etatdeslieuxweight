@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Facture - {{invoice_number}}</title>
+    <style>
+        /* --- Page / print --- */
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #111;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            box-sizing: border-box;
+        }
+
+        /* --- Layout --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .company {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .company .address {
+            font-weight: 400;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .bill-to {
+            margin-top: 12px;
+        }
+
+        .meta {
+            text-align: right;
+            font-size: 13px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #f7f7f7;
+            text-align: left;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .no-border {
+            border: none;
+        }
+
+        .summary {
+            width: 40%;
+            float: right;
+            margin-top: 10px;
+        }
+
+        .summary table {
+            width: 100%;
+        }
+
+        .notes {
+            clear: both;
+            margin-top: 80px;
+            font-size: 12px;
+            color: #333;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 20mm;
+            left: 20mm;
+            right: 20mm;
+            font-size: 11px;
+            text-align: center;
+            color: #666;
+        }
+
+        /* Small print-friendly tweaks */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+            }
+
+            footer {
+                position: fixed;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page" id="invoice-page">
+        <header>
+            <div>
+                <div class="company">JATAI</div>
+                <div class="address">
+                    58 RUE DE MONCEAU,<br />
+                    75008 PARIS
+                </div>
+                <div style="margin-top:8px; font-size:12px;">
+                    Exploité par 123PAC SAS<br />
+                    SIRET: 932310857 • TVA: FR51932310857
+                </div>
+            </div>
+
+            <div class="meta">
+                <div><strong>Facture n°</strong> <span id="invoice-number">—</span></div>
+                <div><strong>Date :</strong> <span id="invoice-date">—</span></div>
+                <div style="margin-top:12px;"><strong>Mode de paiement :</strong> <span id="payment-method">—</span>
+                </div>
+            </div>
+        </header>
+
+        <div style="display:flex; justify-content:space-between;">
+            <div>
+                <strong>Facturé à</strong>
+                <div id="customer-name">nom prenom client</div>
+                <div id="customer-address-line1">adresse ligne 1 client</div>
+                <div id="customer-address-line2">adresse ligne 2 client</div>
+            </div>
+            <div style="text-align:right;">
+                <!-- entreprise details could go here -->
+            </div>
+        </div>
+
+        <div style="margin-top:18px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th style="width:100px" class="text-right">Quantité</th>
+                        <th style="width:140px" class="text-right">Prix unitaire HT</th>
+                        <th style="width:140px" class="text-right">Total HT</th>
+                    </tr>
+                </thead>
+                <tbody id="invoice-lines">
+                    <!-- rows injected here -->
+                    <tr>
+                        <td colspan="4" class="text-right no-border">Aucun élément</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="summary">
+            <table>
+                <tbody>
+                    <tr>
+                        <td class="no-border">Sous-total HT</td>
+                        <td class="text-right" id="subtotal-ht">0,00 €</td>
+                    </tr>
+                    <tr>
+                        <td class="no-border">Remise HT</td>
+                        <td class="text-right" id="discount-ht">0,00 €</td>
+                    </tr>
+                    <tr>
+                        <td class="no-border">Total HT</td>
+                        <td class="text-right" id="total-ht">0,00 €</td>
+                    </tr>
+                    <tr>
+                        <td class="no-border">TVA <span id="tva-rate">20%</span></td>
+                        <td class="text-right" id="tva-amount">0,00 €</td>
+                    </tr>
+                    <tr style="font-weight:700;">
+                        <td class="no-border">Total TTC</td>
+                        <td class="text-right" id="total-ttc">0,00 €</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="notes">
+            <div><strong>Facture réglée le :</strong> <span id="paid-date">JJ/MM/AAAA</span></div>
+            <div style="margin-top:8px;"><strong>Mention :</strong> Paiement reçu par <span id="paid-by">—</span></div>
+
+            <p style="margin-top:18px; font-size:11px; color:#444;">
+                Jatai, exploité par 123PAC SAS, au capital de 500 euros enregistrée sous le numéro RCS. Paris 932 310
+                857.
+                Siège : 58 Rue de Monceau, 75008 Paris.
+            </p>
+        </div>
+
+        <footer>Facture</footer>
+    </div>
+
+    <script>
+        // Formatteur euro (français)
+        function formatPrixEuro(value, decimals = 2) {
+            // value peut être number ou string convertible
+            const num = Number(value) || 0;
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(num);
+        }
+
+        // Remplir la facture à partir d'un objet data
+        // Exemple minimal :
+        // {
+        //  invoice_number: "2025-001",
+        //  date: "2025-10-01", // YYYY-MM-DD
+        //  customer: {name:"Dupont", addr1:"1 rue...", addr2:"75001 Paris"},
+        //  payment_method: "Carte bancaire",
+        //  lines: [
+        //    {desc:"État des lieux simple", qty:1, unit_price:120.0},
+        //    {desc:"Procuration + état", qty:1, unit_price:80.0}
+        //  ],
+        //  discount_ht: 0,
+        //  tva_rate: 20,
+        //  paid_date: "2025-10-01",
+        //  paid_by: "Carte bancaire"
+        // }
+        function fillInvoice(data = {}) {
+            // Métadonnées
+            document.getElementById('invoice-number').textContent = data.invoice_number || '—';
+            // Formater date en JJ/MM/AAAA si possible
+            if (data.date) {
+                const d = new Date(data.date);
+                document.getElementById('invoice-date').textContent = d.toLocaleDateString('fr-FR');
+            }
+            document.getElementById('payment-method').textContent = data.payment_method || '—';
+
+            // Client
+            if (data.customer) {
+                document.getElementById('customer-name').textContent = data.customer.name || '';
+                document.getElementById('customer-address-line1').textContent = data.customer.addr1 || '';
+                document.getElementById('customer-address-line2').textContent = data.customer.addr2 || '';
+            }
+
+            // Lignes
+            const tbody = document.getElementById('invoice-lines');
+            tbody.innerHTML = '';
+            let subtotal = 0;
+            const lines = Array.isArray(data.lines) ? data.lines : [];
+            if (lines.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-right no-border">Aucun élément</td></tr>';
+            } else {
+                for (const line of lines) {
+                    const qty = Number(line.qty || 0);
+                    const unit = Number(line.unit_price || 0);
+                    const totalLine = qty * unit;
+                    subtotal += totalLine;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+            <td>${line.desc || ''}</td>
+            <td class="text-right">${qty}</td>
+            <td class="text-right">${formatPrixEuro(unit)}</td>
+            <td class="text-right">${formatPrixEuro(totalLine)}</td>
+          `;
+                    tbody.appendChild(tr);
+                }
+            }
+
+            // Totaux
+            const discount = Number(data.discount_ht || 0);
+            const totalHT = subtotal - discount;
+            const tvaRate = Number((data.tva_rate !== undefined) ? data.tva_rate : 20);
+            const tvaAmount = (totalHT * tvaRate) / 100;
+            const totalTTC = totalHT + tvaAmount;
+
+            document.getElementById('subtotal-ht').textContent = formatPrixEuro(subtotal);
+            document.getElementById('discount-ht').textContent = formatPrixEuro(discount);
+            document.getElementById('total-ht').textContent = formatPrixEuro(totalHT);
+            document.getElementById('tva-rate').textContent = tvaRate + '%';
+            document.getElementById('tva-amount').textContent = formatPrixEuro(tvaAmount);
+            document.getElementById('total-ttc').textContent = formatPrixEuro(totalTTC);
+
+            if (data.paid_date) {
+                const dpaid = new Date(data.paid_date);
+                document.getElementById('paid-date').textContent = dpaid.toLocaleDateString('fr-FR');
+            }
+            document.getElementById('paid-by').textContent = data.paid_by || '';
+        }
+
+        // --- Exemple d'appel (décommenter pour tester statiquement) ---
+        /*
+        fillInvoice({
+          invoice_number: "2025-0001",
+          date: "2025-10-01",
+          customer: {name:"Jean Dupont", addr1:"10 rue de la Paix", addr2:"75002 Paris"},
+          payment_method: "Carte bancaire",
+          lines: [
+            {desc:"Crédit(s) état des lieux simple", qty:1, unit_price:120.00},
+            {desc:"Crédit(s) procurations + états des lieux", qty:1, unit_price:80.00}
+          ],
+          discount_ht: 0,
+          tva_rate: 20,
+          paid_date: "2025-10-01",
+          paid_by: "Carte bancaire"
+        });
+        */
+
+        // Export helper (optionnel) pour Puppeteer / serveur :
+        // Tu peux récupérer le HTML final via document.documentElement.outerHTML
+        // ou rendre directement la page en PDF via headless Chrome.
+    </script>
+</body>
+
+</html>

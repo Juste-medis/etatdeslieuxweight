@@ -8,11 +8,12 @@ require('./pieceModel')
 require('./compteurModel')
 require('./cledeporteModel')
 require('./thingModel')
+require('./userModel')
 
 const ReviewSchema = mongoose.Schema({
     author: {
         type: Schema.Types.ObjectId,
-        ref: 'users',
+        ref: 'user',
         required: true,
     },
     mandataire: {
@@ -55,8 +56,7 @@ const ReviewSchema = mongoose.Schema({
         }],
         default: []
     },
-
-
+    credited: { type: Boolean, default: false },
     propertyDetails: {
         type: Schema.Types.ObjectId,
         ref: 'properties',
@@ -65,6 +65,10 @@ const ReviewSchema = mongoose.Schema({
     document_address: String,
     review_type: String,
     entranDocumentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'files',
+    },
+    sortantDocumentId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'files',
     },
@@ -77,17 +81,16 @@ const ReviewSchema = mongoose.Schema({
         type: String,
         default: "draft",
     },
-    sortantDocumentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'files',
-    },
-
     dateOfRealisation: {
         type: Date,
     },
     meta: {
         type: Schema.Types.Mixed,
         default: {},
+    },
+    copyOptions: {
+        type: Schema.Types.Mixed,
+        default: null
     },
 },
     {
@@ -98,7 +101,7 @@ const ReviewSchema = mongoose.Schema({
 // Middleware post-save pour génération du QR Code
 
 const generateqrCode = async function (doc) {
-    if (!doc.qrcode && doc.qrcode != '') {
+    if (doc && !doc?.qrcode && doc?.qrcode != '') {
         const qrData = `${config.appUrl}/etat-des-lieux/${doc._id}`;
 
         try {

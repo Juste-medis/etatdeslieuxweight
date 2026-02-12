@@ -2,19 +2,19 @@ import 'package:expansion_widget/expansion_widget.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/constants/constant.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/actions.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/copole.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/utls.dart';
-import 'package:jatai_etatsdeslieux/app/models/_inventory.dart';
-import 'package:jatai_etatsdeslieux/app/providers/providers.dart';
-import 'package:jatai_etatsdeslieux/app/widgets/dialogs/prompt_dialog.dart';
-import 'package:jatai_etatsdeslieux/app/widgets/widgets.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/constants/constant.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/actions.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/copole.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/utls.dart';
+import 'package:mon_etatsdeslieux/app/models/_inventory.dart';
+import 'package:mon_etatsdeslieux/app/providers/providers.dart';
+import 'package:mon_etatsdeslieux/app/widgets/dialogs/prompt_dialog.dart';
+import 'package:mon_etatsdeslieux/app/widgets/widgets.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:provider/provider.dart';
-import 'package:jatai_etatsdeslieux/generated/l10n.dart' as l;
+import 'package:mon_etatsdeslieux/generated/l10n.dart' as l;
 import 'package:responsive_grid/responsive_grid.dart';
-import 'package:jatai_etatsdeslieux/app/core/theme/theme.dart';
+import 'package:mon_etatsdeslieux/app/core/theme/theme.dart';
 import 'package:go_router/go_router.dart';
 
 class InventoryOfKeysCounter extends StatefulWidget {
@@ -34,8 +34,8 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
   @override
   void initState() {
     super.initState();
-    _filteredCompteurs = widget.wizardState.domaine?.compteurs ?? [];
-    _filteredCles = widget.wizardState.domaine?.clesDePorte ?? [];
+    _filteredCompteurs = widget.wizardState.domaine.compteurs ?? [];
+    _filteredCles = widget.wizardState.domaine.clesDePorte ?? [];
     _searchController.addListener(_filterItems);
     _searchControlcles.addListener(_filterItems2);
   }
@@ -50,11 +50,13 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
   void _filterItems() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      _filteredCompteurs = (widget.wizardState.domaine?.compteurs ?? [])
-          .where((thing) =>
-              thing.name?.toLowerCase().contains(query) == true ||
-              thing.comment?.toLowerCase().contains(query) == true ||
-              thing.type?.toLowerCase().contains(query) == true)
+      _filteredCompteurs = (widget.wizardState.domaine.compteurs ?? [])
+          .where(
+            (thing) =>
+                thing.name?.toLowerCase().contains(query) == true ||
+                thing.comment?.toLowerCase().contains(query) == true ||
+                thing.type?.toLowerCase().contains(query) == true,
+          )
           .toList();
     });
   }
@@ -62,11 +64,13 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
   void _filterItems2() {
     final query = _searchControlcles.text.toLowerCase();
     setState(() {
-      _filteredCles = (widget.wizardState.domaine?.clesDePorte ?? [])
-          .where((thing) =>
-              thing.name?.toLowerCase().contains(query) == true ||
-              thing.location?.toLowerCase().contains(query) == true ||
-              thing.type?.toLowerCase().contains(query) == true)
+      _filteredCles = (widget.wizardState.domaine.clesDePorte ?? [])
+          .where(
+            (thing) =>
+                thing.name?.toLowerCase().contains(query) == true ||
+                thing.location?.toLowerCase().contains(query) == true ||
+                thing.type?.toLowerCase().contains(query) == true,
+          )
           .toList();
     });
   }
@@ -87,9 +91,7 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(
-          scrollbars: false,
-        ),
+        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
         child: Form(
           autovalidateMode: AutovalidateMode.disabled,
           key: wizardState.formKeys[WizardStep.inventoryOfKeysCounters],
@@ -102,8 +104,10 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                 Text(
                   "${_lang.compteurs} ${_lang.and} ${_lang.cles}"
                       .capitalizeFirstLetter(),
-                  style: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold, fontSize: 30),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 30,
+                  ),
                 ),
                 20.height,
               ],
@@ -120,19 +124,24 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                     children: [
                       Text(
                         _lang.compteurs.capitalizeFirstLetter(),
-                        style: theme.textTheme.titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ).paddingOnly(bottom: 20),
                       TextFormField(
                         controller: _searchController,
                         decoration: InputDecoration(
                           hintText: _lang.search,
-                          prefixIcon: Icon(Icons.search,
-                              color: theme.colorScheme.primary),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: theme.colorScheme.primary,
+                          ),
                           suffixIcon: _searchController.text.isNotEmpty
                               ? IconButton(
-                                  icon: Icon(Icons.clear,
-                                      color: theme.colorScheme.error),
+                                  icon: Icon(
+                                    Icons.clear,
+                                    color: theme.colorScheme.error,
+                                  ),
                                   onPressed: () {
                                     _searchController.clear();
                                     _filterItems();
@@ -179,15 +188,16 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                                 );
                                 if (name.isEmpty) return;
 
-                                var domain = wizardState.domaine!;
+                                var domain = wizardState.domaine;
                                 domain.compteurs.insert(
-                                    0,
-                                    Compteur(
-                                      name: name,
-                                      order: wizardState
-                                              .domaine!.compteurs.length +
-                                          1,
-                                    ));
+                                  0,
+                                  Compteur(
+                                    name: name,
+                                    order:
+                                        wizardState.domaine.compteurs.length +
+                                        1,
+                                  ),
+                                );
                                 wizardState.updateInventory(domaine: domain);
                                 initState();
                                 _filterItems();
@@ -196,7 +206,7 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                           ),
                           10.width,
                           Text(
-                            '${_filteredCompteurs.length}/${wizardState.domaine?.compteurs.length ?? 0} ${_lang.items}',
+                            '${_filteredCompteurs.length}/${wizardState.domaine.compteurs.length ?? 0} ${_lang.items}',
                             style: theme.textTheme.bodySmall,
                           ),
                         ],
@@ -206,7 +216,7 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                   onReorder: (oldIndex, newIndex) {
                     if (oldIndex < newIndex) newIndex--;
 
-                    final originalList = wizardState.domaine!.compteurs;
+                    final originalList = wizardState.domaine.compteurs;
                     final filteredList = _filteredCompteurs;
 
                     // Find the actual index in the original list
@@ -226,15 +236,15 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                     originalList.removeAt(originalOldIndex);
                     originalList.insert(originalNewIndex, itemToMove);
 
-                    wizardState.updateInventory(domaine: wizardState.domaine!);
+                    wizardState.updateInventory(domaine: wizardState.domaine);
                     _filterItems(); // Refresh search results
                   },
                   children: [
                     ..._filteredCompteurs.asMap().entries.map((entry) {
                       final index2 = entry.key;
                       final compteur = entry.value;
-                      final originalIndex =
-                          wizardState.domaine!.compteurs.indexOf(compteur);
+                      final originalIndex = wizardState.domaine.compteurs
+                          .indexOf(compteur);
 
                       return Column(
                         key: ValueKey('compteur${compteur.order}'),
@@ -243,63 +253,74 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                           ExpansionWidget(
                             expandedAlignment: Alignment.topLeft,
                             initiallyExpanded: index2 == 0,
-                            titleBuilder: (animationValue, easeInValue,
-                                    isExpanded, toggleFunction) =>
-                                InkWell(
-                              onTap: () => toggleFunction(animated: true),
-                              child: Container(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 5),
-                                decoration: BoxDecoration(
-                                  border: BorderDirectional(
-                                    bottom: BorderSide(
-                                      color: theme.colorScheme.outline,
+                            titleBuilder:
+                                (
+                                  animationValue,
+                                  easeInValue,
+                                  isExpanded,
+                                  toggleFunction,
+                                ) => InkWell(
+                                  onTap: () => toggleFunction(animated: true),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 5,
                                     ),
-                                  ),
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        ReorderableDragStartListener(
-                                            index: index2,
-                                            child: SvgPicture.asset(
-                                              'assets/images/sidebar_icons/arrows-move.svg',
-                                              colorFilter: ColorFilter.mode(
-                                                theme.colorScheme.primary,
-                                                BlendMode.srcIn,
-                                              ),
-                                              width: 20,
-                                              height: 20,
-                                            )),
-                                        20.width,
-                                        Text(
-                                          compteur.name!,
-                                          style: theme.textTheme.titleMedium
-                                              ?.copyWith(
-                                                  fontWeight: FontWeight.w600),
+                                    decoration: BoxDecoration(
+                                      border: BorderDirectional(
+                                        bottom: BorderSide(
+                                          color: theme.colorScheme.outline,
                                         ),
-                                      ],
-                                    ),
-                                    AnimatedRotation(
-                                      turns: isExpanded ? 0.25 : 0,
-                                      duration:
-                                          const Duration(milliseconds: 300),
-                                      child: const Icon(
-                                        Icons.arrow_forward_ios_sharp,
-                                        color: AcnooAppColors.kPrimary700,
                                       ),
                                     ),
-                                  ],
-                                ).paddingSymmetric(vertical: 5),
-                              ),
-                            ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            ReorderableDragStartListener(
+                                              index: index2,
+                                              child: SvgPicture.asset(
+                                                'assets/images/sidebar_icons/arrows-move.svg',
+                                                colorFilter: ColorFilter.mode(
+                                                  theme.colorScheme.primary,
+                                                  BlendMode.srcIn,
+                                                ),
+                                                width: 20,
+                                                height: 20,
+                                              ),
+                                            ),
+                                            20.width,
+                                            Text(
+                                              compteur.name!,
+                                              style: theme.textTheme.titleMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                        AnimatedRotation(
+                                          turns: isExpanded ? 0.25 : 0,
+                                          duration: const Duration(
+                                            milliseconds: 300,
+                                          ),
+                                          child: const Icon(
+                                            Icons.arrow_forward_ios_sharp,
+                                            color: AcnooAppColors.kPrimary700,
+                                          ),
+                                        ),
+                                      ],
+                                    ).paddingSymmetric(vertical: 5),
+                                  ),
+                                ),
                             content: Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 8.0, bottom: 8),
+                              padding: const EdgeInsets.only(
+                                top: 8.0,
+                                bottom: 8,
+                              ),
                               child: SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: Row(
@@ -307,69 +328,84 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Flexible(
-                                        child: CustomDropdownButton(
-                                      onclose: () =>
-                                          {wizardState.updateInventory()},
-                                      buttonTitle: "${compteur.count ?? 1} ",
-                                      buttonIcon: Icons.onetwothree_sharp,
-                                      items: [...defaultcountNumber.entries]
-                                          .map((e) => {
+                                      child: CustomDropdownButton(
+                                        onclose: () => {
+                                          wizardState.updateInventory(),
+                                        },
+                                        buttonTitle: "${compteur.count ?? 1} ",
+                                        buttonIcon: Icons.onetwothree_sharp,
+                                        items: [...defaultcountNumber.entries]
+                                            .map(
+                                              (e) => {
                                                 'label': e.value,
                                                 'value': e.key,
-                                              })
-                                          .toList(),
-                                      onChanged: (value) {
-                                        var domain = wizardState.domaine;
+                                              },
+                                            )
+                                            .toList(),
+                                        onChanged: (value) {
+                                          var domain = wizardState.domaine;
 
-                                        var updatedThing = compteur.copyWith(
+                                          var updatedThing = compteur.copyWith(
                                             count: value is int
                                                 ? value
-                                                : int.parse(value));
+                                                : int.parse(value),
+                                          );
 
-                                        final actualindex = domain!.compteurs
-                                            .indexWhere((c) =>
-                                                c.order == compteur.order);
+                                          final actualindex = domain.compteurs
+                                              .indexWhere(
+                                                (c) =>
+                                                    c.order == compteur.order,
+                                              );
 
-                                        if (actualindex != -1) {
-                                          domain.compteurs[actualindex] =
-                                              updatedThing;
-                                          wizardState.updateInventory(
+                                          if (actualindex != -1) {
+                                            domain.compteurs[actualindex] =
+                                                updatedThing;
+                                            wizardState.updateInventory(
                                               domaine: domain,
-                                              liveupdate: false);
-                                        }
-                                      },
-                                    )),
+                                              liveupdate: false,
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ),
                                     10.width,
                                     Flexible(
-                                        child: CustomDropdownButton(
-                                      onclose: () =>
-                                          {wizardState.updateInventory()},
-                                      buttonTitle:
-                                          "${compteur.serialNumber ?? 1}",
-                                      buttonIcon: Icons.width_wide,
-                                      items: [...fairplaymap.entries]
-                                          .map((e) => {
+                                      child: CustomDropdownButton(
+                                        onclose: () => {
+                                          wizardState.updateInventory(),
+                                        },
+                                        buttonTitle:
+                                            "${compteur.serialNumber ?? 1}",
+                                        buttonIcon: Icons.width_wide,
+                                        items: [...fairplaymap.entries]
+                                            .map(
+                                              (e) => {
                                                 'label': e.value,
                                                 'value': e.key,
-                                              })
-                                          .toList(),
-                                      onChanged: (value) {
-                                        var domain = wizardState.domaine;
+                                              },
+                                            )
+                                            .toList(),
+                                        onChanged: (value) {
+                                          var domain = wizardState.domaine;
 
-                                        var updatedThing = compteur.copyWith(
-                                            serialNumber: value);
+                                          var updatedThing = compteur.copyWith(
+                                            serialNumber: value,
+                                          );
 
-                                        domain!.compteurs[originalIndex] =
-                                            updatedThing;
+                                          domain.compteurs[originalIndex] =
+                                              updatedThing;
 
-                                        wizardState.updateInventory(
-                                            domaine: domain, liveupdate: false);
-                                      },
-                                    )),
+                                          wizardState.updateInventory(
+                                            domaine: domain,
+                                            liveupdate: false,
+                                          );
+                                        },
+                                      ),
+                                    ),
                                     10.width,
                                     10.width,
+
                                     //use chat more button instead
-
                                     Flexible(
                                       child: inventoryActionButton(
                                         context,
@@ -379,7 +415,7 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                                             '/thing-inventory',
                                             extra: {
                                               "thing": compteur.order,
-                                              "piece": wizardState.domaine
+                                              "piece": wizardState.domaine,
                                             },
                                           );
                                         },
@@ -402,8 +438,9 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                           child: Text(
                             _lang.noItemsFound,
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.5),
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.5,
+                              ),
                             ),
                           ),
                         ),
@@ -421,8 +458,9 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                     children: [
                       Text(
                         _lang.cles.capitalizeFirstLetter(),
-                        style: theme.textTheme.titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold),
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       // Text(
                       //   _lang.roomInventoriesDescription,
@@ -434,12 +472,16 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                         controller: _searchControlcles,
                         decoration: InputDecoration(
                           hintText: _lang.search,
-                          prefixIcon: Icon(Icons.search,
-                              color: theme.colorScheme.primary),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: theme.colorScheme.primary,
+                          ),
                           suffixIcon: _searchControlcles.text.isNotEmpty
                               ? IconButton(
-                                  icon: Icon(Icons.clear,
-                                      color: theme.colorScheme.error),
+                                  icon: Icon(
+                                    Icons.clear,
+                                    color: theme.colorScheme.error,
+                                  ),
                                   onPressed: () {
                                     _searchControlcles.clear();
                                     _filterItems2();
@@ -486,9 +528,11 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                                 );
                                 if (name.isEmpty) return;
 
-                                var domain = wizardState.domaine!;
-                                domain.clesDePorte
-                                    .insert(0, CleDePorte(name: name));
+                                var domain = wizardState.domaine;
+                                domain.clesDePorte.insert(
+                                  0,
+                                  CleDePorte(name: name),
+                                );
                                 wizardState.updateInventory(domaine: domain);
                                 initState();
                                 _filterItems2();
@@ -497,7 +541,7 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                           ),
                           10.width,
                           Text(
-                            '${_filteredCles.length}/${wizardState.domaine?.clesDePorte.length ?? 0} ${_lang.cles}',
+                            '${_filteredCles.length}/${wizardState.domaine.clesDePorte.length ?? 0} ${_lang.cles}',
                             style: theme.textTheme.bodySmall,
                           ),
                         ],
@@ -507,7 +551,7 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                   onReorder: (oldIndex, newIndex) {
                     if (oldIndex < newIndex) newIndex--;
 
-                    final originalList = wizardState.domaine!.clesDePorte;
+                    final originalList = wizardState.domaine.clesDePorte;
                     final filteredList = _filteredCles;
 
                     // Find the actual index in the original list
@@ -527,15 +571,15 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                     originalList.removeAt(originalOldIndex);
                     originalList.insert(originalNewIndex, itemToMove);
 
-                    wizardState.updateInventory(domaine: wizardState.domaine!);
+                    wizardState.updateInventory(domaine: wizardState.domaine);
                     _filterItems2(); // Refresh search results
                   },
                   children: [
                     ..._filteredCles.asMap().entries.map((entry) {
                       final index2 = entry.key;
                       final cledeporte = entry.value;
-                      final originalIndex =
-                          wizardState.domaine!.clesDePorte.indexOf(cledeporte);
+                      final originalIndex = wizardState.domaine.clesDePorte
+                          .indexOf(cledeporte);
 
                       return Column(
                         key: ValueKey('cledeporte$originalIndex'),
@@ -544,63 +588,74 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                           ExpansionWidget(
                             expandedAlignment: Alignment.topLeft,
                             initiallyExpanded: index2 == 0,
-                            titleBuilder: (animationValue, easeInValue,
-                                    isExpanded, toggleFunction) =>
-                                InkWell(
-                              onTap: () => toggleFunction(animated: true),
-                              child: Container(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 5),
-                                decoration: BoxDecoration(
-                                  border: BorderDirectional(
-                                    bottom: BorderSide(
-                                      color: theme.colorScheme.outline,
+                            titleBuilder:
+                                (
+                                  animationValue,
+                                  easeInValue,
+                                  isExpanded,
+                                  toggleFunction,
+                                ) => InkWell(
+                                  onTap: () => toggleFunction(animated: true),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 5,
                                     ),
-                                  ),
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        ReorderableDragStartListener(
-                                            index: index2,
-                                            child: SvgPicture.asset(
-                                              'assets/images/sidebar_icons/arrows-move.svg',
-                                              colorFilter: ColorFilter.mode(
-                                                theme.colorScheme.primary,
-                                                BlendMode.srcIn,
-                                              ),
-                                              width: 20,
-                                              height: 20,
-                                            )),
-                                        20.width,
-                                        Text(
-                                          cledeporte.name!,
-                                          style: theme.textTheme.titleMedium
-                                              ?.copyWith(
-                                                  fontWeight: FontWeight.w600),
+                                    decoration: BoxDecoration(
+                                      border: BorderDirectional(
+                                        bottom: BorderSide(
+                                          color: theme.colorScheme.outline,
                                         ),
-                                      ],
-                                    ),
-                                    AnimatedRotation(
-                                      turns: isExpanded ? 0.25 : 0,
-                                      duration:
-                                          const Duration(milliseconds: 300),
-                                      child: const Icon(
-                                        Icons.arrow_forward_ios_sharp,
-                                        color: AcnooAppColors.kPrimary700,
                                       ),
                                     ),
-                                  ],
-                                ).paddingSymmetric(vertical: 5),
-                              ),
-                            ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            ReorderableDragStartListener(
+                                              index: index2,
+                                              child: SvgPicture.asset(
+                                                'assets/images/sidebar_icons/arrows-move.svg',
+                                                colorFilter: ColorFilter.mode(
+                                                  theme.colorScheme.primary,
+                                                  BlendMode.srcIn,
+                                                ),
+                                                width: 20,
+                                                height: 20,
+                                              ),
+                                            ),
+                                            20.width,
+                                            Text(
+                                              cledeporte.name!,
+                                              style: theme.textTheme.titleMedium
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                        AnimatedRotation(
+                                          turns: isExpanded ? 0.25 : 0,
+                                          duration: const Duration(
+                                            milliseconds: 300,
+                                          ),
+                                          child: const Icon(
+                                            Icons.arrow_forward_ios_sharp,
+                                            color: AcnooAppColors.kPrimary700,
+                                          ),
+                                        ),
+                                      ],
+                                    ).paddingSymmetric(vertical: 5),
+                                  ),
+                                ),
                             content: Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 8.0, bottom: 8),
+                              padding: const EdgeInsets.only(
+                                top: 8.0,
+                                bottom: 8,
+                              ),
                               child: SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: Row(
@@ -608,43 +663,54 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Flexible(
-                                        child: CustomDropdownButton(
-                                      onclose: () =>
-                                          {wizardState.updateInventory()},
-                                      buttonTitle: "${cledeporte.count ?? 1} ",
-                                      buttonIcon: Icons.onetwothree_sharp,
-                                      items: [...defaultcountNumber.entries]
-                                          .map((e) => {
+                                      child: CustomDropdownButton(
+                                        onclose: () => {
+                                          wizardState.updateInventory(),
+                                        },
+                                        buttonTitle:
+                                            "${cledeporte.count ?? 1} ",
+                                        buttonIcon: Icons.onetwothree_sharp,
+                                        items: [...defaultcountNumber.entries]
+                                            .map(
+                                              (e) => {
                                                 'label': e.value,
                                                 'value': e.key,
-                                              })
-                                          .toList(),
-                                      onChanged: (value) {
-                                        var domain = wizardState.domaine;
+                                              },
+                                            )
+                                            .toList(),
+                                        onChanged: (value) {
+                                          var domain = wizardState.domaine;
 
-                                        var updatedThing = cledeporte.copyWith(
-                                            count: value is int
-                                                ? value
-                                                : int.parse(value));
+                                          var updatedThing = cledeporte
+                                              .copyWith(
+                                                count: value is int
+                                                    ? value
+                                                    : int.parse(value),
+                                              );
 
-                                        final actualindex = domain!.clesDePorte
-                                            .indexWhere((c) =>
-                                                c.order == cledeporte.order);
-                                        if (actualindex != -1) {
-                                          domain.clesDePorte[actualindex] =
-                                              updatedThing;
-                                          wizardState.updateInventory(
+                                          final actualindex = domain.clesDePorte
+                                              .indexWhere(
+                                                (c) =>
+                                                    c.order == cledeporte.order,
+                                              );
+                                          if (actualindex != -1) {
+                                            domain.clesDePorte[actualindex] =
+                                                updatedThing;
+                                            wizardState.updateInventory(
                                               domaine: domain,
-                                              liveupdate: false);
-                                        }
-                                      },
-                                    )),
+                                              liveupdate: false,
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ),
                                     SizedBox(
-                                      width: MediaQuery.of(context).size.width *
+                                      width:
+                                          MediaQuery.of(context).size.width *
                                           0.5,
                                     ),
-                                    //use chat more button instead
 
+                                    //use chat more button instead
                                     Flexible(
                                       child: inventoryActionButton(
                                         context,
@@ -654,7 +720,7 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                                             '/thing-inventory',
                                             extra: {
                                               "thing": cledeporte.order,
-                                              "piece": wizardState.domaine
+                                              "piece": wizardState.domaine,
                                             },
                                           );
                                         },
@@ -677,8 +743,9 @@ class _InventoryOfKeysCounterState extends State<InventoryOfKeysCounter> {
                           child: Text(
                             _lang.noItemsFound,
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.5),
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.5,
+                              ),
                             ),
                           ),
                         ),

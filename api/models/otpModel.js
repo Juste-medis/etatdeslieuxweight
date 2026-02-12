@@ -20,6 +20,10 @@ const otpSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    isRevoked: {
+        type: Boolean,
+        default: false,
+    },
     verifiedAt: {
         type: Date,
     },

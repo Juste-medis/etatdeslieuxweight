@@ -6,13 +6,17 @@ var randomstring = require("randomstring");
 const ReviewAccessSchema = mongoose.Schema({
     user: { type: String, required: true, },
     review: { type: Schema.Types.ObjectId, ref: 'reviews', required: true, },
-    accessCode: {
-        type: String,
-        unique: true,
-        sparse: true,     // important if you want to allow multiple `null` values
-        default: null
-    },
-    qrcode: { type: String, unique: true, },
+    procuration: { type: Schema.Types.ObjectId, ref: 'procurations' },
+    // accessCode: {
+    //     type: String,
+    //     unique: true,
+    //     sparse: true,
+    // },
+    // qrcode: {
+    //     type: String,
+    //      unique: true,
+    //     sparse: true
+    // },
     expiryDate: { type: Date },
     meta: {
         type: Schema.Types.Mixed,
@@ -24,7 +28,7 @@ const ReviewAccessSchema = mongoose.Schema({
     }
 );
 const generateqrCode = async function (doc) {
-    if (!doc.qrcode && doc.qrcode != '') {
+    if (doc && !doc.qrcode && doc.qrcode != '') {
         const code = randomstring.generate({ length: 8, charset: 'alphanumeric', capitalization: 'uppercase' });
         const qrData = `JET-${code}`;
         try {
@@ -37,9 +41,9 @@ const generateqrCode = async function (doc) {
         }
     }
 }
-ReviewAccessSchema.post('save', generateqrCode);
-ReviewAccessSchema.post('findOneAndUpdate', generateqrCode);
-ReviewAccessSchema.post('findByIdAndUpdate', generateqrCode);
+// ReviewAccessSchema.post('save', generateqrCode);
+// ReviewAccessSchema.post('findOneAndUpdate', generateqrCode);
+// ReviewAccessSchema.post('findByIdAndUpdate', generateqrCode);
 
 const procurationmodel = mongoose.model('reviewaccess', ReviewAccessSchema);
 

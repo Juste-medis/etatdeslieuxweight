@@ -1,0 +1,95 @@
+name: mon_etatsdeslieux
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: '1.0.0'
+
+environment:
+  sdk: '>=3.4.3 <4.0.0'
+  flutter: ^3.35.4 
+  
+dependencies:
+  flutter_localization: ^0.3.2 
+  
+ 
+  flutter: 
+    sdk: flutter 
+  
+  nb_utils: ^7.1.4
+  responsive_framework: ^1.4.0
+  provider: ^6.1.2
+  dropdown_button2: ^2.3.9
+  country_flags: ^4.0.1 
+  flutter_svg: ^2.0.10+1
+  expansion_widget: ^0.1.0  
+  go_router: ^16.2.4 
+  collection: ^1.18.0  
+  intl: ^0.20.2 
+  flutter_animate: ^4.5.0     
+  image_picker: ^1.1.2
+  syncfusion_flutter_signaturepad: ^31.1.21
+  syncfusion_flutter_pdfviewer: ^31.1.21
+  open_file: ^3.3.1
+  permission_handler: ^12.0.1
+  file_picker: ^10.1.9
+  firebase_core: ^4.1.1
+  firebase_messaging: ^16.0.2
+  flutter_local_notifications: ^19.4.2
+  share_plus: ^12.0.0
+  universal_html: ^2.2.4
+
+
+  
+  responsive_grid:
+    git: 
+      url: https://github.com/iamtoricool/ResponsiveGrid_Flutter.git
+      ref: master
+
+
+dev_dependencies:
+  flutter_test: 
+    sdk: flutter
+  flutter_lints: 
+  icons_launcher: ^3.0.1
+  build_runner: ^2.4.13
+  intl_utils: ^2.8.0
+ 
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets: 
+    - assets/images/
+    - assets/images/widget_images/
+    
+    - assets/images/sidebar_icons/
+    - assets/images/widget_images/authentication_images/
+    - assets/app_icons/
+    - assets/images/static_images/ 
+    - assets/images/static_images/icons/
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: fonts/Inter/Inter-Thin.ttf
+          weight: 100
+        - asset: fonts/Inter/Inter-ExtraLight.ttf
+          weight: 200
+        - asset: fonts/Inter/Inter-Light.ttf
+          weight: 300
+        - asset: fonts/Inter/Inter-Regular.ttf
+          weight: 400
+        - asset: fonts/Inter/Inter-Medium.ttf
+          weight: 500
+        - asset: fonts/Inter/Inter-SemiBold.ttf
+          weight: 600
+        - asset: fonts/Inter/Inter-Bold.ttf
+          weight: 700
+        - asset: fonts/Inter/Inter-ExtraBold.ttf
+          weight: 800
+        - asset: fonts/Inter/Inter-Black.ttf
+          weight: 900
+
+flutter_intl:
+  enabled: true

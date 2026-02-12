@@ -7,6 +7,10 @@ const userDeviceSchema = new mongoose.Schema({
         ref: 'users',
         required: true
     },
+    userEmail: {
+        type: String,
+        trim: true
+    },
     registrationToken: {
         type: String,
         required: true
@@ -15,12 +19,12 @@ const userDeviceSchema = new mongoose.Schema({
         type: String,
         required: true
     }
-    
+
 },
     {
         timestamps: true
     }
 );
 
-module.exports = mongoose.model('userNotification', userDeviceSchema);
+module.exports = mongoose.model('notificationFcm', userDeviceSchema);
 

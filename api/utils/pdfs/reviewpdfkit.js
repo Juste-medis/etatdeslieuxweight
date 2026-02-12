@@ -1,8 +1,8 @@
 const config = require("../../config/config");
-const { getState, getTestingStates, getcompteurName, getFullDate } = require("../utils");
+const { getState, getTestingStates, getcompteurName, getFullDate, authorname } = require("../utils");
 
 module.exports = {
-    generateReviewHTML: (data, fortenant) => {
+    generateReviewHTML: (data, fortenant, theMandataire) => {
         const property = data.propertyDetails;
         const owners = data.owners;
         const cledeportes = data.cledeportes;
@@ -15,54 +15,31 @@ module.exports = {
         }, {});
 
 
-
-
-        // console.log(data.meta);
-
-
-
-
         const pieces = data.pieces;
-        const dateOfEntryReview = new Date(data.dateOfRealisation).toLocaleDateString('fr-FR')
+
         const tenantEntryReviewDate = data.meta.tenant_entry_date ? new Date(data.meta.tenant_entry_date).toLocaleDateString('fr-FR') : "Inconnu";
+        const tenantNewAddresse = data.meta.tenant_new_address ?? "Inconnu";
 
         //Section Bien Concerné 
 
         //Section LE BAILLEUR
 
         const date = new Date(data.estimatedDateOfReview).toLocaleDateString('fr-FR');
-        let { meta: signatures } = data;
+        let { meta: { signatures, signaturesMeta } } = data;
 
-        const establishedDate = Object.values(signatures?.signatures || {}).reduce((latest, sig) => {
-            const sigDate = new Date(sig.timestamp);
-            return !latest || sigDate > latest ? sigDate : latest;
-        }, null) ? getFullDate(Object.values(signatures?.signatures || {}).reduce((latest, sig) => {
-            const sigDate = new Date(sig.timestamp);
-            return !latest || sigDate > latest ? sigDate : latest;
-        }, null)) : '';
+        data.mandataire = theMandataire
 
+        const exitenants = [...data.exitenants, ...data.entrantenants].filter(t => {
 
-
-        const exitenants = [...data.exitenants, ...data.entrantenants];
-        const entrantenants = data.entrantenants;
-        const proccurarion = data.proccurarion ??
-        //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-        {
-            accesgivenTo: [exitenants[0]],
-        }
-        //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-        const today = new Date().toLocaleDateString('fr-FR');
-
-
-
+            return t._id != data?.mandataire?._id.toString()
+        });
         let photoCounter = {
             compteurs: 0,
             current: 0,
         }
         // console.log(data);
 
-        return `<!DOCTYPE html>
+        var content = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -90,9 +67,8 @@ module.exports = {
             margin-bottom: 30px;
         }
         .logo {
-            height: 100px;
-            object-fit: contain;
-            width: 200px;
+             object-fit: contain;
+            width: 130px;
             margin-bottom: 15px;
         }
         .maintitle {
@@ -106,7 +82,7 @@ module.exports = {
          }
             .header-info-block .section-label {
             display: flex;
-            min-width: 70px;
+            min-width: 80px;
          } 
              .tenant-address-block .section-label {
             min-width:100px  !important;
@@ -154,6 +130,7 @@ module.exports = {
             border-width: 1.5px;
             border-style: solid;
             border-color: #333;
+            text-align: center;
         }
         .signature-block {
             margin-top: 50px;
@@ -217,7 +194,7 @@ module.exports = {
              
         }
             .observationcol{ 
-            width: 250px; }
+            width: 180px; }
             .observatiheberger{
              display: flex; flex-wrap: wrap}
 
@@ -243,7 +220,7 @@ module.exports = {
             flex-direction: row;
             justify-content: space-between;
             border: 1.9px solid #333;
-            padding: 3px 5px;
+            padding: 5px 8px;
 
         }  .rightqrcodecontainer span {
           font-size: 10px;
@@ -291,10 +268,7 @@ padding: 4px 8px;}
         .device-observations { border-top: 1px solid #eee; padding-top: 12px; } .observations-title { margin: 0 0 8px 0; font-size: 0.9em; color: #555; } .photo-reference { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; background-color: #f5f5f5; border-radius: 4px; font-size: 0.9em; } .photo-icon { font-size: 1.1em; }
    
    
-   .selfie-photo{
-   
-   width: 300px; height: 300px; object-fit: cover; border-radius: 6px; margin-top: 10px;
-   }
+   .selfie-photo{ width: 300px; height: 300px; object-fit: cover; border-radius: 6px; margin-top: 10px; }
    
         </style>
 </head>
@@ -304,23 +278,23 @@ padding: 4px 8px;}
             <span class="maintitle">ETAT DES LIEUX ${data.proccurarion ? fortenant != "exit" ? "D'ENTREE" : "DE SORTIE" : fortenant != "entrance" ? " DE SORTIE" : " D'ENTREE"} </span>
             <span>Le présent état des lieux a été établi de manière contradictoire entre les parties mentionnées ci-après, pour le logement désigné ci-dessous, loué en vertu d’un contrat sous seing privé.</span>
         </div>
-        <img src="https://jatai.fr/wp-content/uploads/2024/09/cropped-Copy-of-Jatai.png" class="logo" alt="Logo">
+        <img src="${config.appUrl}/assets/media/logos/rocketdeliveries.png" class="logo" alt="Logo">
     </div>
      <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
         <div class="" style="display: flex;  width: 308px; flex-direction: column;">
             <div style="display: flex; justify-content: space-between; font-weight: bold;">
                 <span style="">Date d'établissement :</span>
                 <span>
-                ${data.status == "draft" ? "à venir" : establishedDate}</span>
+                ${data.status == "draft" ? "à venir" : signaturesMeta?.establishedDate}</span>
                 </span>
             </div>
            ${data.status == "draft" ? `<span style="font-size: 7px; background-color: #dfaa74; width: fit-content; align-self: self-end;"  > la date d'établissement sera fixée lors de la signature du document</span>` : ""}</span>
             ${fortenant != "exit" ? "" : `<div style="display: flex; justify-content: space-between;">
-                <span class="">Date d'état des lieux d'entrée :</span>
+                <span class="">Date de l'état des lieux d'entrée :</span>
                 <span>
                  ${data.status == "draft" ? "à venir" : tenantEntryReviewDate}</span>
                  </span>
-            </div>`}
+            </div>`}    
         </div>
         <div class="rightqrcodecontainer">
             <div style="display: flex; flex-direction: column; justify-content: center;">
@@ -337,47 +311,68 @@ padding: 4px 8px;}
     </div> 
      <div class="header-info-block">
                 <strong class="section-title">BIEN CONCERNÉ</strong>
-                <div class="tr" ><span class="section-label" >Type:</span><span> Appartement loué ${property.furnitured ? 'meublé' : 'non meublé'} - ${property.roomCount} pièce${property.roomCount > 1 ? 's' : ''} - ${property.surface} m² </span></div>
-                <div class="tr" ><span class="section-label">Adresse:</span><span> ${property.address}</span></div>
+                <div class="tr" ><span class="section-label" >Type: </span><span> Appartement loué ${property.furnitured ? 'meublé' : 'non meublé'} - ${property.roomCount} pièce${property.roomCount > 1 ? 's' : ''} - ${property.surface} m² </span></div>
+                <div class="tr" ><span class="section-label">Adresse: </span><span> ${property.address} ${property.complement ?? ''} </span></div>
+                 ${property.box ? `<div class="tr" ><span class="section-label">Box :</span><span> ${property.box}</span></div>` : ""}
+                ${property.cellar ? `<div class="tr" ><span class="section-label">Cave :</span><span> ${property.cellar}</span></div>` : ""}
+                ${property.garage ? `<div class="tr" ><span class="section-label">Garage :</span><span> ${property.garage}</span></div>` : ""}
+                ${property.parking ? `<div class="tr" ><span class="section-label">Parking :</span><span> ${property.parking}</span></div>` : ""}
+
+
             </div>
      <div class="header-info-block tenant-address-block">
-                <strong class="section-title">LE${owners.length > 0 ? "S" : ""} BAILLEUR${owners.length > 0 ? "S" : ""}</strong>
+                <strong class="section-title">LE${owners.length > 1 ? "S" : ""} BAILLEUR${owners.length > 1 ? "S" : ""}</strong>
   
         ${owners.map(author => `
-            <div class="tr" ><span class="section-label">${author.type != "morale" ? "M/Mme" : "Société"} :</span><span> ${author.type != "morale" ? `${author.firstname} ${author.lastname}` : `${author.denomination}`} </span></div>
-            <div class="tr" ><span class="section-label">Domicilié(e) à :</span><span> ${author.address}</span></div> 
-            <div class="tr" ><span class="section-label">Né(e) le :</span><span> ${new Date(author.dob).toLocaleDateString('fr-FR')}</span></div>
-            <div class="tr" ><span class="section-label">à/au/en :</span><span> ${author.placeofbirth}</span></div>
+            <div class="tr" ><span class="section-label">${author.type != "morale" ? "M/Mme" : "Société"} :</span><span> ${authorname(author)} </span></div>
+            ${author.type == "morale" ? `
+                <div class="tr" ><span class="section-label">Domicilié(e) à :</span><span> ${author.address}</span></div> 
+                <div class="tr" ><span class="section-label">Représenté(e) par : </span><span style="padding-left: 10px;" > ${authorname(author.representant)} </span></div>
+            ` : `
+                <div class="tr" ><span class="section-label">Demeurant à :</span><span> ${author.address}</span></div>
+                
+            `}
+            
          `).join('<span style="font-weight: bold; margin-top: 10px; margin-bottom: 10px;">et</span>')}
   
             </div>
      <div class="header-info-block tenant-address-block">
-                <strong class="section-title">LE${exitenants.length > 0 ? "S" : ""} LOCATAIRE${exitenants.length > 0 ? "S" : ""}</strong>
+                <strong class="section-title">LE${exitenants.length > 1 ? "S" : ""} LOCATAIRE${exitenants.length > 1 ? "S" : ""}</strong>
   
         ${exitenants.map(author => `
-            <div class="tr" ><span class="section-label">${author.type != "morale" ? "M/Mme" : "Société"} :</span><span> ${author.type != "morale" ? `${author.firstname} ${author.lastname}` : `${author.denomination}`} </span></div>
-            <div class="tr" ><span class="section-label">Domicilié(e) à :</span><span> ${author.address}</span></div> 
-            <div class="tr" ><span class="section-label">Né(e) le :</span><span> ${new Date(author.dob).toLocaleDateString('fr-FR')}</span></div>
-            <div class="tr" ><span class="section-label">à/au/en :</span><span> ${author.placeofbirth}</span></div>
+            <div class="tr" ><span class="section-label">${author.type != "morale" ? "M/Mme" : "Société"} :</span><span>${authorname(author)} </span></div>
+       
+            ${author.type == "morale" ? `
+                <div class="tr" ><span class="section-label">Domicilié(e) à :</span><span> ${author.address}</span></div> 
+                <div class="tr" ><span class="section-label">Représenté(e) par : </span><span style="padding-left: 10px;" > ${authorname(author.representant)} </span></div>
+            ` : `
+                    <div class="tr" ><span class="section-label">Demeurant à :</span><span> ${author.address}</span></div>
+            `}
+            
         `).join('<span style="font-weight: bold; margin-top: 10px; margin-bottom: 10px;">et</span>')}
- 
+        
+        ${fortenant == "exit" ? `<div class="tr" ><span class="section-label">Nouvelle adresse :</span><span style="padding-left: 10px;" > ${tenantNewAddresse}</span></div>` : ``}    
+
         </div>
-        ${proccurarion.accesgivenTo && proccurarion.accesgivenTo.length > 0 ? `
+        ${data.mandataire != null ? `
      <div class="header-info-block tenant-address-block">
                 <strong class="section-title">LE MANDATAIRE</strong>
               <div class="tr" ><span>Pour l’établissement du présent état des lieux, le(s) bailleur(s) a/ont mandaté:</span></div>
-        ${proccurarion.accesgivenTo.map(author => `
-            <div class="tr" ><span class="section-label">${author.type != "morale" ? "M/Mme" : "Société"} :</span><span> ${author.type != "morale" ? `${author.firstname} ${author.lastname}` : `${author.denomination}`} </span></div>
-            <div class="tr" ><span class="section-label">Domicilié(e) à :</span><span> ${author.address}</span></div> 
-            <div class="tr" ><span class="section-label">Né(e) le :</span><span> ${new Date(author.dob).toLocaleDateString('fr-FR')}</span></div>
-            <div class="tr" ><span class="section-label">à/au/en :</span><span> ${author.placeofbirth}</span></div>
+        ${[data.mandataire].map(author => `
+            <div class="tr" ><span class="section-label">${author.type != "morale" ? "M/Mme" : "Société"} :</span><span> ${authorname(author)} </span></div>
+       
+            ${author.type == "morale" ? `
+                <div class="tr" ><span class="section-label">Domicilié(e) à :</span><span> ${author.address}</span></div> 
+                <div class="tr" ><span class="section-label">Représenté(e) par : </span><span style="padding-left: 10px;" > ${authorname(author.representant)} </span></div>
+                <div class="tr" ><span class="section-label">Né(e) le :</span><span> ${new Date(author.representant.dob).toLocaleDateString('fr-FR')}</span></div>
+            ` : `
+                    <div class="tr" ><span class="section-label">Demeurant à :</span><span> ${author.address}</span></div>
+            `}
         `).join('<span style="font-weight: bold; margin-top: 10px; margin-bottom: 10px;">et</span>')}
  
         </div>` : ''}
-
-
         <!-- *************************************************************************************************************************************************************************************************** -->
-           <div class="header-info-block property-address-block"> 
+           <div style="page-break-inside: avoid;" class="header-info-block property-address-block"> 
                 <strong class="section-title">RELEVÉ DES COMPTEURS</strong>
            
              <table style="width:100%; border-collapse: collapse; margin: 20px 0;">
@@ -392,28 +387,30 @@ padding: 4px 8px;}
         <tr class="heatingtr" style="height: 55px;padding: 8px;">
             <td>Mode de chauffage</td>
             <td>
-                ${config.heatingTypes[data.meta.heatingType] ?? data.meta.heatingType}
+                ${config.heatingTypes[property.heatingType] ?? property.heatingType}   
             </td>
             <td> 
-                ${config.heatingModes[data.meta.heatingMode] ?? data.meta.heatingMode}
+                ${config.heatingModes[property.heatingMode] ?? property.heatingMode}
             </td>
         </tr>
         <tr class="heatingtr" style="height: 55px;padding: 8px;">
             <td>Production d'eau chaude</td>
             <td>
-                ${config.hotWaterTypes[data.meta.hotWaterType] ?? data.meta.hotWaterType}
+                ${config.hotWaterTypes[property.hotWaterType] ?? property.hotWaterType}
             </td>
             <td>
-                ${config.heatingWaterModes[data.meta.hotWaterMode] ?? data.meta.hotWaterMode}
+                ${config.heatingWaterModes[property.hotWaterMode] ?? property.hotWaterMode}
             </td>
     </tbody>
 </table>
          </div>  
-        ${Object.entries(compteurs).map(([type, items]) => ` 
+        ${Object.keys(compteurs).length == 0 ? `<span style="font-weight: bold; margin-top: 10px; margin-bottom: 10px;">Aucun compteur renseigné</span>` :
+
+                Object.entries(compteurs).map(([type, items]) => ` 
     <strong class="piece-name">${getcompteurName(type)}</strong>
     <table cellpadding="8" cellspacing="0" style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
         ${type == "electricity" ?
-                `<thead>
+                        `<thead>
                 <tr>
                     <th rowspan="3">NUMÉRO DE COMPTEUR</th>
                     <th colspan="4">RELEVÉ</th>
@@ -430,8 +427,8 @@ padding: 4px 8px;}
                     <th>Heures Creuses</th>
                 </tr>
             </thead>`
-                :
-                `<thead>
+                        :
+                        `<thead>
                 <tr>
                     <th rowspan="2">NUMÉRO DE COMPTEUR</th>
                     <th colspan="2">RELEVÉ</th>
@@ -442,20 +439,29 @@ padding: 4px 8px;}
                     <th>SORTIE</th>
                 </tr>
             </thead>`
-            }
+                    }
         <tbody>
             ${items.map(compteur => `
                 <tr>
                     <td>${compteur.serialNumber ?? ""}</td>
                     ${type == "electricity" ?
-                    `    <td>${compteur.initialReadingHp ?? ""}</td>
-                         <td>${compteur.currentReadingHp ?? ""}</td>
-                         <td>${compteur.initialReadingHc ?? ""}</td>
-                         <td>${compteur.currentReadingHc ?? ""}</td>`
-                    :
-                    `<td>${compteur.initialReading ?? ""}</td>
-                     <td>${compteur.currentReading ?? ""}</td>`
-                }
+                            fortenant == "entrance" ?
+                                `<td>${compteur.initialReadingHp ?? ""}</td>
+                    <td>${compteur.initialReadingHc ?? ""}</td>
+                    <td>${compteur.currentReadingHp ?? ""}</td>
+                    <td>${compteur.currentReadingHc ?? ""}</td>`
+                                :
+                                //si c'est la sortie mettre dans 4 et 5 e td les currentReading
+                                `
+                            
+                    <td>${compteur.currentReadingHp ?? ""}</td>
+                    <td>${compteur.currentReadingHc ?? ""}</td>    <td>${compteur.initialReadingHp ?? ""}</td>
+                    <td>${compteur.initialReadingHc ?? ""}</td>`
+                            :
+                            `  <td>${compteur.currentReading ?? ""}</td>
+                            <td>${compteur.initialReading ?? ""}</td>
+                   `
+                        }
                     <td class="observationcol" colspan="2">
                         <div class="observatiheberger">
                             <span class="section-label">${compteur.comment ?? ''}</span>
@@ -470,7 +476,7 @@ padding: 4px 8px;}
             `).join('')}
         </tbody>
     </table>
-`).join('')} 
+`).join('')}
    <div class="photo-container">
   ${(() => {
                 photoCounter.compteurs = photoCounter.current;
@@ -490,7 +496,7 @@ padding: 4px 8px;}
                   <span>PHOTO ${photoNumber} -</span> ${compteur.name || type}
                 </p>
                 <p class="photo-desc">
-                  Photo prise lors de l'état des lieux <span>de sortie</span>
+                  Photo prise lors de l'état des lieux <span>${fortenant == "entrance" ? "d'entrée" : "de sortie"}</span>
                 </p>
                 <img src="${config.appUrl}/${p}" 
                      alt="Photo ${photoNumber}" 
@@ -506,10 +512,10 @@ padding: 4px 8px;}
             })()}
 </div>  
     <!-- *************************************************************************************************************************************************************************************************** -->
-    <div style="margin-bottom: 1px;" class="header-info-block property-address-block">
+    <div  style="page-break-inside: avoid;" style="margin-bottom: 1px;" class="header-info-block property-address-block">
         <strong class="section-title">DETECTEUR DE FUMEE</strong>
     </div>
-    <div class="safety-device-card">
+    <div  style="page-break-inside: avoid;" class="safety-device-card">
         <h3 class="device-title">Détecteur de fumée</h3>
 
         <div class="device-status">
@@ -534,14 +540,15 @@ padding: 4px 8px;}
                     </span>
                 </div>
             </div>`}
-        </div> 
+        </div>  
     </div>
 
     <!-- *************************************************************************************************************************************************************************************************** -->
-    <div class="header-info-block property-address-block" style="margin-bottom: 10px;">
+    <div  style="page-break-inside: avoid;" class="header-info-block property-address-block" style="margin-bottom: 10px;">
         <strong class="section-title">RESTITUTION DES CLÉS</strong>
-    </div> 
-           ${cledeportes.map(cle => ` 
+    </div>
+           ${cledeportes.length == 0 ? `<span style="font-weight: bold; margin-top: 10px; margin-bottom: 10px;">Aucune clé restituée</span>` :
+                cledeportes.map(cle => ` 
 <table cellpadding="8" cellspacing="0"
         style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
         <thead>
@@ -561,12 +568,12 @@ padding: 4px 8px;}
                 <td ${fortenant == "entrance" && `class="contitionstate"`} > ${fortenant == "entrance" ? `
                     <span>${cle.count ?? ""}</span>
                          ` :
-                    `<span></span>`}
+                        `<span></span>`}
                 </td>  
                 <td ${fortenant == "exit" && `class="contitionstate"`} > ${fortenant == "exit" ? `
                     <span>${cle.count ?? ""}</span>
                          ` :
-                    `<span></span>`}
+                        `<span></span>`}
                 </td>
                  <td class="observationcol" colspan="2" style="width: 150px;">
                     <div class="observatiheberger">
@@ -579,7 +586,6 @@ padding: 4px 8px;}
     </table> 
             `).join('<span style="font-weight: bold; margin-top: 10px; margin-bottom: 10px;"> </span>')
             }
-   
    <div class="photo-container">
           ${(() => {
                 photoCounter.compteurs = photoCounter.current + 1;
@@ -589,7 +595,7 @@ padding: 4px 8px;}
                     return ` 
  <div class="photo-block"> 
             <p class="photo-title"> <span>PHOTO ${(++photoCounter.compteurs)} - </span> ${cle.name} </p>
-            <p class="photo-desc">Photo prise lors de l'état des lieux <span>de sortie</span></p>
+            <p class="photo-desc">Photo prise lors de l'état des lieux <span>${fortenant == "entrance" ? "d'entrée" : "de sortie"}</span></p>
 
             <img src="${config.appUrl}/${p}" alt="Photo 1"
                 style="width:100%; object-fit:cover; border-radius:6px;">
@@ -601,16 +607,17 @@ padding: 4px 8px;}
 
         <!-- *************************************************************************************************************************************************************************************************** -->
 
-    <div style="margin-bottom: 10px;" class="header-info-block property-address-block"> <strong class="section-title">ÉTAT DES PIÈCES DU BIEN</strong> </div> 
-        ${pieces.map(piece => ` 
+    <div  style="page-break-inside: avoid;" style="margin-bottom: 10px;" class="header-info-block property-address-block"> <strong class="section-title">ÉTAT DES PIÈCES DU BIEN</strong> </div> 
+        ${pieces.length == 0 ? `<span style="font-weight: bold; margin-top: 10px; margin-bottom: 10px;">Aucune pièce renseignée</span>` :
+                pieces.map(piece => `
             <strong class="piece-name">${piece.name}</strong>
 <div class="tr" >
 
     ${piece.photos.length > 0 ?
-                    ` <span class="section-label">Ont été prises les photos suivantes concernant la pièce en général :</span><span> <div class="observatiheberger">
+                        ` <span class="section-label">Ont été prises les photos suivantes concernant la pièce en général :</span><span> <div class="observatiheberger">
                         ${piece.photos.map((p, i) => ` <span style="padding: 2px 2px;"><span class="photolabel" >Photo ${++photoCounter.compteurs}</span></span> `)}
                     </div> </span>` : ''
-                }
+                    }
 </div>
 <table cellpadding="8" cellspacing="0"
         style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
@@ -634,17 +641,17 @@ padding: 4px 8px;}
         
                   ${piece.things.map((thing, i) => {
 
-                    return `
-   <tr>
+                        return `
+            <tr>
                 <td>${thing.name ?? ""}  </td>
-                <td>${thing.entrycount ?? ""}</td> 
-                <td>${thing.count ?? "0"}</td>
-
+                <td>${fortenant == "entrance" ? `${thing.count ?? "0"}` : ``}</td> 
+                <td>${fortenant != "entrance" ? `${thing.count ?? "0"}` : ``}</td>
+ 
                 <td ${fortenant != "entrance" && `class="contitionstate"`} > ${fortenant == "entrance" ? `
                     <span class="condition-value ${thing.condition}" >${thing.condition ? getState(thing.condition) : ""}</span>
                     
                         ` :
-                            `<span></span>`}
+                                `<span></span>`}
                 </td>
                 <td ${fortenant != "entrance" && `class="contitionstate"`} > ${fortenant != "entrance" ? `
                     <span  class="condition-value ${thing.condition}" >${thing.condition ? getState(thing.condition) : ""}</span>
@@ -654,8 +661,8 @@ padding: 4px 8px;}
                 </td> 
                 <td class="observationcol" >  
                     <div class="observatiheberger">
-                        <span class="section-label">${[thing.comment ?? ''].join(', ')}</span>
-                        <span style="margin-right:10px;" >${thing.testingStage ? `, ${getTestingStates(thing.testingStage)}` : ""}</span>
+                        <span class="section-label"> ${[thing.comment ?? ''].join(' ')}</span>
+                        <span style="margin-right:10px;" > ${thing.testingStage ? `<span style="padding-left: 3px;" > ${getTestingStates(thing.testingStage)}</span>` : ""}</span>
                         ${thing.photos.map((p, i) => ` <span style="padding: 2px 2px;"><span class="photolabel" >Photo ${++photoCounter.compteurs}</span></span> `).join(' ')}
                     </div>
                 </td>
@@ -665,18 +672,16 @@ padding: 4px 8px;}
         </tbody>  
     </table> 
             `).join('<span style="font-weight: bold; margin-top: 10px; margin-bottom: 10px;"> </span>')
-            }
-  
-
-
+            } 
    <div class="photo-container">
           ${(() => {
                 photoCounter.compteurs = photoCounter.current + 1;
                 return pieces.map(piece => `
                                   ${piece.photos.map((p, i) => {
+
                     return `<div class="photo-block">
             <p class="photo-title"> <span>PHOTO ${(++photoCounter.compteurs)} - </span> ${piece.name} </p>
-            <p class="photo-desc">Photo prise lors de l'état des lieux <span>de sortie</span></p>
+            <p class="photo-desc">Photo prise lors de l'état des lieux <span>${fortenant == "entrance" ? "d'entrée" : "de sortie"}</span></p>
              <img src="${config.appUrl}/${p}" alt="Photo 1"
                 style="width:100%; object-fit:cover; border-radius:6px;">
         </div> `}).join(' ')} `)
@@ -686,9 +691,11 @@ padding: 4px 8px;}
                     return `${piece.things.map((thing, i) => {
                         return `${thing.photos.map((p, i) => {
                             photoCounter.current = photoCounter.compteurs;
+
+
                             return `<div class="photo-block">
             <p class="photo-title"> <span>PHOTO ${(++photoCounter.compteurs)} - </span> ${thing.name} </p>
-            <p class="photo-desc">Photo prise lors de l'état des lieux <span>de sortie</span></p>
+            <p class="photo-desc">Photo prise lors de l'état des lieux <span>${fortenant == "entrance" ? "d'entrée" : "de sortie"}</span></p>
              <img src="${config.appUrl}/${p}" alt="Photo 1"
                 style="width:100%; object-fit:cover; border-radius:6px;">
         </div> `}).join(' ')} `
@@ -744,14 +751,14 @@ padding: 4px 8px;}
       
       <div class="tr legitimetext" >
               <span>
-              Le locataire reconnaît avoir lu le constat et le reconnaît exact. Sa signature figure en dernière page et en paraphe sur chaque page du document.  Les signataires aux présentes ont convenu du caractère probant et indiscutable des signatures y figurant pour être recueillies selon procédé informatique sécurisé au contradictoire des parties.    
+              Le locataire reconnaît avoir lu le constat et le reconnaît exact. Sa signature figure en dernière page du document.  Les signataires aux présentes ont convenu du caractère probant et indiscutable des signatures y figurant pour être recueillies selon procédé informatique sécurisé au contradictoire des parties.    
 
               </span>
       </div>
       
       <div class="tr legitimetext" >
               <span>
-              Dressé le ${establishedDate} sur place, ${data.document_address || 'Paris'}
+              Dressé le ${signaturesMeta?.establishedDate ?? "<span style='color: #dfaa74;'>à venir</span>"} sur place, ${data.document_address || 'Paris'}
               </span>
                
         </div>
@@ -784,13 +791,15 @@ const absoluteTop = window.scrollY + rect.top;
 
         <div class="signatures-container"> 
 
-            ${data.procuration != null ?
+            ${data.mandataire != null ?
                 `<div class="signature-item">
                 <div style="display: flex; flex-direction: column; margin-bottom: 10px;">
                     <strong>Mandataire</strong>
-                    <span>${data.mandataire.type == "morale" ? `${data.mandataire.denomination} [représenté(e) par ${data.mandataire.representant.firstname} ${data.mandataire.representant.lastname}]` : `${data.mandataire.firstname} ${data.mandataire.lastname}`}</span>
+                    <span>${authorname(data.mandataire)}</span>
                 </div>
-                ${(signatures && signatures?.signatures?.[data.mandataire._id]) ? `<img src="data:image/png;base64,${signatures?.signatures?.[data.mandataire._id]?.path}" />` : "<span></span>"}
+                ${(signatures && signatures?.[data.mandataire._id]) ? `<img src="data:image/png;base64,${signatures?.[data.mandataire._id]?.path}" />` : "<span></span>"}
+                ${signatures?.[data.mandataire._id] ? `<span class="signature-date">Signé le <strong>${data.mandataire ? new Date(signatures?.[data.mandataire._id]?.timestamp).toLocaleDateString('fr-FR') : ''}</strong></span>` : ""}
+                <div class="selfiephotos"> ${data.mandataire.meta?.[data._id]?.photos ? data.mandataire.meta?.[data._id]?.photos.map((p) => { return `<img src="${config.appUrl}/${p}" alt="Selfie photo"  class="selfie-photo" />` }) : ""} </div>
             </div>  
                 ` :
                 owners.map((owner) => {
@@ -798,24 +807,26 @@ const absoluteTop = window.scrollY + rect.top;
             <div class="signature-item"> 
                  <div style="display: flex; flex-direction: column; margin-bottom: 10px;">
                     <strong>Bailleur</strong> 
-                    <span>${owner.type == "morale" ? `${owner.denomination} [représenté(e) par ${owner.representant.firstname} ${owner.representant.lastname}]` : `${owner.firstname} ${owner.lastname}`}</span>
+                    <span>${authorname(owner)}</span>
                 </div>
-                ${(signatures && signatures?.signatures?.[owner._id]) ? `<img src="data:image/png;base64,${signatures?.signatures?.[owner._id]?.path}" />` : "<span></span>"}
-                 ${signatures?.signatures?.[owner._id] ? `<span class="signature-date">Signé le <strong>${owner ? new Date(signatures?.signatures?.[owner._id]?.timestamp).toLocaleDateString('fr-FR') : ''}</strong></span>` : ""}
+                ${(signatures && signatures?.[owner._id]) ? `<img src="data:image/png;base64,${signatures?.[owner._id]?.path}" />` : "<span></span>"}
+                 ${signatures?.[owner._id] ? `<span class="signature-date">Signé le <strong>${owner ? new Date(signatures?.[owner._id]?.timestamp).toLocaleDateString('fr-FR') : ''}</strong></span>` : ""}
                 <div class="selfiephotos"> ${owner.meta?.[data._id]?.photos ? owner.meta?.[data._id]?.photos.map((p) => { return `<img src="${config.appUrl}/${p}" alt="Selfie photo"  class="selfie-photo" />` }) : ""} </div>
             </div>  
             `})
             } 
 
             ${exitenants.map((tenant) => {
-                return `
-            <div class="signature-item"> 
+                tenant._id = tenant._id?.toString()
+
+                return `<div class="signature-item"> 
                  <div style="display: flex; flex-direction: column; margin-bottom: 10px;">
                     <strong>Locataire </strong>
-                    <span>${tenant.type == "morale" ? `${tenant.denomination} [représenté(e) par ${tenant.representant.firstname} ${tenant.representant.lastname}]` : `${tenant.firstname} ${tenant.lastname}`}</span>
+                    <span>${authorname(tenant)}</span>
                 </div>
-                ${(signatures && signatures?.signatures?.[tenant._id]) ? `<img src="data:image/png;base64,${signatures?.signatures?.[tenant._id]?.path}" />` : "<span></span>"}
-                <span class="signature-date">Signé le <strong>${tenant ? new Date(signatures?.signatures?.[tenant._id]?.timestamp).toLocaleDateString('fr-FR') : ''}</strong></span>
+                ${(signatures && signatures?.[tenant._id]) ? `<img src="data:image/png;base64,${signatures?.[tenant._id]?.path}" />` : "<span></span>"}
+                ${signatures?.[tenant._id] ? `<span class="signature-date">Signé le <strong>${tenant ? new Date(signatures?.[tenant._id]?.timestamp).toLocaleDateString('fr-FR') : ''}</strong></span>` : ""}
+
                 <div class="selfiephotos"> ${tenant.meta?.[data._id]?.photos ? tenant.meta?.[data._id]?.photos.map((p) => { return `<img src="${config.appUrl}/${p}" alt="Selfie photo"  class="selfie-photo" />` }) : ""} </div>
             </div>
             `}).join('')}  
@@ -831,5 +842,13 @@ const absoluteTop = window.scrollY + rect.top;
 
 </body >
 </html > `;
+
+
+
+
+        return {
+            content: content,
+        }
+
     }
 };

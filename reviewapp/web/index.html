@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -23,19 +24,25 @@
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="acnoo_flutter_admin_panel">
+  <meta name="apple-mobile-web-app-title" content="jatai_etatsdeslieux">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
-  <title>acnoo_flutter_admin_panel</title>
+  <title>jatai_etatsdeslieux</title>
   <link rel="manifest" href="manifest.json">
   <script
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDEM60A5JwT_mj95MOpk_N7HjLFgiIfS-w&libraries=drawing,visualization,places">
-</script>
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDEM60A5JwT_mj95MOpk_N7HjLFgiIfS-w&libraries=drawing,visualization,places">
+    </script>
 </head>
+
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  <script type="module" async>
+    import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.min.mjs';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.worker.min.mjs";
+  </script>
 </body>
+
 </html>

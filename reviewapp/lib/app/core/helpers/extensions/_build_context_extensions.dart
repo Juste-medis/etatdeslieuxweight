@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:go_router/go_router.dart';
+import 'package:mon_etatsdeslieux/app/core/static/model_keys.dart';
 
 extension GoRouterX on BuildContext {
   void goTo(String path) {
@@ -20,8 +21,10 @@ extension GoRouterX on BuildContext {
   }
 
   void popRoute() {
-    GoRouter.of(this).pop();
+    GoRouter.of(Jks.context!).pop();
   }
+
+  bool get isKeyboardOpen => MediaQuery.of(this).viewInsets.bottom > 0;
 
   // Optionnel : accès au router
   GoRouter get router => GoRouter.of(this);
@@ -32,7 +35,8 @@ extension LocaleExtension on BuildContext {
   String getLocaleCurrency({Locale? locale}) {
     final currentLocale = locale ?? Localizations.localeOf(this);
 
-    return NumberFormat.simpleCurrency(locale: currentLocale.countryCode)
-        .currencySymbol;
+    return NumberFormat.simpleCurrency(
+      locale: currentLocale.countryCode,
+    ).currencySymbol;
   }
 }

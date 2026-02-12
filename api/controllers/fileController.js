@@ -16,6 +16,7 @@ const ThingSchema = require("../models/thingModel")
 const CleDePorteSchema = require("../models/cledeporteModel");
 const userModel = require("../models/userModel");
 const reviewController = require("../controllers/reviewController");
+const procurationController = require("../controllers/procurationController");
 
 // Convert fs functions to promise-based
 const accessAsync = util.promisify(fs.access);
@@ -31,6 +32,7 @@ module.exports = {
   reviewfile: async (req, res, next) => {
     try {
       const { id } = req.params;
+
       const theDocument = await FileModel.findOne({
         $or: [
           isValidObjectId(id) ? { _id: id } : { shield: id }
@@ -41,13 +43,9 @@ module.exports = {
       // Verify file exists and is accessible
       try {
         await accessAsync(filePath, fs.constants.F_OK | fs.constants.R_OK);
-
-        // Get file stats for Content-Length header
         const stats = await statAsync(filePath);
-
-        // Set proper headers
         res.set({
-          'Content-Type': theDocument.type || 'image/jpeg',
+          'Content-Type': theDocument.type || "application/pdf",
           'Content-Length': stats.size,
           'Cache-Control': 'public, max-age=86400', // Cache for 24 hours
           'Last-Modified': stats.mtime.toUTCString()
@@ -89,9 +87,11 @@ module.exports = {
     }
   },
   getFile: async (req, res, next) => {
+
     try {
       const { id, size } = req.params;
       const userId = req.user._id.toString();
+      const isAdmin = req.casper === true;
 
       // Validate parameters
       if (!isValidObjectId(id)) {
@@ -101,17 +101,16 @@ module.exports = {
       if (size && !ALLOWED_SIZES.includes(size)) {
         return res.status(400).json({ error: 'Invalid image size requested' });
       }
-
-      // Check file access in database
-
       const fileAccess = await FileAccessSchema.findOne({
-        fileId: id,
-        userId
+        $or: [
+          { fileId: id, userId: userId, accessType: { $in: ['read'] } },
+          { fileId: id, email: req.user.email, accessType: { $in: ['read'] } }
+        ]
       }).lean();
-
-      if (!fileAccess) {
+      if (!isAdmin && !fileAccess) {
         return res.status(403).json({ error: 'You do not have permission to access this file' });
       }
+
       const theDocument = await FileModel.findOne({
         $or: [
           isValidObjectId(id) ? { _id: id } : { shield: id }
@@ -125,7 +124,6 @@ module.exports = {
 
         // Get file stats for Content-Length header
         const stats = await statAsync(filePath);
-
         // Set proper headers
         res.set({
           'Content-Type': theDocument.type || 'image/jpeg',
@@ -157,6 +155,8 @@ module.exports = {
         stream.pipe(res);
 
       } catch (err) {
+        console.log(err);
+
         if (err.code === 'ENOENT') {
           return res.status(404).json({ error: 'File not found' });
         }
@@ -175,7 +175,8 @@ module.exports = {
       const userId = req.user._id.toString();
       const { file, } = req;
       const profile = req.body.profile || false;
-      const reviewId = req.body.review_id || false;
+      const reviewId = req.body.review_id ? req.body.review_id : req.body.proccuration_id
+
       // Validate file exists
       if (!file) {
         return res.status(400).json({ status: false, message: 'No file uploaded' });
@@ -202,14 +203,20 @@ module.exports = {
       }
 
 
-      const fullReviewt = await reviewController.getfullReview(reviewId)
+      const fullReviewt = await reviewController.getfullReview(reviewId) ?? await procurationController.getfullProcuration({ _id: reviewId });
       if (!fullReviewt) {
-        return res.status(404).json({ status: false, message: 'Review not found or unauthorized access' });
+        return res.status(404).json({ status: false, message: 'Etat des lieux ou procuration non trouvé ou accès non autorisé' });
       }
+      if (fullReviewt?.status === "signing" || fullReviewt?.status === "completed") {
+        return res.status(400).json({ status: false, message: "Vous ne pouvez pas modifier un état des lieux déjà signé" });
+      }
+
+
+
       const userPosition = await reviewController.getUserPositionInreview(fullReviewt, req.user.email, userId)
 
       if (!userPosition) {
-        return res.status(404).json({ status: false, message: 'Review not found or unauthorized access' });
+        return res.status(404).json({ status: false, message: 'Etat des lieux non trouvé ou accès non autorisé' });
       }
 
       // Validate ID format
@@ -231,17 +238,31 @@ module.exports = {
       let TheThunSchema, pistage = "photos"
       if ('reviewauthor' === thing) {
         let thingPosition = await reviewController.getUserPositionInreview(fullReviewt, null, id)
-        if (!thingPosition) { return res.status(404).json({ status: false, message: 'youw to update an non existing review author for this review' }); }
+        if (!thingPosition) { return res.status(404).json({ status: false, message: 'you want to update an non existing review author for this review' }); }
         TheThunSchema = `${thingPosition}`.includes('owner') ? OwnerSchema : TenantSchema;
         pistage = `meta.${reviewId}`
-        const sharp = require('sharp');
-        // Add watermark to the image
+
+
+
+        // const sharp = require('sharp');
+        // // Add watermark to the image
         const watermarkedImagePath = path.join(tempDir, `watermarked_${file.filename}`);
-        const watermark = await sharp("./public/assets/media/logos/app_icon_main.png").resize({ width: 400, height: 200 }).png().toBuffer();
-        await sharp(file.path).composite([{ input: watermark, gravity: 'southeast' }]).toFile(watermarkedImagePath);
+        // const watermark = await sharp("./public/assets/media/logos/app_icon_main.png").resize({ width: 400, height: 200 }).png().toBuffer();
+        // await sharp(file.path).composite([{ input: watermark, gravity: 'southeast' }]).toFile(watermarkedImagePath);
+
+        await addDiagonalWatermark(
+          file.path,
+          watermarkedImagePath,
+          "Document exclusivement reservé à l'état des lieux"
+        );
+
         // Replace original file with watermarked version
         await fs.promises.unlink(file.path);
         await fs.promises.rename(watermarkedImagePath, file.path);
+
+
+
+
       } else {
         TheThunSchema = schemaMap[thing];
 
@@ -264,7 +285,6 @@ module.exports = {
           message: `${thing} not found`
         });
       }
-
       // Create file record
       const fileob = new FileModel({
         name: file.filename,
@@ -363,7 +383,7 @@ module.exports = {
       const { id, thing } = req.params;
       const { delete_id } = req.body;
       const userId = req.user._id.toString();
-      const reviewId = req.body.review_id || false;
+      const reviewId = req.body.review_id || req.body.proccuration_id
 
       if (!delete_id) {
         return res.status(400).json({ status: false, message: 'Missing delete_id in request body' });
@@ -375,7 +395,7 @@ module.exports = {
         return res.status(400).json({ status: false, message: 'Invalid thing type', validTypes: validThingTypes });
       }
 
-      const fullReviewt = await reviewController.getfullReview(reviewId)
+      const fullReviewt = await reviewController.getfullReview(reviewId) ?? await procurationController.getfullProcuration({ _id: reviewId });
       if (!fullReviewt) {
         return res.status(404).json({ status: false, message: 'Review not found or unauthorized access' });
       }
@@ -462,5 +482,72 @@ module.exports = {
         details: process.env.NODE_ENV === 'development' ? err.message : undefined
       });
     }
-  },
+  }
 };
+
+async function addDiagonalWatermark(inputPath, outputPath, text) {
+  const sharp = require('sharp');
+  try {
+    // 1. Obtenir les dimensions de l'image originale
+    const metadata = await sharp(inputPath).metadata();
+    const width = metadata.width;
+    const height = metadata.height;
+
+    // 2. Créer un motif de filigrane en SVG
+    const watermarkSVG = `<svg width="${width}" height="${height}" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g transform="matrix(1.3332 0 0 1.3332 -132.17 .00024849)">
+        <g transform="rotate(-45 1191.4 1500)" fill="#f9b053" font-family="Inter"
+            font-size="70.77px" stroke-width="9.3978">
+            <g transform="translate(-${width / 2})">
+                <text transform="rotate(.04956)" x="-7.798286" y="405.89429"
+                    vector-effect="non-scaling-stroke" xml:space="preserve"><tspan x="-7.798286" y="405.89429" fill="#f9b053" stroke-width="9.3978">${text}</tspan></text>
+                <text transform="rotate(.04956)" x="-7.518003" y="729.74213"
+                    vector-effect="non-scaling-stroke" xml:space="preserve"><tspan x="-7.518003" y="729.74213" fill="#f9b053" stroke-width="9.3978">${text}</tspan></text>
+                <text transform="rotate(.04956)" x="-7.2381134" y="1053.5901"
+                    vector-effect="non-scaling-stroke" xml:space="preserve"><tspan x="-7.2381134" y="1053.5901" fill="#f9b053" stroke-width="9.3978">${text}</tspan></text>
+                <text transform="rotate(.04956)" x="-6.9578314" y="1377.438"
+                    vector-effect="non-scaling-stroke" xml:space="preserve"><tspan x="-6.9578314" y="1377.438" fill="#f9b053" stroke-width="9.3978">${text}</tspan></text>
+                <text transform="rotate(.04956)" x="-6.6775465" y="1701.286"
+                    vector-effect="non-scaling-stroke" xml:space="preserve"><tspan x="-6.6775465" y="1701.286" fill="#f9b053" stroke-width="9.3978">${text}</tspan></text>
+                <text transform="rotate(.04956)" x="-6.3976593" y="2025.1338"
+                    vector-effect="non-scaling-stroke" xml:space="preserve"><tspan x="-6.3976593" y="2025.1338" fill="#f9b053" stroke-width="9.3978">${text}</tspan></text>
+                <text transform="rotate(.04956)" x="-6.1173759" y="2348.9814"
+                    vector-effect="non-scaling-stroke" xml:space="preserve"><tspan x="-6.1173759" y="2348.9814" fill="#f9b053" stroke-width="9.3978">${text}</tspan></text>
+                <text transform="rotate(.04956)" x="-5.8374877" y="2672.8296"
+                    vector-effect="non-scaling-stroke" xml:space="preserve"><tspan x="-5.8374877" y="2672.8296" fill="#f9b053" stroke-width="9.3978">${text}</tspan></text>
+                <text transform="rotate(.04956)" x="-8.0781746" y="82.046516"
+                    vector-effect="non-scaling-stroke" xml:space="preserve"><tspan x="-8.0781746" y="82.046516" fill="#f9b053" stroke-width="9.3978">${text}</tspan></text>
+                <text transform="rotate(.04956)" x="-5.5572038" y="2996.6775"
+                    vector-effect="non-scaling-stroke" xml:space="preserve"><tspan x="-5.5572038" y="2996.6775" fill="#f9b053" stroke-width="9.3978">${text}</tspan></text>
+            </g>
+        </g>
+    </g>
+</svg>
+
+    `;
+    console.log(watermarkSVG);
+
+
+    // 3. Convertir le SVG en buffer
+    const watermarkBuffer = Buffer.from(watermarkSVG);
+
+    // 4. Appliquer le filigrane
+    await sharp(inputPath)
+      .composite([{
+        input: watermarkBuffer,
+        tile: true,
+        blend: 'over'
+
+      }])
+      .toFile(outputPath);
+
+    console.log('Filigrane appliqué avec succès');
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout du filigrane:', error);
+  }
+}
+// addDiagonalWatermark(
+//   "uploads/temps/oeuf.png",
+//   "uploads/temps/oeufi.png",
+//   "Document exclusivement reservé à l'état des lieuhssh"
+// ); 

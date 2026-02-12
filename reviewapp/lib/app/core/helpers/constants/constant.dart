@@ -1,49 +1,20 @@
-import 'package:flutter/material.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/utls.dart';
-import 'package:jatai_etatsdeslieux/app/models/_inventory.dart';
-import 'package:jatai_etatsdeslieux/app/models/mylocale.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/utls.dart';
+import 'package:mon_etatsdeslieux/app/models/_inventory.dart';
+import 'package:mon_etatsdeslieux/app/models/mylocale.dart';
 import 'package:nb_utils/nb_utils.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/french_translations.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/french_translations.dart';
 
 /// DO NOT CHANGE THIS PACKAGE NAME
-var appPackageName =
-    isAndroid ? 'com.jatai.etatdeslieux' : 'com.jatai.etatdeslieux';
+var appPackageName = isAndroid
+    ? 'com.jatai.mon_etatsdeslieux'
+    : 'com.jatai.mon_etatsdeslieux';
 
-//region Common Configs
-const DEFAULT_FIREBASE_PASSWORD = 12345678;
-const DECIMAL_POINT = 2;
-const MAXIMUM_INTERESTS = 5;
-const PER_PAGE_ITEM = 20;
-const LABEL_TEXT_SIZE = 18;
-const double SETTING_ICON_SIZE = 22;
-const MARK_AS_READ = 'markas_read';
-const PERMISSION_STATUS = 'permissionStatus';
-
-const ONESIGNAL_TAG_KEY = 'appType';
-const ONESIGNAL_TAG_VALUE = 'userApp';
-const PER_PAGE_CHAT_LIST_COUNT = 50;
-
-const USER_NOT_CREATED = "User not created";
-const USER_CANNOT_LOGIN = "User can't login";
-const USER_NOT_FOUND = "User not found";
-
-const BOOKING_TYPE_ALL = 'Tout';
-//endregion
-
-//region LIVESTREAM KEYS
 const LIVESTREAM_TOKEN = 'tokenStream';
-const LIVESTREAM_UPDATE_BOOKING_LIST = "UpdateBookingList";
-const SLIDE_PROVIER_SCREEN = "SLIDE_PROVIER_SCREEN";
-const LIVESTREAM_UPDATE_SERVICE_LIST = "LIVESTREAM_UPDATE_SERVICE_LIST";
-const LIVESTREAM_UPDATE_job_LIST = "LIVESTREAM_UPDATE_job_LIST";
-const LIVESTREAM_UPDATE_DASHBOARD = "streamUpdateDashboard";
-const LIVESTREAM_START_TIMER = "startTimer";
-const LIVESTREAM_PAUSE_TIMER = "pauseTimer";
-//endregion
 
 //region default USER login
 const DEFAULT_EMAIL = 'demo@user.com';
 const DEFAULT_PASS = '12345678';
+const MaxPhotosPerPiece = 100;
 //endregion
 
 //region THEME MODE TYPE
@@ -58,7 +29,9 @@ const GENDER = 'GENDER';
 const SHOW_GENDER = 'SHOW_GENDER';
 const SHOW_INTERESTS = 'SHOW_INTERESTS';
 const AGE_RANGE = 'AGE_RANGE';
+const USER_BALENCE = 'USER_BALENCE';
 const META = 'META';
+const APP_SETTINGS = 'APP_SETTINGS';
 const MAX_DISTANCE = 'MAX_DISTANCE';
 const ABOUT = 'ABOUT';
 const DISTANCE_BW = 'DISTANCE_BW';
@@ -69,9 +42,9 @@ const FAVORITES = 'FAVORITES';
 const IMAGES = 'IMAGES';
 const PRIVATES = 'PRIVATES';
 const LAST_ONLINE = 'LAST_ONLINE';
+const IS_DARK_MODE = 'IS_DARK_MODE';
 //endregion
 //region SHARED PREFERENCES KEYS
-const IS_FIRST_TIME = 'IsFirstTime';
 const IS_LOGGED_IN = 'IS_LOGGED_IN';
 const USER_ID = 'USER_ID';
 const FIRST_NAME = 'FIRST_NAME';
@@ -96,129 +69,9 @@ const LATITUDE = 'LATITUDE';
 const LONGITUDE = 'LONGITUDE';
 const CURRENT_ADDRESS = 'CURRENT_ADDRESS';
 const LOGIN_TYPE = 'LOGIN_TYPE';
-const PAYMENT_LIST = 'PAYMENT_LIST';
 const USER_TYPE = 'USER_TYPE';
-const USER_PS = 'USER_PS';
 
-const PRIVACY_POLICY = 'PRIVACY_POLICY';
-const TERM_CONDITIONS = 'TERM_CONDITIONS';
-const INQUIRY_EMAIL = 'INQUIRY_EMAIL';
-const HELPLINE_NUMBER = 'HELPLINE_NUMBER';
-const USE_MATERIAL_YOU_THEME = 'USE_MATERIAL_YOU_THEME';
-const IN_MAINTENANCE_MODE = 'inMaintenanceMode';
-const HAS_IN_APP_STORE_REVIEW = 'hasInAppStoreReview1';
-const HAS_IN_PLAY_STORE_REVIEW = 'hasInPlayStoreReview1';
-const HAS_IN_REVIEW = 'hasInReview';
-const SERVER_LANGUAGES = 'SERVER_LANGUAGES';
-const AUTO_SLIDER_STATUS = 'AUTO_SLIDER_STATUS';
-const UPDATE_NOTIFY = 'UPDATE_NOTIFY';
-const CURRENCY_POSITION = 'CURRENCY_POSITION';
-//endregion
-
-//region FORCE UPDATE
-const FORCE_UPDATE = 'forceUpdate';
-const FORCE_UPDATE_USER = 'forceUpdateInUser';
-const USER_CHANGE_LOG = 'userChangeLog';
-const LATEST_VERSIONCODE_USER_APP_ANDROID = 'latestVersionCodeUserAndroid';
-const LATEST_VERSIONCODE_USER_APP_IOS = 'latestVersionCodeUseriOS';
-//endregion
-
-//region CURRENCY POSITION
-const CURRENCY_POSITION_LEFT = 'left';
-const CURRENCY_POSITION_RIGHT = 'right';
-//endregion
-
-//region CONFIGURATION KEYS
-const CONFIGURATION_TYPE_CURRENCY = 'CURRENCY';
-const CONFIGURATION_TYPE_CURRENCY_POSITION = 'CURRENCY_POSITION';
-const CURRENCY_COUNTRY_SYMBOL = 'CURRENCY_COUNTRY_SYMBOL';
-const CURRENCY_COUNTRY_CODE = 'CURRENCY_COUNTRY_CODE';
-const CURRENCY_COUNTRY_ID = 'CURRENCY_COUNTRY_ID';
-const IS_CURRENT_LOCATION = 'CURRENT_LOCATION';
-//endregion
-
-//region User Types
-const USER_TYPE_PROVIDER = 'provider';
-const USER_TYPE_HANDYMAN = 'handyman';
-const USER_TYPE_USER = 'user';
-//endregion
-
-//region LOGIN TYPE
 const LOGIN_TYPE_USER = 'user';
-const LOGIN_TYPE_GOOGLE = 'google';
-const LOGIN_TYPE_FACEBOOK = 'facebook';
-const LOGIN_TYPE_OTP = 'mobile';
-//endregion
-
-//region SERVICE TYPE
-const SERVICE_TYPE_FIXED = 'fixed';
-const SERVICE_TYPE_PERCENT = 'percent';
-const SERVICE_TYPE_HOURLY = 'hourly';
-//endregion
-
-//region PAYMENT METHOD
-const PAYMENT_METHOD_COD = 'cash';
-const PAYMENT_METHOD_STRIPE = 'stripe';
-const PAYMENT_METHOD_RAZOR = 'razorPay';
-const PAYMENT_METHOD_PAYSTACK = 'paystack';
-const PAYMENT_METHOD_FLUTTER_WAVE = 'wave';
-//endregion
-
-//region SERVICE PAYMENT STATUS
-const SERVICE_PAYMENT_STATUS_PAID = 'paid';
-const SERVICE_PAYMENT_STATUS_PENDING = 'pending';
-//endregion
-
-//region FireBase Collection Name
-const MESSAGES_COLLECTION = "messages";
-const USER_COLLECTION = "users";
-const CONTACT_COLLECTION = "contact";
-const CHAT_DATA_IMAGES = "chatImages";
-
-const IS_ENTER_KEY = "IS_ENTER_KEY";
-const SELECTED_WALLPAPER = "SELECTED_WALLPAPER";
-const PER_PAGE_CHAT_COUNT = 50;
-//endregion
-
-//region FILE TYPE
-const TEXT = "TEXT";
-const IMAGE = "IMAGE";
-
-const VIDEO = "VIDEO";
-const AUDIO = "AUDIO";
-//endregion
-
-//region CHAT LANGUAGE
-const List<String> RTL_LanguageS = ['ar', 'ur'];
-//endregion
-
-//region MessageType
-enum MessageType {
-  TEXT,
-  IMAGE,
-  VIDEO,
-  AUDIO,
-}
-//endregion
-
-//region MessageExtension
-extension MessageExtension on MessageType {
-  String? get name {
-    switch (this) {
-      case MessageType.TEXT:
-        return 'TEXT';
-      case MessageType.IMAGE:
-        return 'IMAGE';
-      case MessageType.VIDEO:
-        return 'VIDEO';
-      case MessageType.AUDIO:
-        return 'AUDIO';
-      default:
-        return null;
-    }
-  }
-}
-//endregion
 
 //region DateFormat
 const DATE_FORMAT_1 = 'dd-MMM-yyyy hh:mm a';
@@ -243,17 +96,20 @@ int maxUploadMB = 50;
 int maxUploadSecond = 360;
 const int paginationLimit = 5;
 var heatingTypes = <String, String>{
+  "-": " ".tr,
   "gas": "Gaz".tr,
   "electric": "Électrique".tr,
   "oil": "Fioul".tr,
   "other": "Autre".tr,
 };
 var heatingmODes = <String, String>{
+  "-": " ".tr,
   "individual": "Individuel".tr,
   "collective": "Collectif".tr,
   "not_applicable": "Pas de chauffage".tr,
 };
 var heatingwatermODes = <String, String>{
+  "-": " ".tr,
   "individual": "Individuel".tr,
   "collective": "Collectif".tr,
   "not_applicable": "Pas d'eau chaude".tr,
@@ -272,7 +128,7 @@ var defaultthings = <String, Map<String, dynamic>>{
       "color": {"name": "Couleur".tr, "type": "color"},
       "coating": {"name": "Revêtement".tr, "type": "String"},
       "comment": {"name": "Commentaire".tr, "type": "String"},
-    }
+    },
   },
   "ceiling": {
     "name": "Plafond".tr,
@@ -281,7 +137,7 @@ var defaultthings = <String, Map<String, dynamic>>{
       "color": {"name": "Couleur".tr, "type": "color"},
       "material": {"name": "Matériau".tr, "type": "String"},
       "comment": {"name": "Commentaire".tr, "type": "String"},
-    }
+    },
   },
   // "floor": {
   //   "name": "Sol".tr,
@@ -333,94 +189,135 @@ var defaultthings = <String, Map<String, dynamic>>{
 var defaultroooms = <String, Map<String, dynamic>>{
   "livingRoom": {
     "name": "Salon".tr,
-    "icon": "assets/images/static_images/icons/sofa.png"
+    "icon": "assets/images/static_images/icons/sofa.png",
   },
   "bedroom": {
     "name": "Chambre".tr,
-    "icon": "assets/images/static_images/icons/bathroom.png"
+    "icon": "assets/images/static_images/icons/bedroom.png",
   },
   "kitchen": {
     "name": "Cuisine".tr,
-    "icon": "assets/images/static_images/icons/kitchen.png"
+    "icon": "assets/images/static_images/icons/kitchen.png",
   },
   "bathroom": {
     "name": "Salle de bain".tr,
-    "icon": "assets/images/static_images/icons/bathroom.png"
+    "icon": "assets/images/static_images/icons/bathroom.png",
   },
   "toilets": {
     "name": "Toilettes".tr,
-    "icon": "assets/images/static_images/icons/toilet.png"
+    "icon": "assets/images/static_images/icons/toilet.png",
   },
   "laundry": {
     "name": "Buanderie".tr,
-    "icon": "assets/images/static_images/icons/laundry.png"
+    "icon": "assets/images/static_images/icons/laundry.png",
   },
   "entrance": {
     "name": "Entrée".tr,
-    "icon": "assets/images/static_images/icons/entrance.png"
+    "icon": "assets/images/static_images/icons/entrance.png",
   },
   "balcony": {
     "name": "Balcon".tr,
-    "icon": "assets/images/static_images/icons/balcony.png"
+    "icon": "assets/images/static_images/icons/balcony.png",
   },
   "terrace": {
     "name": "Terrasse".tr,
-    "icon": "assets/images/static_images/icons/terrace.png"
+    "icon": "assets/images/static_images/icons/terrace.png",
   },
   "parkingGarage": {
     "name": "Parking-Garage".tr,
-    "icon": "assets/images/static_images/icons/parking_garage.png"
+    "icon": "assets/images/static_images/icons/parking_garage.png",
   },
   "otherRoom": {
     "name": "Autre Pièce".tr,
-    "icon": "assets/images/static_images/icons/other.png"
+    "icon": "assets/images/static_images/icons/other.png",
   },
 };
+
+var transactionsStatus = <String, String>{
+  "all": "Tous".tr,
+  "completed": "Réuissi".tr,
+  "pending": "En attente".tr,
+};
+
 var defaulcompteurs = <String, Map<String, dynamic>>{
+  "": {"name": "".tr},
   "electricity": {
     "name": "Électricité".tr,
-    "icon": "assets/images/static_images/icons/electricity.png"
+    "icon": "assets/images/static_images/icons/electricity.png",
   },
   "gas": {
     "name": "Gaz".tr,
-    "icon": "assets/images/static_images/icons/gas.png"
+    "icon": "assets/images/static_images/icons/gas.png",
   },
   "cold_water": {
     "name": "Eau froide".tr,
-    "icon": "assets/images/static_images/icons/cold_water.png"
+    "icon": "assets/images/static_images/icons/cold_water.png",
   },
   "hot_water": {
     "name": "Eau chaude".tr,
-    "icon": "assets/images/static_images/icons/hot_water.png"
+    "icon": "assets/images/static_images/icons/hot_water.png",
   },
   "thermal_energy": {
     "name": "Énergie thermique".tr,
-    "icon": "assets/images/static_images/icons/thermal.png"
+    "icon": "assets/images/static_images/icons/thermal.png",
   },
   "other": {
     "name": "Autre".tr,
-    "icon": "assets/images/static_images/icons/other_counter.png"
-  }
+    "icon": "assets/images/static_images/icons/other_counter.png",
+  },
+};
+var defaulcles = <String, Map<String, dynamic>>{
+  "": {"name": "".tr},
+  "principal_key": {
+    "name": "Porte principale".tr,
+    "icon": "assets/images/static_images/icons/door.png",
+  },
+  "common_area": {
+    "name": "Partie communes".tr,
+    "icon": "assets/images/static_images/icons/common_area.png",
+  },
+  "badge": {
+    "name": "Badge".tr,
+    "icon": "assets/images/static_images/icons/badge.png",
+  },
+  "mailbox": {
+    "name": "Boîte aux lettres".tr,
+    "icon": "assets/images/static_images/icons/mailbox.svg",
+  },
+  "parking_garage": {
+    "name": "Parking-Garage".tr,
+    "icon": "assets/images/static_images/icons/parking_garage.png",
+  },
+  "gate": {
+    "name": "Portail".tr,
+    "icon": "assets/images/static_images/icons/portal.png",
+  },
+  "bike_room": {
+    "name": "Local à vélo".tr,
+    "icon": "assets/images/static_images/icons/bike_room.png",
+  },
+  "trash_room": {
+    "name": "Local poubelle".tr,
+    "icon": "assets/images/static_images/icons/trash_room.png",
+  },
+  "cellar": {
+    "name": "Cave".tr,
+    "icon": "assets/images/static_images/icons/cellar.png",
+  },
+  "other": {
+    "name": "Autre".tr,
+    "icon": "assets/images/static_images/icons/door.png",
+  },
 };
 
-var defaulcles = <String, String>{
-  "principal_key": "Porte principale".tr,
-  "common_area": "Partie communes".tr,
-  "badge": "Badge".tr,
-  "mailbox": "Boîte aux lettres".tr,
-  "parking_garage": "Parking-Garage".tr,
-  "gate": "Portail".tr,
-  "bike_room": "Local à vélo".tr,
-  "trash_room": "Local poubelle".tr,
-  "cellar": "Cave".tr,
-};
 var defaultStates = <String, String>{
+  "new": "Neuf".tr,
   "good": "Bon Etat".tr,
   "average": "Etat Moyen".tr,
   "bad": "Mauvais Etat".tr,
-  "new": "Neuf".tr,
   "not_applicable": "Non Applicable".tr,
 };
+
 var yesnonotTested = <String, String>{
   "yes": "Oui".tr,
   "no": "Non".tr,
@@ -433,16 +330,15 @@ var defaultcountNumber = <String, String>{
   "counterfield": "4",
 };
 
-var fairplaymap = <String, String>{
-  "text": "4",
-};
+var fairplaymap = <String, String>{"text": "4"};
 
 var defaultTestingStates = <String, String>{
+  "unknown": "N/A".tr,
   "ok": "Fonctionne".tr,
   "not_working": "Ne fonctionne pas".tr,
   "not_testes": "Non testé".tr,
-  "unknown": "N/A".tr,
 };
+final ownerpositions = ["sortant", "entrant"];
 
 var defaultActionButtons = <String, String>{
   "unknown": "Non applicable".tr,
@@ -450,26 +346,17 @@ var defaultActionButtons = <String, String>{
   "not_working": "Ne fonctionne pas".tr,
   "not_testes": "Non testé".tr,
 };
-var defaultphotos = <String, List<String>>{
-  "piece": [
-    'assets/images/static_images/background_images/background_image_11.png',
-    'assets/images/static_images/background_images/background_image_12.png',
-    'assets/images/static_images/background_images/background_image_13.png',
-    'assets/images/static_images/background_images/background_image_14.png',
-    'assets/images/static_images/background_images/background_image_15.png',
-    'assets/images/static_images/background_images/background_image_16.png',
-    'assets/images/static_images/background_images/background_image_17.png',
-    'assets/images/static_images/background_images/background_image_18.png',
-  ],
-};
 
 final basethings = [...defaultthings.entries]
-    .map((e) => InventoryOfThing(
+    .map(
+      (e) => InventoryOfThing(
         name: e.value['name'],
         id: "${generateRandomStrings(5)}${DateTime.now().millisecondsSinceEpoch.toString()}",
         type: e.key,
         condition: 'good',
-        order: defaultthings.keys.toList().indexOf(e.key)))
+        order: defaultthings.keys.toList().indexOf(e.key),
+      ),
+    )
     .toList();
 
 var countryCodes = <String, MyLocale>{

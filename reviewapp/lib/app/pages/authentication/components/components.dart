@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/helpers.dart';
+import 'package:mon_etatsdeslieux/app/providers/_theme_provider.dart';
+import 'package:nb_utils/nb_utils.dart';
+import 'package:provider/src/consumer.dart';
 import '../../../core/theme/theme.dart';
 
 class AwesomeOtpField extends StatefulWidget {
@@ -17,7 +21,7 @@ class AwesomeOtpField extends StatefulWidget {
   final bool autoFocus;
 
   const AwesomeOtpField({
-    Key? key,
+    super.key,
     this.length = 6,
     required this.onCompleted,
     this.activeColor = AcnooAppColors.kPrimary500,
@@ -34,7 +38,7 @@ class AwesomeOtpField extends StatefulWidget {
     this.obscuringCharacter = '•',
     this.keyboardType = TextInputType.number,
     this.autoFocus = true,
-  }) : super(key: key);
+  });
 
   @override
   _AwesomeOtpFieldState createState() => _AwesomeOtpFieldState();
@@ -76,7 +80,6 @@ class _AwesomeOtpFieldState extends State<AwesomeOtpField> {
 
   void _onChanged(String value, int index) {
     if (value.length > 1) {
-      // Handle pasted code
       if (value.length == widget.length) {
         for (int i = 0; i < widget.length; i++) {
           _otp[i] = value[i];
@@ -88,9 +91,9 @@ class _AwesomeOtpFieldState extends State<AwesomeOtpField> {
             FocusScope.of(context).requestFocus(_focusNodes[i + 1]);
           }
         }
-        widget.onCompleted(_otp.join());
         return;
       }
+
       return;
     }
 
@@ -113,10 +116,11 @@ class _AwesomeOtpFieldState extends State<AwesomeOtpField> {
         FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
       }
     }
+    widget.onCompleted(_otp.join());
   }
 
-  void _onKey(RawKeyEvent event, int index) {
-    if (event is RawKeyDownEvent &&
+  void _onKey(KeyEvent event, int index) {
+    if (event is KeyDownEvent &&
         event.logicalKey == LogicalKeyboardKey.backspace) {
       if (_otp[index].isEmpty && index > 0) {
         _focusNodes[index].unfocus();
@@ -125,17 +129,35 @@ class _AwesomeOtpFieldState extends State<AwesomeOtpField> {
     }
   }
 
+  void clear() {
+    setState(() {
+      for (int i = 0; i < widget.length; i++) {
+        _otp[i] = '';
+        _controllers[i].clear();
+      }
+      widget.onCompleted('');
+
+      _currentIndex = 0;
+      FocusScope.of(context).requestFocus(_focusNodes[0]);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return RawKeyboardListener(
+    return KeyboardListener(
       focusNode: FocusNode(),
-      onKey: (event) => _onKey(event, _currentIndex),
+      onKeyEvent: (event) => _onKey(event, _currentIndex),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(
-          widget.length,
-          (index) => _buildOtpField(index),
-        ),
+        children: [
+          ...List.generate(widget.length, (index) => _buildOtpField(index)),
+          IconButton(
+            onPressed: () {
+              clear();
+            },
+            icon: Icon(Icons.clear, size: 15),
+          ).center(),
+        ],
       ),
     );
   }
@@ -144,10 +166,8 @@ class _AwesomeOtpFieldState extends State<AwesomeOtpField> {
     return Container(
       width: widget.fieldSize,
       height: widget.fieldSize,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: widget.fillColor,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(color: widget.fillColor),
       child: Center(
         child: TextField(
           controller: _controllers[index],
@@ -178,7 +198,18 @@ class _AwesomeOtpFieldState extends State<AwesomeOtpField> {
   }
 }
 
-Widget AuthHeader({double screenHeight = 0, double screenWidth = 0}) {
+Widget authHeader(
+  BuildContext context, {
+  double screenHeight = 0,
+  double screenWidth = 0,
+  Consumer<AppThemeProvider>? themeswitcher,
+  required bool desktopView,
+}) {
+  if (context.isKeyboardOpen || desktopView) {
+    return (themeswitcher ?? SizedBox.shrink()).paddingOnly(
+      top: screenHeight * 0.05,
+    );
+  }
   return Stack(
     clipBehavior: Clip.none,
     children: [
@@ -189,37 +220,49 @@ Widget AuthHeader({double screenHeight = 0, double screenWidth = 0}) {
         fit: BoxFit.cover,
       ),
       Positioned(
-        bottom: -70,
-        left: screenWidth * 0.5 - 100,
-        right: screenWidth * 0.5 - 100,
-        child: Image.asset(
-          'assets/app_icons/logoplein.png',
-          height: 100,
-          width: 10,
-          fit: BoxFit.cover,
+        bottom: 0,
+        width: screenWidth,
+        child: Container(
+          color: Colors.black.withAlpha(100),
+          width: 300,
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image.asset(
+                'assets/app_icons/rocketdeliveries.png',
+                width: 120,
+                height: 60,
+                fit: BoxFit.contain,
+              ),
+              Text(
+                'État des Lieux',
+                style: boldTextStyle(size: 20, color: Colors.white),
+              ),
+            ],
+          ),
         ),
       ),
+      if (themeswitcher != null)
+        Positioned(top: 10, left: 10, child: themeswitcher),
     ],
   );
 }
 
-Widget AuthHeaderOtp({double screenHeight = 0, double screenWidth = 0}) {
+Widget authHeaderOtp({double screenHeight = 0, double screenWidth = 0}) {
   return Stack(
     clipBehavior: Clip.none,
     children: [
-      SizedBox(
-        height: screenHeight * 0.1,
-        width: double.infinity,
-      ),
+      SizedBox(height: screenHeight * 0.1, width: double.infinity),
       Positioned(
-        bottom: -70,
+        bottom: -200,
         left: screenWidth * 0.5 - 100,
         right: screenWidth * 0.5 - 100,
         child: Image.asset(
           'assets/app_icons/app_icon_main.png',
           height: 100,
-          width: 10,
-          fit: BoxFit.cover,
+          width: 50,
+          fit: BoxFit.contain,
         ),
       ),
     ],

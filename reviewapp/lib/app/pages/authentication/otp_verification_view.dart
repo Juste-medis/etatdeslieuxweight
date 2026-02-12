@@ -4,15 +4,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 // 📦 Package imports:
-import 'package:jatai_etatsdeslieux/app/core/helpers/extensions/_build_context_extensions.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/utls.dart';
-import 'package:jatai_etatsdeslieux/app/core/network/rest_apis.dart';
-import 'package:jatai_etatsdeslieux/app/core/static/model_keys.dart';
-import 'package:jatai_etatsdeslieux/app/core/theme/theme.dart';
-import 'package:jatai_etatsdeslieux/app/pages/authentication/components/components.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/extensions/_build_context_extensions.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/utls.dart';
+import 'package:mon_etatsdeslieux/app/core/network/rest_apis.dart';
+import 'package:mon_etatsdeslieux/app/core/static/model_keys.dart';
+import 'package:mon_etatsdeslieux/app/core/theme/theme.dart';
+import 'package:mon_etatsdeslieux/app/pages/authentication/components/components.dart';
+import 'package:mon_etatsdeslieux/main.dart';
 
-// 🌎 Project imports:
-import '../../../dev_utils/dev_utils.dart';
 import '../../../generated/l10n.dart' as l;
 import '../../widgets/widgets.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -22,9 +21,17 @@ class OtpVerificationView extends StatefulWidget {
   final String? email;
   final String? userId;
   final String? password;
+  final String? ressetPassword;
+  final void Function(String)? onVerified;
 
-  const OtpVerificationView(
-      {super.key, this.email, this.password, this.userId});
+  const OtpVerificationView({
+    super.key,
+    this.email,
+    this.password,
+    this.userId,
+    this.ressetPassword,
+    this.onVerified,
+  });
 
   @override
   State<OtpVerificationView> createState() => _OtpVerificationViewState();
@@ -47,18 +54,11 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
   Future<void> _verifyOtp(BuildContext context) async {
     Jks.context = context;
     final lang = l.S.of(context);
-
-    // context.push(
-    //   '/loading',
-    //   extra: {'message': lang.verificationInprogress},
-    // );
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (context) {
-        return LoadingScreen(
-          message: lang.verificationInprogress,
-        );
+        return LoadingScreen(message: lang.verificationInprogress);
       },
     );
 
@@ -66,23 +66,27 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
       "otp": _otpCode,
       "password": widget.password,
       "email": widget.email,
-      "id": widget.userId
+      "id": widget.userId,
     };
 
-    await verifyCode(request).then((res) async {
-      if (res.status ?? false) {
-        await loginUser(request).then((res) async {
-          await saveUserData(res.data!, token: res.token);
-          Future.delayed(const Duration(seconds: 2));
-          context.go(
-            '/',
-            extra: res.data,
-          );
+    await verifyCode(request)
+        .then((res) async {
+          if (res.status ?? false) {
+            if (widget.onVerified != null) {
+              widget.onVerified!(_otpCode);
+              return;
+            }
+            await loginUser(request).then((res) async {
+              await initializeApp(res.data!, res.token);
+              Future.delayed(const Duration(seconds: 2));
+              Jks.checkingAuth = false;
+              context.go('/', extra: res.data);
+            });
+          } else {}
+        })
+        .catchError((e) {
+          my_inspect(e);
         });
-      } else {}
-    }).catchError((e) {
-      my_inspect(e);
-    });
     if (mounted) {
       context.popRoute();
     }
@@ -116,13 +120,8 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
 
   Future<void> _resendOtp() async {
     if (!_canResendOtp) return;
-
-    // Your resend OTP API call here
     try {
-      var request = {
-        "email": widget.email,
-        "id": widget.userId,
-      };
+      var request = {"email": widget.email, "id": widget.userId};
 
       await resendOtpCode(request).then((res) {
         if (res.status ?? false) {
@@ -139,9 +138,6 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
   Widget build(BuildContext context) {
     final lang = l.S.of(context);
     final _theme = Theme.of(context);
-
-    final _screenWidth = MediaQuery.sizeOf(context).width;
-    final _screenHeight = MediaQuery.sizeOf(context).height;
     const _buttonPadding = EdgeInsetsDirectional.symmetric(
       horizontal: 24,
       vertical: 12,
@@ -149,22 +145,19 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
     final _buttonTextStyle = _theme.textTheme.bodyLarge?.copyWith(
       fontWeight: FontWeight.w600,
     );
+    final _screenWidth = MediaQuery.sizeOf(context).width;
 
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
-        backgroundColor: _theme.colorScheme.onPrimary,
+        backgroundColor: _theme.colorScheme.primaryContainer,
         body: SafeArea(
-          child: Column(
-            children: [
-              // AuthHeaderOtp(
-              //   screenHeight: 150,
-              //   screenWidth: _screenWidth,
-              // ),
-              Flexible(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 800),
-                  child: Center(
+          child: Center(
+            child: Column(
+              children: [
+                Flexible(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 800),
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -190,17 +183,11 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
                                 ),
                               ],
                             ),
-                            style: _theme.textTheme.labelLarge?.copyWith(
-                              color: _theme.colorScheme.onSecondary,
-                            ),
+                            style: _theme.textTheme.labelLarge,
                           ),
                           Text.rich(
-                            TextSpan(
-                              text: lang.entertoconfirm,
-                            ),
-                            style: _theme.textTheme.labelLarge?.copyWith(
-                              color: _theme.colorScheme.onSecondary,
-                            ),
+                            TextSpan(text: lang.entertoconfirm),
+                            style: _theme.textTheme.labelLarge,
                           ),
 
                           16.height,
@@ -213,20 +200,17 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
                                 setState(() {
                                   _otpCode = code;
                                 });
-                                // You can add your OTP verification logic here
-                                devLogger('OTP entered: $code');
                               },
                               activeColor: _theme.colorScheme.primary,
                               inactiveColor: _theme.colorScheme.outline,
                               fillColor: _theme.colorScheme.surface,
-                              textStyle:
-                                  _theme.textTheme.headlineSmall!.copyWith(
-                                color: _theme.colorScheme.onSurface,
-                              ),
+                              textStyle: _theme.textTheme.headlineSmall!
+                                  .copyWith(
+                                    color: _theme.colorScheme.onSurface,
+                                  ),
                             ),
                           ),
-                          const SizedBox(height: 24),
-
+                          20.height,
                           // Resend OTP Button
                           Center(
                             child: OutlinedButton.icon(
@@ -234,13 +218,15 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: _canResendOtp
                                     ? AcnooAppColors.kPrimary600
-                                    : AcnooAppColors.kPrimary600
-                                        .withOpacity(0.5),
+                                    : AcnooAppColors.kPrimary600.withOpacity(
+                                        0.5,
+                                      ),
                                 side: BorderSide(
                                   color: _canResendOtp
                                       ? AcnooAppColors.kPrimary600
-                                      : AcnooAppColors.kPrimary600
-                                          .withOpacity(0.5),
+                                      : AcnooAppColors.kPrimary600.withOpacity(
+                                          0.5,
+                                        ),
                                   width: .0001,
                                 ),
                                 shadowColor: Colors.transparent,
@@ -306,8 +292,9 @@ class _OtpVerificationViewState extends State<OtpVerificationView> {
                     ),
                   ),
                 ),
-              ),
-            ],
+                authHeaderOtp(screenHeight: 150, screenWidth: _screenWidth),
+              ],
+            ),
           ),
         ),
       ),

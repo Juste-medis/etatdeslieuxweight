@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+
 const UserSchema = mongoose.Schema({
     firstName: String,
     lastName: String,
+    address: String,
     level: {
         type: String,
         default: 'standard',
@@ -73,10 +75,14 @@ const UserSchema = mongoose.Schema({
         type: Date,
         default: null
     },
-    meta: {
-        type: Schema.Types.Mixed,
-        default: {},
+    balances: {
+        simple: { type: Number, default: 0 },
+        procurement: { type: Number, default: 0 },
+        other: { type: Schema.Types.Mixed, default: {}, }
     },
+    lastSeenAt: { type: Date, default: null },
+
+    meta: { type: Schema.Types.Mixed, default: {}, },
 },
     {
         timestamps: true

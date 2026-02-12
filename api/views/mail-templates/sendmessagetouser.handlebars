@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation de votre message - Jatai</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .logo {
+            height: 40px;
+            margin-bottom: 16px;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        .confirmation-section {
+            text-align: center;
+            margin: 32px 0;
+            padding: 20px;
+        }
+
+        .confirmation-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .confirmation-message {
+            font-size: 16px;
+            color: #444;
+            margin-bottom: 8px;
+        }
+
+        .info-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 24px 0;
+        }
+
+        .info-title {
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #333;
+            text-align: center;
+        }
+
+        .info-item {
+            margin-bottom: 12px;
+            padding: 0;
+        }
+
+        .label {
+            font-weight: 500;
+            color: #666;
+            display: inline-block;
+            min-width: 80px;
+        }
+
+        .value {
+            color: #1a1a1a;
+        }
+
+        .next-steps {
+            margin: 24px 0;
+            padding: 0 20px;
+        }
+
+        .next-steps-title {
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .steps-list {
+            padding-left: 20px;
+            color: #444;
+        }
+
+        .steps-list li {
+            margin-bottom: 8px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .contact-info {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <img src="{{logoUrl}}" alt="Jatai" class="logo">
+                <h1 class="title">Confirmation de réception</h1>
+            </div>
+
+            <div class="confirmation-section">
+                <div class="confirmation-icon">✓</div>
+                <p class="confirmation-message">Nous avons bien reçu votre message</p>
+                <p style="color: #666; font-size: 14px;">Notre équipe support vous répondra dans les plus brefs délais
+                </p>
+            </div>
+
+            <div class="info-section">
+                <div class="info-title">Récapitulatif de votre message</div>
+
+                <div class="info-item">
+                    <span class="label">Nom :</span>
+                    <span class="value">{{fullName}}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Email :</span>
+                    <span class="value">{{email}}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Sujet :</span>
+                    <span class="value">{{subject}}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Message :</span>
+                    <span class="value" style="display: block; margin-top: 8px;">{{message}}</span>
+                </div>
+            </div>
+
+            <div class="next-steps">
+                <div class="next-steps-title">Prochaines étapes :</div>
+                <ul class="steps-list">
+                    <li>Notre équipe analyse votre demande</li>
+                    <li>Vous recevrez une réponse par email</li>
+                    <li>Délai de réponse habituel : 24-48 heures</li>
+                </ul>
+            </div>
+
+            <div class="footer">
+                <p>Merci de votre confiance,</p>
+                <p><strong>L'équipe Jatai</strong></p>
+
+                <div class="contact-info">
+                    <p>📧 contact@jatai.fr | 🌐 jatai.fr</p>
+                </div>
+
+                <p style="margin-top: 24px;">© 2025 JATAI. Tous droits réservés.</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

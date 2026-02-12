@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '_app_colors.dart';
 
 abstract class AcnooAppTheme {
-  static const _fontFamily = 'Inter';
+  static const _fontFamily = 'Manrope';
 
   static ThemeData kLightTheme() {
     final _baseTheme = ThemeData.light();
@@ -128,7 +128,8 @@ abstract class AcnooAppTheme {
     vertical: 12,
   );
   static const _buttonDensity = VisualDensity.standard;
-  static _getElevatedButtonTheme(TextTheme baseTextTheme) {
+  static ElevatedButtonThemeData _getElevatedButtonTheme(
+      TextTheme baseTextTheme) {
     return ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         padding: _buttonPadding,

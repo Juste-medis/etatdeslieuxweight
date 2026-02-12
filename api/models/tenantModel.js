@@ -22,7 +22,6 @@ const TenantSchema = mongoose.Schema({
     },
     dob: {
         type: Date,
-        required: true,
     },
     placeofbirth: String,
     address: String,

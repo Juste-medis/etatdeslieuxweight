@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/utls.dart';
-import 'package:jatai_etatsdeslieux/app/providers/_theme_provider.dart';
+import 'package:mon_etatsdeslieux/app/providers/_theme_provider.dart';
 
 class OverlayHelper {
   OverlayHelper(this.context);
@@ -45,39 +44,4 @@ class OverlayHelper {
 
   LayerLink get layerLink => _layerLink;
   OverlayEntry? get overlayEntry => _overlayEntry;
-}
-
-dynamic extracthings(Map<String, dynamic> formData, String property,
-    AppThemeProvider wizardState) {
-  final owners = [];
-  formData.forEach((key, value) {
-    if (key.startsWith(property)) {
-      final parts = key.split('_');
-      final ownerId = parts[0].replaceAll(property, '');
-      final field = parts[1];
-      if (owners.length <= int.parse(ownerId)) {
-        owners.add({'id': ownerId});
-      }
-      if (value is DateTime) {
-        owners[int.parse(ownerId)][field] = value.toIso8601String();
-      } else {
-        owners[int.parse(ownerId)][field] = "$value";
-      }
-
-      if (property == "owner") {
-        owners[int.parse(ownerId)]['id'] =
-            wizardState.inventoryProprietaires[int.parse(ownerId)].id;
-      }
-      if (property == "exittenant") {
-        owners[int.parse(ownerId)]['id'] =
-            wizardState.inventoryLocatairesSortant[int.parse(ownerId)].id;
-      }
-
-      if (property == "entranttenant") {
-        owners[int.parse(ownerId)]['id'] =
-            wizardState.inventoryLocatairesEntrants[int.parse(ownerId)].id;
-      }
-    }
-  });
-  return owners;
 }

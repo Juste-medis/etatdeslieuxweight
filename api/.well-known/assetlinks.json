@@ -1,0 +1,26 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.jatai.etatdeslieux",
+            "sha256_cert_fingerprints": [
+                "91:F9:C1:0C:64:03:EC:BF:49:40:F7:59:C2:96:02:30:62:1B:37:1B:16:81:59:1F:18:93:0F:6E:E2:58:2E:52"
+            ]
+        }
+    },
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.jatai.jatai_etatsdeslieux",
+            "sha256_cert_fingerprints": [
+                "91:F9:C1:0C:64:03:EC:BF:49:40:F7:59:C2:96:02:30:62:1B:37:1B:16:81:59:1F:18:93:0F:6E:E2:58:2E:52"
+            ]
+        }
+    }
+]

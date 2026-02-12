@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails de paiement - Jatai</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            width: 100%;
+        }
+
+        .header {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 20px;
+            color: #222;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 18px;
+            color: #222;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        p,
+        li {
+            font-size: 15px;
+            color: #444;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: 600;
+        }
+
+        ul {
+            padding-left: 5px;
+        }
+
+        li {
+            margin-bottom: 12px;
+            list-style-type: none;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 13px;
+            color: #777;
+        }
+
+        .badge {
+            border-radius: 20px;
+            font-size: 24px;
+            padding-left: 12px;
+        }
+
+        .success-badge {
+            background-color: #e6f7ee;
+            color: #00a65a;
+        }
+
+        .warning-badge {
+            background-color: #fff8e1;
+            color: #f39c12;
+        }
+
+        .info-badge {
+            background-color: #f0f7ff;
+            color: #f39c12;
+        }
+
+        a {
+            color: #f39c12;
+            text-decoration: none;
+        }
+
+        .detail-section {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .detail-row {
+            display: flex;
+            flex-direction: column;
+            justify-content: start;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #666;
+            font-size: 24px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #222;
+            font-size: 24px;
+        }
+
+        .amount-highlight {
+            font-size: 24px;
+            font-weight: 700;
+            color: #f39c12;
+            align-self: center;
+            padding-left: 15px;
+
+        }
+
+        .button {
+            background-color: #f39c12;
+            color: white !important;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="card">
+            <div class="header">
+                <img src="{{logoUrl}}" alt="Jatai" class="logo"
+                    style="height: 40px; margin-bottom: 10px; object-fit: contain;">
+                <div style="font-size: 12px; color: #888; margin-bottom: 10px;">CONFIRMATION DE PAIEMENT</div>
+            </div>
+
+            <h1>Votre paiement a été traité</h1>
+
+            <p>Bonjour {{userName}},</p>
+
+            <p>Nous vous confirmons que votre transaction a été traitée avec succès. Voici le récapitulatif de votre
+                achat</p>
+
+            <div class="detail-section">
+                <div class="detail-row">
+                    <span class="detail-label">Type d'achat</span>
+                    <span class="detail-value">{{transactionLabel}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">ID de transaction</span>
+                    <span class="detail-value" style="font-family: 'monospace'; font-size: 24px;">
+                        {{transactionId}}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date</span>
+                    <span class="detail-value">{{transactionDate}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Méthode de paiement</span>
+                    <span class="detail-value">{{paymentMethod}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Statut</span>
+                    <span class="badge {{statusBadgeClass}}">{{paymentStatus}}</span>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h3 style="margin-top: 0; color: #222;">Crédits achetés</h3>
+
+                {{#if isCreditPurchase}}
+                <div class="detail-row">
+                    <span class="detail-label">Crédits achetés</span>
+                    <span class="detail-value amount-highlight">+ {{creditAmount}} crédits</span>
+                </div>
+                {{#if computedDispersion}}
+                <div style="flex-basis: 100%; margin-top: 8px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                        style="width:100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th align="left"
+                                    style="text-align:left; font-size:14px; color:#666; font-weight:600; padding:8px 0; border-bottom:1px solid #eee;">
+                                    Libellé
+                                </th>
+                                <th align="center"
+                                    style="text-align:center; font-size:14px; color:#666; font-weight:600; padding:8px 0; border-bottom:1px solid #eee;">
+                                    Quantité
+                                </th>
+                                <th align="right"
+                                    style="text-align:right; font-size:14px; color:#666; font-weight:600; padding:8px 0; border-bottom:1px solid #eee;">
+                                    Prix
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each computedDispersion}}
+                            <tr>
+                                <td style="padding:10px 0; border-bottom:1px solid #eee;">
+                                    <strong class="feature-icon" style="margin-right:8px;">-</strong>
+                                    <span style="vertical-align:middle;">{{name}}</span>
+                                </td>
+                                <td align="center"
+                                    style="padding:10px 0; border-bottom:1px solid #eee; color:#222; font-weight:500;">
+                                    {{quantity}}
+                                </td>
+                                <td align="right"
+                                    style="padding:10px 0; border-bottom:1px solid #eee; color:#222; font-weight:600;">
+                                    {{price}} €
+                                </td>
+                            </tr>
+                            {{/each}}
+
+                            {{#if hasCoupon}}
+                            <tr>
+                                <td style="padding:10px 0; border-bottom:1px solid #eee;">
+                                    <strong class="feature-icon" style="margin-right:8px;">-</strong>
+                                    <span style="vertical-align:middle;">Réduction ({{couponCode}})</span>
+                                </td>
+                                <td align="center"
+                                    style="padding:10px 0; border-bottom:1px solid #eee; color:#222; font-weight:500;">
+                                    1
+                                </td>
+                                <td align="right"
+                                    style="padding:10px 0; border-bottom:1px solid #eee; color:red; font-weight:600;">
+                                    - {{couponAmount}} €
+                                </td>
+                            </tr>
+                            {{/if}}
+                        </tbody>
+                    </table>
+                </div>
+                {{/if}}
+                {{else}}
+
+                <div class="detail-row">
+                    <span class="detail-label">Prix de base</span>
+                    <span class="detail-value">{{basePrice}} €</span>
+                    {{#each computedDispersion}}
+                    <li>
+                        <strong class="feature-icon">-</strong>
+                        <span class="valuelab">{{ammount}} crédit(s) pour
+                            {{#if (eq type "review")}}état des lieux{{else if (eq type
+                            "procuration")}}procuration{{else}}autre{{/if}}</span>
+                    </li>
+                    {{/each}}
+                </div>
+                {{/if}}
+                {{#if hasTax}}
+                <div class="detail-row">
+                    <span class="detail-label">Taxes ({{taxRate}}%)</span>
+                    <span class="detail-value">{{taxAmount}} €</span>
+                </div>
+                {{/if}}
+
+                <div class="detail-row" style="border-top: 2px solid #f39c12; padding-top: 12px;">
+                    <span class="detail-label">Montant total</span>
+                    <span class="detail-value amount-highlight">{{totalAmount}} {{amountUnit}}</span>
+                </div>
+            </div>
+
+            {{#if transactionDetails}}
+            <div class="detail-section">
+                <h3 style="margin-top: 0; color: #222;">Détails de la transaction</h3>
+                <p>{{transactionDetails}}</p>
+            </div>
+            {{/if}}
+
+            {{#if isCreditPurchase}}
+            <h2>📄 Documents</h2>
+            <p>Vous pouvez télécharger les documents relatifs à cette transaction</p>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="{{invoiceUrl}}" class="button" style="margin-right: 10px;">
+                    Télécharger la facture
+                </a>
+                <a href="{{receiptUrl}}" class="button" style="background-color: #666;">
+                    Voir le reçu
+                </a>
+            </div>
+            {{/if}}
+
+            <h2>📱 Prochaines étapes</h2>
+            <ul>
+                {{#if isCreditPurchase}}
+                <li><strong class="feature-icon">💳</strong> Vos crédits ont été ajoutés à votre compte</li>
+                <li><strong class="feature-icon">🔧</strong> Utilisez-les pour acheter des états des lieux ou des
+                    procurations</li>
+                {{else if isReviewPurchase}}
+                <li><strong class="feature-icon">🏠</strong> Votre état des lieux est maintenant disponible</li>
+                <li><strong class="feature-icon">✍️</strong> Accédez-y depuis votre espace personnel</li>
+                {{else}}
+                <li><strong class="feature-icon">📋</strong> Votre procuration est maintenant active</li>
+                <li><strong class="feature-icon">👥</strong> Partagez-la avec les signataires concernés</li>
+                {{/if}}
+                <li><strong class="feature-icon">📞</strong> Besoin d'aide ? Contactez notre support</li>
+            </ul>
+
+            <div style="text-align: center; margin: 25px 0;">
+                <a href="{{dashboardLink}}"
+                    style="background-color: #f39c12; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; font-weight: 500;">
+                    Accéder à mon espace
+                </a>
+            </div>
+
+            <p>Pour toute question concernant cette transaction, notre équipe est à votre disposition.</p>
+
+            <p>Cordialement,</p>
+            <p><strong>L'équipe Jatai</strong><br>
+                <a href="mailto:contact@jatai.fr">contact@jatai.fr</a> | <a href="https://www.jatai.fr">www.jatai.fr</a>
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 JATAI. Tous droits réservés.</p>
+            <p>
+                <a href="https://jatai.fr/politique-de-confidentialite">Confidentialité</a> |
+                <a href="https://jatai.fr/conditions-generales-dutilisation-jatai-etat-des-lieux">Conditions</a> |
+                <a href="https://jatai.fr/jatai-etat-des-lieux-aide">Aide</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue sur Jatai - État des Lieux</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            color: #1e293b;
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        p {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #475569;
+        }
+
+        .highlight {
+            color: #f9b053 !important;
+            font-weight: 600;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: #f9b053;
+            color: white !important;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px 0 20px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .signature {
+            margin-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+
+        .features {
+            margin: 25px 0;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .feature-icon {
+            margin-right: 12px;
+            color: #f9b053;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <img src="{{logoUrl}}" alt="Jatai" class="logo"
+                    style="height: 40px; margin-bottom: 10px; object-fit: contain;">
+            </div>
+
+            <h1>Bienvenue sur Jatai – État des Lieux</h1>
+
+            <p>Bonjour <span class="highlight">{{ name }}</span>,</p>
+
+            <p>Bienvenue sur <span class="highlight">Jatai – État des Lieux</span>, l'application qui vous permet de
+                <strong>réaliser facilement votre état des lieux d'entrée ou de sortie</strong>, directement depuis
+                votre smartphone.
+            </p>
+
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <div>Guidage <strong>pas à pas</strong> dans la réalisation du constat avec l'aide de l'IA</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <div>Ajout de <strong>photos et commentaires</strong> pour chaque pièce</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <div><strong>Signature électronique</strong> et envoi automatique du PDF aux parties concernées
+                    </div>
+                </div>
+            </div>
+
+            <p>Pour toute question, notre support est disponible à tout moment pour vous accompagner.</p>
+
+            <a href="https://etatdeslieux.jatai.fr" class="cta-button">Commencer mon état des lieux</a>
+
+            <div class="signature">
+                <p>Bonne installation dans votre nouveau logement,</p>
+                <p><strong>L'équipe Jatai</strong></p>
+                <p>
+                    <a href="mailto:contact@jatai.fr"
+                        style="color: #f9b053; text-decoration: none;">contact@jatai.fr</a> |
+                    <a href="https://www.jatai.fr/" style="color: #f9b053; text-decoration: none;">www.jatai.fr</a>
+                </p>
+            </div>
+        </div>
+        <div class="footer">
+            <p>© 2025 JATAI. Tous droits réservés.</p>
+            <p>
+                <a href="https://jatai.fr/politique-de-confidentialite">Confidentialité</a> |
+                <a href="https://jatai.fr/conditions-generales-dutilisation-jatai-etat-des-lieux">Conditions</a> |
+                <a href="https://jatai.fr/jatai-etat-des-lieux-aide">Aide</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

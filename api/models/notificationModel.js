@@ -1,8 +1,12 @@
 const mongoose = require("mongoose");
 
 const notificationSchema = new mongoose.Schema({
-
     title: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    message: {
         type: String,
         required: true,
         trim: true
@@ -15,16 +19,20 @@ const notificationSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    message: {
-        type: String,
-        required: true,
-        trim: true
-    },
     is_read: {
         type: Boolean,
         default: false,
         trim: true
+    },
+    push_response: {
+        type: String,
+        default: null
+    },
+    data: {
+        type: Object,
+        default: {}
     }
+
 
 },
     {
@@ -32,4 +40,4 @@ const notificationSchema = new mongoose.Schema({
     }
 );
 
-module.exports = mongoose.model("notification", notificationSchema);
+module.exports = mongoose.model("notifications", notificationSchema);

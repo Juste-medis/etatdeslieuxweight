@@ -8,11 +8,9 @@ const PropertySchema = mongoose.Schema({
     },
     complement: {
         type: String,
-        default: ''
     },
     floor: {
         type: String,
-        default: ''
     },
     surface: {
         type: String,
@@ -28,11 +26,9 @@ const PropertySchema = mongoose.Schema({
     },
     box: {
         type: String,
-        default: ''
     },
     cellar: {
         type: String,
-        default: ''
     },
     garage: {
         type: String,
@@ -40,23 +36,18 @@ const PropertySchema = mongoose.Schema({
     },
     parking: {
         type: String,
-        default: ''
     },
     heatingType: {
         type: String,
-        default: 'gas'
     },
     heatingMode: {
         type: String,
-        default: 'individual'
     },
     hotWaterType: {
         type: String,
-        default: 'electric'
     },
     hotWaterMode: {
         type: String,
-        default: 'individual'
     },
     is_active: {
         type: Boolean,

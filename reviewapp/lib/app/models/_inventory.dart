@@ -1,5 +1,7 @@
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/utls.dart';
-import 'package:jatai_etatsdeslieux/app/models/review.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/utls.dart';
+import 'package:mon_etatsdeslieux/app/core/static/model_keys.dart';
+import 'package:mon_etatsdeslieux/app/models/_user_model.dart';
+import 'package:mon_etatsdeslieux/app/models/review.dart';
 
 class Domaine {
   String? id;
@@ -100,6 +102,51 @@ class Domaine {
     }''';
   }
 
+  Map propertyDetails() {
+    return {
+      "_id": id,
+      'address': address,
+      'complement': complement,
+      'floor': floor,
+      'surface': surface,
+      'roomCount': roomCount,
+      'furnitured': furnitured,
+      'box': box,
+      'cellar': cellar,
+      'garage': garage,
+      'parking': parking,
+      'heatingType': heatingType,
+      'heatingMode': heatingMode,
+      'hotWaterType': hotWaterType,
+      'hotWaterMode': hotWaterMode,
+    };
+  }
+
+  void setPropertyDetails(Review review) {
+    id =
+        review.propertyDetails?.id ??
+        "${generateRandomStrings(5)}${DateTime.now().millisecondsSinceEpoch.toString()}";
+    name = review.propertyDetails?.name;
+    type = review.propertyDetails?.type;
+    address = review.propertyDetails?.address;
+    city = review.propertyDetails?.city;
+    postalCode = review.propertyDetails?.postalCode;
+    country = review.propertyDetails?.country;
+    complement = review.propertyDetails?.complement ?? '';
+    floor = review.propertyDetails?.floor ?? '';
+    surface = review.propertyDetails?.surface ?? '';
+    roomCount = review.propertyDetails?.roomCount;
+    furnitured = review.propertyDetails?.furnitured ?? false;
+    box = review.propertyDetails?.box ?? '';
+    cellar = review.propertyDetails?.cellar ?? '';
+    garage = review.propertyDetails?.garage ?? '';
+    parking = review.propertyDetails?.parking ?? '';
+    heatingType = review.propertyDetails?.heatingType ?? 'gas';
+    heatingMode = review.propertyDetails?.heatingMode ?? 'individual';
+    hotWaterType = review.propertyDetails?.hotWaterType ?? 'electric';
+    hotWaterMode = review.propertyDetails?.hotWaterMode ?? 'individual';
+  }
+
   factory Domaine.fromJson(Map<String, dynamic> json) {
     return Domaine(
       id: json['_id']?.toString(),
@@ -110,53 +157,56 @@ class Domaine {
       postalCode: json['postalCode']?.toString(),
       country: json['country']?.toString(),
       complement: json['complement']?.toString() ?? '', // Added complement
-      floor: json['floor']?.toString() ?? '', // Added floor
-      surface: json['surface']?.toString(), // Added surface
-      roomCount: json['roomCount'] as int?,
+      floor: json['floor']?.toString() ?? '0', // Added floor
+      surface: json['surface']?.toString() ?? '0', // Added surface
+      roomCount: json['roomCount'] as int? ?? 1,
       furnitured: json['furnitured'] as bool? ?? false, // Added furnitured
       box: json['box']?.toString() ?? '', // Added box
       cellar: json['cellar']?.toString() ?? '', // Added cellar
       garage: json['garage']?.toString() ?? '', // Added garage
       parking: json['parking']?.toString() ?? '', // Added parking
-      heatingType:
-          json['heatingType']?.toString() ?? 'gas', // Added heatingType
-      heatingMode:
-          json['heatingMode']?.toString() ?? 'individual', // Added heatingMode
-      hotWaterType:
-          json['hotWaterType']?.toString() ?? 'electric', // Added hotWaterType
-      hotWaterMode: json['hotWaterMode']?.toString() ??
-          'individual', // Added hotWaterMode
+      heatingType: json['heatingType']?.toString(), // Added heatingType
+      heatingMode: json['heatingMode']?.toString(), // Added heatingMode
+      hotWaterType: json['hotWaterType']?.toString(), // Added hotWaterType
+      hotWaterMode: json['hotWaterMode']?.toString(), // Added hotWaterMode
       surfaceArea: json['surfaceArea']?.toDouble(),
-      compteurs: (json['compteurs'] as List<dynamic>?)
+      compteurs:
+          (json['compteurs'] as List<dynamic>?)
               ?.map((e) => Compteur.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      clesDePorte: (json['clesDePorte'] as List<dynamic>?)
+      clesDePorte:
+          (json['clesDePorte'] as List<dynamic>?)
               ?.map((e) => CleDePorte.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       things: json['things'] != null
           ? (json['things'] as List)
-              .map((item) => InventoryOfThing.fromJson(item))
-              .toList()
+                .map((item) => InventoryOfThing.fromJson(item))
+                .toList()
           : null,
-      pieces: (json['pieces'] as List<dynamic>?)
+      pieces:
+          (json['pieces'] as List<dynamic>?)
               ?.map((e) => InventoryPiece.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      proprietaires: (json['proprietaires'] as List<dynamic>?)
+      proprietaires:
+          (json['proprietaires'] as List<dynamic>?)
               ?.map((e) => InventoryAuthor.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      locataires: (json['locataires'] as List<dynamic>?)
+      locataires:
+          (json['locataires'] as List<dynamic>?)
               ?.map((e) => InventoryAuthor.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       meta: json['meta'] as Map<String, dynamic>?,
-      createdAt:
-          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
-      updatedAt:
-          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : null,
     );
   }
 
@@ -179,14 +229,18 @@ class Domaine {
     if (cellar != null) data['cellar'] = cellar; // Added cellar
     if (garage != null) data['garage'] = garage; // Added garage
     if (parking != null) data['parking'] = parking; // Added parking
-    if (heatingType != null)
+    if (heatingType != null) {
       data['heatingType'] = heatingType; // Added heatingType
-    if (heatingMode != null)
+    }
+    if (heatingMode != null) {
       data['heatingMode'] = heatingMode; // Added heatingMode
-    if (hotWaterType != null)
+    }
+    if (hotWaterType != null) {
       data['hotWaterType'] = hotWaterType; // Added hotWaterType
-    if (hotWaterMode != null)
+    }
+    if (hotWaterMode != null) {
       data['hotWaterMode'] = hotWaterMode; // Added hotWaterMode
+    }
     if (surfaceArea != null) data['surfaceArea'] = surfaceArea;
     data['pieces'] = pieces.map((piece) => piece.toJson()).toList();
     data['proprietaires'] = proprietaires.map((p) => p.toJson()).toList();
@@ -214,6 +268,7 @@ class Domaine {
 
 class InventoryAuthor {
   String? id;
+  String? localId;
   int? order;
   String? firstname;
   String? lastName; // Added lastName
@@ -241,19 +296,26 @@ class InventoryAuthor {
     this.lastName, // Added lastName
     this.denomination, // Added denomination
     this.address,
-    this.type, // Added type
+    this.type = 'physique',
     this.dob, // Added dob
     this.placeOfBirth, // Added placeOfBirth
     this.photos = const [], // Added photos
     this.meta,
     this.createdAt,
     this.updatedAt,
+    localId,
   });
+
+  set settype(String? value) {
+    Jks.wizardState.updateFormValue('__', value);
+    type = value;
+  }
 
   @override
   String toString() {
     return '''User: { 
       id: $id, 
+      localId: $localId,
       order: $order, 
       name: $firstname, 
       representant: $representant, 
@@ -272,31 +334,65 @@ class InventoryAuthor {
     }''';
   }
 
-  factory InventoryAuthor.fromJson(Map<String, dynamic> doc, {Review? review}) {
+  factory InventoryAuthor.fromJson(
+    Map<String, dynamic> doc, {
+    Review? review,
+    Procuration? procuration,
+    String? source,
+  }) {
     return InventoryAuthor(
       id: doc['_id'] ?? "0",
+      localId: doc['localId'] ?? '',
       email: doc['email'] ?? '',
       phone: doc['phone'] ?? '', // Added phone
       representant: doc['representant'] != null
-          ? InventoryAuthor.fromJson(doc['representant'])
-          : InventoryAuthor(),
+          ? doc['representant'] is String
+                ? InventoryAuthor(id: doc['representant'])
+                : InventoryAuthor.fromJson(doc['representant'])
+          : null,
       order: doc['order'] ?? 1,
       firstname: doc['firstname'] ?? doc['firstName'] ?? '',
       lastName: doc['lastname'] ?? '', // Added lastName
       denomination: doc['denomination'] ?? '', // Added denomination
       address: doc['address'] ?? '',
       type: doc['type'] ?? 'physique', // Added type
-      dob: doc['dob'] != null ? DateTime.parse(doc['dob']) : null, // Added dob
-      placeOfBirth: doc['placeofbirth'] ?? '', // Added placeOfBirth
+      dob: doc['dob'] != null
+          ? DateTime.parse(
+              doc['dob'] != "" ? doc['dob'] : DateTime.now().toIso8601String(),
+            )
+          : null, // Added dob
+      placeOfBirth: doc['placeofbirth'] ?? '',
       photos: doc['meta'] != null
           ? List<String>.from(
-              (doc['meta']?[review?.id ?? 'photos']?["photos"]) ?? [])
-          : null, // Added photos
-      meta: doc['meta'] ?? {},
-      createdAt:
-          doc['createdAt'] != null ? DateTime.parse(doc['createdAt']) : null,
-      updatedAt:
-          doc['updatedAt'] != null ? DateTime.parse(doc['updatedAt']) : null,
+              (doc['meta']?[review?.id ??
+                      procuration?.id ??
+                      'photos']?["photos"]) ??
+                  [],
+            )
+          : [],
+      meta: doc['meta'] ?? (procuration != null ? {"hasSigned": false} : {}),
+      createdAt: doc['createdAt'] != null
+          ? DateTime.parse(doc['createdAt'])
+          : null,
+      updatedAt: doc['updatedAt'] != null
+          ? DateTime.parse(doc['updatedAt'])
+          : null,
+    );
+  }
+
+  factory InventoryAuthor.fromUser(User user) {
+    return InventoryAuthor(
+      id: user.iid,
+      email: user.email,
+      phone: user.phoneNumber, // Added phone
+      order: 1,
+      firstname: user.firstName,
+      lastName: user.lastName, // Added lastName
+      address: user.address,
+      type: user.type, // Added type
+      dob: user.dob, // Added dob
+      placeOfBirth: user.placeOfBirth, // Added placeOfBirth
+      meta: user.meta,
     );
   }
 
@@ -307,21 +403,23 @@ class InventoryAuthor {
     return photos ?? [];
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson({bool newly = false}) {
     Map<String, dynamic> data = {};
-    if (id != null) data['_id'] = id;
+    if (id != null) data['_id'] = newly ? generateClientId("author") : id;
     if (email != null) data['email'] = email;
     if (phone != null) data['phone'] = phone; // Added phone
     if (order != null) data['order'] = order;
     if (firstname != null) data['firstname'] = firstname;
     if (lastName != null) data['lastname'] = lastName; // Added lastName
-    if (denomination != null)
+    if (denomination != null) {
       data['denomination'] = denomination; // Added denomination
+    }
     if (address != null) data['address'] = address;
     if (type != null) data['type'] = type; // Added type
     if (dob != null) data['dob'] = dob!.toIso8601String(); // Added dob
-    if (placeOfBirth != null)
+    if (placeOfBirth != null) {
       data['placeofbirth'] = placeOfBirth; // Added placeOfBirth
+    }
     if (meta != null) data['meta'] = meta;
     if (representant != null) {
       data['representant'] = representant!.toJson();
@@ -373,6 +471,7 @@ class InventoryAuthor {
 
 class InventoryPiece {
   String? id;
+  String? localId;
   String? name;
   String? type; // Type of the piece (e.g., bedroom, kitchen, etc.)
   double? area; // Area of the piece in square meters
@@ -388,6 +487,7 @@ class InventoryPiece {
 
   InventoryPiece({
     this.id,
+    this.localId,
     this.name,
     this.type,
     this.area,
@@ -405,6 +505,7 @@ class InventoryPiece {
   String toString() {
     return '''Piece: { 
       id: $id, 
+      localId: $localId,
       name: $name, 
       type: $type, 
       area: $area, 
@@ -419,9 +520,13 @@ class InventoryPiece {
     }''';
   }
 
-  factory InventoryPiece.fromJson(Map<String, dynamic> doc) {
-    return InventoryPiece(
+  factory InventoryPiece.fromJson(
+    Map<String, dynamic> doc, {
+    Map<String, dynamic>? copyOptions,
+  }) {
+    InventoryPiece result = InventoryPiece(
       id: doc['_id'] ?? 0,
+      localId: doc['localId'] ?? '',
       name: doc['name'] ?? '',
       type: doc['type'] ?? '',
       area: doc['area'] != null ? (doc['area'] as num).toDouble() : null,
@@ -430,22 +535,61 @@ class InventoryPiece {
       meta: doc['meta'] ?? {},
       things: doc['things'] != null
           ? (doc['things'] as List)
-              .map((item) => InventoryOfThing.fromJson(item))
-              .toList()
+                .map((item) => InventoryOfThing.fromJson(item))
+                .toList()
           : null,
       photos: doc['photos'] != null ? List<String>.from(doc['photos']) : null,
-      comment: doc['comment'] ?? '', // Added comment
-      createdAt:
-          doc['createdAt'] != null ? DateTime.parse(doc['createdAt']) : null,
-      updatedAt:
-          doc['updatedAt'] != null ? DateTime.parse(doc['updatedAt']) : null,
+      comment: doc['comment'] ?? '',
+      createdAt: doc['createdAt'] != null
+          ? DateTime.parse(doc['createdAt'])
+          : null,
+      updatedAt: doc['updatedAt'] != null
+          ? DateTime.parse(doc['updatedAt'])
+          : null,
+    );
+    if (copyOptions != null) {
+      if (copyOptions["copyOptions"]?.indexOf("observations") == -1) {
+        result.comment = '';
+      }
+    }
+    return result;
+  }
+
+  InventoryPiece copyWith({
+    String? id,
+    String? name,
+    String? type,
+    double? area,
+    int? count,
+    int? order,
+    Map? meta,
+    List<InventoryOfThing>? things,
+    List<String>? photos, // Added photos
+    String? comment, // Added comment
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return InventoryPiece(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      area: area ?? this.area,
+      count: count ?? this.count,
+      order: order ?? this.order,
+      meta: meta ?? this.meta,
+      things: things ?? this.things,
+      photos: photos ?? this.photos, // Added photos
+      comment: comment ?? this.comment, // Added comment
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson({String? source}) {
     Map<String, dynamic> data = {};
 
-    if (id != null) data['_id'] = id;
+    if (id != null)
+      data['_id'] = source == 'duplicate' ? generateClientId("piece") : id;
     if (name != null) data['name'] = name;
     if (type != null) data['type'] = type;
     if (area != null) data['area'] = area;
@@ -453,13 +597,13 @@ class InventoryPiece {
     if (order != null) data['order'] = order; // Added order
     if (meta != null) data['meta'] = meta;
     if (things != null) {
-      data['things'] = things!.map((item) => item.toJson()).toList();
+      data['things'] = things!
+          .map((item) => item.toJson(source: source))
+          .toList();
     }
-    if (photos != null) {
-      data['photos'] = photos; // Added photos
-    }
+    if (photos != null) data['photos'] = source == 'duplicate' ? [] : photos;
     if (comment != null) {
-      data['comment'] = comment; // Added comment
+      data['comment'] = comment;
     }
     if (createdAt != null) data['createdAt'] = createdAt!.toIso8601String();
     if (updatedAt != null) data['updatedAt'] = updatedAt!.toIso8601String();
@@ -470,6 +614,7 @@ class InventoryPiece {
 
 class InventoryOfThing {
   String? id;
+  String? localId;
   String? name;
   String? type; // Type of the thing (e.g., furniture, appliance, etc.)
   String? brand; // Brand of the thing
@@ -486,6 +631,10 @@ class InventoryOfThing {
   int? count; // Order of the thing
   DateTime? dateAcquired; // Date when the thing was acquired
   Map? meta = {};
+  bool newlyAdded = false;
+
+  DateTime? createdAt;
+  DateTime? updatedAt;
 
   InventoryOfThing({
     this.id,
@@ -505,12 +654,17 @@ class InventoryOfThing {
     this.notes,
     this.order, // Added order
     this.dateAcquired,
+    this.newlyAdded = false,
+    this.createdAt,
+    this.updatedAt,
+    localId,
   });
 
   @override
   String toString() {
     return '''Thing: { 
       id: $id, 
+      localId: $localId,
       name: $name, 
       type: $type, 
       brand: $brand, 
@@ -518,47 +672,64 @@ class InventoryOfThing {
       serialNumber: $serialNumber, 
       condition: $condition, 
       location: $location, 
-      value: $testingStage,       meta: ${meta != null ? meta.toString() : 'null'}, 
-
+      meta: ${meta != null ? meta.toString() : 'null'},  
       description: $comment, 
       count: $count, 
       photos: ${photos != null ? photos.toString() : 'null'}, // Added photos
       warranty: $warranty, 
       notes: $notes, 
+      newlyAdded: $newlyAdded,
+      testingStage: $testingStage,
       order: $order, // Added order
       dateAcquired: ${dateAcquired?.toIso8601String()}, 
+      createdAt: ${createdAt?.toIso8601String()}, 
+      updatedAt: ${updatedAt?.toIso8601String()}
      
     }''';
   }
 
   factory InventoryOfThing.fromJson(Map<String, dynamic> doc) {
     return InventoryOfThing(
-      id: doc['_id'] ?? 0,
+      id: doc['_id'] ?? generateRandomStrings(5),
+      localId: doc["localId"] ?? '',
       name: doc['name'] ?? '',
       type: doc['type'] ?? '',
       brand: doc['brand'] ?? '',
       model: doc['model'] ?? '',
       serialNumber: doc['serialNumber'] ?? '',
-      condition: doc['condition'] ?? '',
+      condition: doc['condition'] ?? doc['etat'] ?? '',
       location: doc['location'] ?? '',
-      count: doc['count'] ?? '',
+      count: doc['count'] ?? 0,
       testingStage: doc['testingStage'] ?? '',
       comment: doc['comment'] ?? '',
       photos: doc['photos'] != null ? List<String>.from(doc['photos']) : null,
       warranty: doc['warranty'] ?? '',
       notes: doc['notes'] ?? '',
+      newlyAdded: doc['newlyAdded'] ?? false,
       order: doc['order'] ?? 0, // Added order
       dateAcquired: doc['dateAcquired'] != null
           ? DateTime.parse(doc['dateAcquired'])
           : null,
       meta: doc['meta'] ?? {},
+      createdAt: doc['createdAt'] != null
+          ? DateTime.parse(doc['createdAt'])
+          : null,
+      updatedAt: doc['updatedAt'] != null
+          ? DateTime.parse(doc['updatedAt'])
+          : null,
     );
   }
 
-  Map<String, dynamic> toJson() {
+  void addphoto(String photoUrl) {
+    photos ??= [];
+    photos!.add(photoUrl);
+  }
+
+  Map<String, dynamic> toJson({String? source}) {
     Map<String, dynamic> data = {};
 
-    if (id != null) data['_id'] = id;
+    if (id != null)
+      data['_id'] = source == 'duplicate' ? generateClientId("thing") : id;
     if (name != null) data['name'] = name;
     if (type != null) data['type'] = type;
     if (brand != null) data['brand'] = brand;
@@ -569,9 +740,7 @@ class InventoryOfThing {
     if (location != null) data['location'] = location;
     if (testingStage != null) data['testingStage'] = testingStage;
     if (comment != null) data['comment'] = comment;
-    if (photos != null) {
-      data['photos'] = photos; // Added photos
-    }
+    if (photos != null) data['photos'] = source == 'duplicate' ? [] : photos;
     if (meta != null) data['meta'] = meta;
 
     if (warranty != null) data['warranty'] = warranty;
@@ -580,6 +749,9 @@ class InventoryOfThing {
     if (dateAcquired != null) {
       data['dateAcquired'] = dateAcquired!.toIso8601String();
     }
+    if (newlyAdded) data['newlyAdded'] = newlyAdded;
+    if (createdAt != null) data['createdAt'] = createdAt!.toIso8601String();
+    if (updatedAt != null) data['updatedAt'] = updatedAt!.toIso8601String();
 
     return data;
   }
@@ -610,6 +782,9 @@ class InventoryOfThing {
     DateTime? dateUpgraded,
     DateTime? dateDowngraded,
     DateTime? dateRecalled,
+    bool? newlyAdded,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return InventoryOfThing(
       id: id ?? this.id,
@@ -622,12 +797,15 @@ class InventoryOfThing {
       condition: condition ?? this.condition,
       location: location ?? this.location,
       testingStage: testingStage ?? this.testingStage,
-      comment: description ?? this.comment,
+      comment: description ?? comment,
       photos: photos ?? this.photos,
       warranty: warranty ?? this.warranty,
       notes: notes ?? this.notes,
       order: order ?? this.order,
+      newlyAdded: newlyAdded ?? this.newlyAdded,
       dateAcquired: dateAcquired ?? this.dateAcquired,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }
@@ -650,6 +828,7 @@ class Compteur {
   DateTime? lastChecked;
   Map<String, dynamic>? meta;
   List<String>? photos;
+  String? localId;
 
   Compteur({
     this.id,
@@ -669,6 +848,7 @@ class Compteur {
     this.lastChecked,
     this.meta,
     this.photos = const [],
+    this.localId,
   });
 
   @override
@@ -676,6 +856,7 @@ class Compteur {
     return '''Compteur: {
       id: $id,
       name: $name,
+      localId: $localId,
       type: $type,
       serialNumber: $serialNumber,
       location: $comment,
@@ -697,6 +878,7 @@ class Compteur {
   factory Compteur.fromJson(Map<String, dynamic> json) {
     return Compteur(
       id: json['_id']?.toString(),
+      localId: json['localId']?.toString(),
       name: json['name']?.toString(),
       type: json['type']?.toString(),
       serialNumber: json['serialNumber']?.toString(),
@@ -718,24 +900,29 @@ class Compteur {
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson({String? source}) {
     Map<String, dynamic> data = {};
 
-    if (id != null) data['_id'] = id;
+    if (id != null)
+      data['_id'] = source == 'duplicate' ? generateClientId("compteur") : id;
     if (name != null) data['name'] = name;
     if (type != null) data['type'] = type;
     if (serialNumber != null) data['serialNumber'] = serialNumber;
     if (comment != null) data['comment'] = comment;
     if (initialReading != null) data['initialReading'] = initialReading;
     if (currentReading != null) data['currentReading'] = currentReading;
-    if (initialReadingHp != null)
+    if (initialReadingHp != null) {
       data['initialReadingHp'] = initialReadingHp; // Added
-    if (initialReadingHc != null)
+    }
+    if (initialReadingHc != null) {
       data['initialReadingHc'] = initialReadingHc; // Added
-    if (currentReadingHp != null)
+    }
+    if (currentReadingHp != null) {
       data['currentReadingHp'] = currentReadingHp; // Added
-    if (currentReadingHc != null)
+    }
+    if (currentReadingHc != null) {
       data['currentReadingHc'] = currentReadingHc; // Added
+    }
     if (unit != null) data['unit'] = unit;
     if (count != null) data['count'] = count;
     if (order != null) data['order'] = order;
@@ -743,7 +930,7 @@ class Compteur {
       data['lastChecked'] = lastChecked!.toIso8601String();
     }
     if (meta != null) data['meta'] = meta;
-    if (photos != null) data['photos'] = photos;
+    if (photos != null) data['photos'] = source == 'duplicate' ? [] : photos;
 
     return data;
   }
@@ -863,10 +1050,11 @@ class CleDePorte {
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson({String? source}) {
     Map<String, dynamic> data = {};
 
-    if (id != null) data['_id'] = id;
+    if (id != null)
+      data['_id'] = source == 'duplicate' ? generateClientId("cledeporte") : id;
     if (name != null) data['name'] = name; // Added name
     if (type != null) data['type'] = type;
     if (description != null) data['description'] = description;
@@ -882,7 +1070,7 @@ class CleDePorte {
     }
     if (meta != null) data['meta'] = meta;
     if (comment != null) data['comment'] = comment; // Added comment
-    if (photos != null) data['photos'] = photos; // Added photos
+    if (photos != null) data['photos'] = source == 'duplicate' ? [] : photos;
 
     return data;
   }

@@ -758,7 +758,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "introduction": MessageLookupByLibrary.simpleMessage("Introduction"),
         "introductionSection":
             MessageLookupByLibrary.simpleMessage("1. Section d\'introduction"),
-        "inventories": MessageLookupByLibrary.simpleMessage("Inventaires"),
+        "inventories": MessageLookupByLibrary.simpleMessage("Inventaire"),
         "inventoryreport":
             MessageLookupByLibrary.simpleMessage("état des lieux"),
         "invoice": MessageLookupByLibrary.simpleMessage("Facture"),
@@ -772,7 +772,7 @@ class MessageLookup extends MessageLookupByLibrary {
                 "Le code source du générateur est-il disponible ?"),
         "item": MessageLookupByLibrary.simpleMessage("Élément"),
         "itemInventories":
-            MessageLookupByLibrary.simpleMessage("Inventaires des équipements"),
+            MessageLookupByLibrary.simpleMessage("Inventaire des équipements"),
         "items": MessageLookupByLibrary.simpleMessage("Articles"),
         "jan": MessageLookupByLibrary.simpleMessage("Jan"),
         "jennyWilson": MessageLookupByLibrary.simpleMessage("Jenny Wilson"),
@@ -1207,7 +1207,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "room": MessageLookupByLibrary.simpleMessage("Pièce"),
         "roomCount": MessageLookupByLibrary.simpleMessage("Nombre de pièces"),
         "roomInventories":
-            MessageLookupByLibrary.simpleMessage("Inventaires des pièces"),
+            MessageLookupByLibrary.simpleMessage("Inventaire des pièces"),
         "roomInventoriesDescription": MessageLookupByLibrary.simpleMessage(
             "S\'il n\'y a aucun élément, laissez la valeur à 0"),
         "rounded": MessageLookupByLibrary.simpleMessage("Arrondi"),
@@ -1297,7 +1297,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "selectreviewtype": MessageLookupByLibrary.simpleMessage(
             "Sélectionnez le type d\'état des lieux"),
         "selfreview": MessageLookupByLibrary.simpleMessage(
-            "Je veux effectuer moi-même mon état des lieux ou bien je suis mandaté pour l\'effectuer"),
+            "Je veux effectuer moi-même mon état des lieux ou je suis mandaté pour l\'effectuer"),
         "send": MessageLookupByLibrary.simpleMessage("Envoyer"),
         "senior": MessageLookupByLibrary.simpleMessage("Sénior"),
         "sent": MessageLookupByLibrary.simpleMessage("Envoyés"),

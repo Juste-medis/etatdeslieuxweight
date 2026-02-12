@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 // 📦 Package imports:
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class AcnooDropdownStyle {
   AcnooDropdownStyle(this.context);
@@ -32,7 +31,7 @@ class AcnooDropdownStyle {
   AcnooDropdownIconData get iconStyle {
     return AcnooDropdownIconData(
       icon: Icon(
-        MdiIcons.unfoldMoreHorizontal,
+        Icons.keyboard_arrow_down_rounded,
         color: _isDark ? Colors.white : const Color(0xff404040),
       ),
     );

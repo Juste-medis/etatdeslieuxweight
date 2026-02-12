@@ -7,6 +7,9 @@ const FileAccessSchema = mongoose.Schema({
         ref: 'User',
         required: true
     },
+    email: {
+        type: String,
+    },
     fileId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'files',

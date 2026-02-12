@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouveau message de support - Jatai</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .logo {
+            height: 40px;
+            margin-bottom: 16px;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        .info-section {
+            margin-bottom: 24px;
+        }
+
+        .info-item {
+            margin-bottom: 12px;
+            padding: 0;
+        }
+
+        .label {
+            font-weight: 500;
+            color: #666;
+            display: inline-block;
+            min-width: 80px;
+        }
+
+        .value {
+            color: #1a1a1a;
+        }
+
+        .message-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 24px 0;
+        }
+
+        .message-title {
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .message-content {
+            color: #444;
+            white-space: pre-wrap;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <img src="{{logoUrl}}" alt="Jatai" class="logo">
+                <h1 class="title">Nouveau message de support pour Jatai - Etat des Lieux</h1>
+            </div>
+
+            <div class="info-section">
+                <div class="info-item">
+                    <span class="label">De :</span>
+                    <span class="value">{{fullName}}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Email :</span>
+                    <span class="value">{{email}}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Sujet :</span>
+                    <span class="value">{{subject}}</span>
+                </div>
+            </div>
+
+            <div class="message-section">
+                <div class="message-title">Message :</div>
+                <div class="message-content">{{message}}</div>
+            </div>
+
+            <div class="footer">
+                <p>Ce message a été envoyé via le formulaire de contact Jatai</p>
+                <p>© 2025 JATAI. Tous droits réservés.</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

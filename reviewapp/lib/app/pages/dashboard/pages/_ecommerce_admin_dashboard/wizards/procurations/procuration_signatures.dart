@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/constants/constant.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/copole.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/copole2.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/signature.dart';
-import 'package:jatai_etatsdeslieux/app/core/static/model_keys.dart';
-import 'package:jatai_etatsdeslieux/app/providers/providers.dart';
-import 'package:jatai_etatsdeslieux/app/widgets/widgets.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/copole.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/copole2.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/utls.dart';
+import 'package:mon_etatsdeslieux/app/core/static/model_keys.dart';
+import 'package:mon_etatsdeslieux/app/providers/_payment_provider.dart';
+import 'package:mon_etatsdeslieux/app/providers/_proccuration_provider.dart';
+import 'package:mon_etatsdeslieux/app/providers/providers.dart';
+import 'package:mon_etatsdeslieux/app/widgets/dialogs/confirm_dialog.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:provider/provider.dart';
-import 'package:jatai_etatsdeslieux/generated/l10n.dart' as l;
 import 'package:responsive_grid/responsive_grid.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/french_translations.dart';
-import 'package:syncfusion_flutter_signaturepad/signaturepad.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/french_translations.dart';
 
 class Signatures extends StatelessWidget {
   final AppThemeProvider wizardState;
@@ -21,6 +20,7 @@ class Signatures extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final wizardState = context.watch<AppThemeProvider>();
+    final proccurationState = context.watch<ProccurationProvider>();
     final _padding = responsiveValue<double>(
       context,
       xs: 16,
@@ -29,80 +29,238 @@ class Signatures extends StatelessWidget {
       lg: 24,
     );
 
-    return SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: ScrollConfiguration(
-            behavior: ScrollConfiguration.of(context).copyWith(
-              scrollbars: false,
-            ),
+    return Consumer<PaymentProvider>(
+      builder: (context, appState, child) {
+        Jks.paymentState = appState;
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(
+              context,
+            ).copyWith(scrollbars: false),
             child: Form(
-                autovalidateMode: AutovalidateMode.disabled,
-                key: wizardState.formKeys[WizardStep.values[6]],
-                child: ShadowContainer(
-                  contentPadding: EdgeInsets.all(_padding / 2.75),
-                  customHeader: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      20.height,
-                      Text(
-                        "Signature".tr.capitalizeFirstLetter(),
-                        style:
-                            theme.textTheme.labelLarge?.copyWith(fontSize: 40),
-                      ),
-                      20.height,
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.9,
-                        height: 200,
-                        child: SignaturePadWidget("procuration_signature"),
-                      ).center(),
-                      30.height,
-                      inventoryAddButton(
-                        context,
-                        title:
-                            "+ PHOTO Selfie Bailleur avec sa Pièce d’identité"
-                                .tr,
-                        icon: Icons.add_a_photo,
-                        onPressed: () async {
-                          sourceSelect(
-                              context: context,
-                              callback: (croppedFile) async {
-                                // await uploadFile(croppedFile,
-                                //     delete_id: delete_id,
-                                //     update_id: update_id,
-                                //     onfinish: onfinish,
-                                //     isprofile: isprofile);
-                              });
-                        },
-                      ).paddingOnly(bottom: 10),
-                      SizedBox(
-                        height: 400,
-                        width: MediaQuery.of(context).size.width,
-                        child: GridView.count(
-                          crossAxisCount: responsiveValue<int>(
-                            context,
-                            xs: 2,
-                            sm: 2,
-                            md: 3,
-                            lg: 4,
+              autovalidateMode: AutovalidateMode.disabled,
+              key: wizardState.formKeys[WizardStep.values[6]],
+              child: Padding(
+                padding: EdgeInsets.all(_padding / 2.75),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Signatures".tr.capitalizeFirstLetter(),
+                      style: theme.textTheme.labelLarge?.copyWith(fontSize: 40),
+                    ),
+                    20.height,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Règlement des procurations".tr
+                              .capitalizeFirstLetter(),
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
-                          childAspectRatio: 360 / 320,
-                          mainAxisSpacing: _padding,
-                          crossAxisSpacing: _padding,
-                          children: List.generate(
-                            defaultphotos["piece"]!.length,
-                            (index) {
-                              final _item = defaultphotos["piece"]![index];
+                        ),
+                        16.height,
+                        Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: appState.paymentMade == "done"
+                              ? Text(
+                                  "Le paiement a été effectué avec succès. Vous pouvez maintenant compléter la procuration."
+                                      .tr,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                )
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          "Solde actuel:",
+                                          style: theme.textTheme.titleMedium,
+                                        ),
+                                        Text(
+                                          "${wizardState.currentUser.balance?.procurement ?? 0} Crédits",
+                                          style: theme.textTheme.titleMedium
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                    16.height,
+                                    Text(
+                                      "Nombre de crédit nécessaire: 1",
+                                      style: theme.textTheme.bodyLarge,
+                                    ),
+                                    20.height,
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        ElevatedButton.icon(
+                                          onPressed:
+                                              ((appState.isLoading) ||
+                                                  (wizardState
+                                                              .currentUser
+                                                              .balance
+                                                              ?.procurement ??
+                                                          0) <
+                                                      1)
+                                              ? null
+                                              : () async {
+                                                  final confirmed =
+                                                      await showAwesomeConfirmDialog(
+                                                        forceHorizontalButtons:
+                                                            true,
+                                                        cancelText:
+                                                            'Annuler'.tr,
+                                                        confirmText:
+                                                            'confirmer'.tr,
+                                                        context: context,
+                                                        title:
+                                                            'Utiliser un double crédit État des Lieux ?'
+                                                                .tr,
+                                                        description:
+                                                            'Ce crédit vous permet de déléguer vos états de lieux à vos locataires'
+                                                                .tr,
+                                                      );
+                                                  if (confirmed ?? false) {
+                                                    appState
+                                                        .useOneCredit({
+                                                          'type': "procurement",
+                                                          "procuration_id":
+                                                              wizardState
+                                                                  .formValues['procurationId'],
+                                                        })
+                                                        .then((val) {
+                                                          var newpro =
+                                                              proccurationState
+                                                                  .editingProccuration!;
+                                                          newpro.setCredited(
+                                                            Jks
+                                                                .paymentState
+                                                                .paymentMade,
+                                                          );
 
-                              return JataiGalleryImageCard(
-                                item: _item,
-                                onDelete: () {},
-                              );
-                            },
-                          ),
-                        ).paddingOnly(bottom: 10),
+                                                          proccurationState
+                                                              .seteditingProcuration(
+                                                                newpro,
+                                                              );
+                                                        });
+                                                  }
+                                                },
+                                          icon: appState.isLoading
+                                              ? SizedBox(
+                                                  width: 16,
+                                                  height: 16,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        color: theme
+                                                            .colorScheme
+                                                            .onPrimary,
+                                                      ),
+                                                )
+                                              : const Icon(Icons.payment),
+                                          label: Text("Utiliser 1 crédit"),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                theme.colorScheme.primary,
+                                            foregroundColor:
+                                                theme.colorScheme.onPrimary,
+                                          ),
+                                        ),
+                                        8.height,
+                                        OutlinedButton(
+                                          onPressed: appState.isLoading
+                                              ? null
+                                              : () {
+                                                  showpayementDialog(
+                                                    context,
+                                                    source:
+                                                        "procurationcreated",
+                                                    onConfirmed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                  );
+                                                },
+                                          child: Text("Acheter des crédits"),
+                                        ),
+                                        8.height,
+                                        TextButton(
+                                          onPressed: appState.isLoading
+                                              ? null
+                                              : () {
+                                                  Jks.wizardNextStep();
+                                                },
+                                          child: Text("Régler plus tard"),
+                                        ),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 16.0),
+                                      child: Text(
+                                        "Vous pourrez signer le document après avoir effectué le paiement.",
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(
+                                              color: wizardState.isDarkTheme
+                                                  ? whiteColor
+                                                  : blackColor,
+                                            ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                        signatureDivider(),
+                      ],
+                    ),
+                    if (appState.paymentMade == "done") ...[
+                      Text(
+                        wizardState.inventoryProprietaires.length > 1
+                            ? "Signatures des bailleurs".tr
+                                  .capitalizeFirstLetter()
+                            : "Signature du bailleur".tr
+                                  .capitalizeFirstLetter(),
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          fontSize: 40,
+                        ),
                       ),
+                      for (final tenant in wizardState.inventoryProprietaires)
+                        Column(
+                          key: Key('tenant_${tenant.id}_signature'),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            signatureDivider(),
+                            SignatureSection(
+                              userkey: "Bailleur",
+                              title: authorname(tenant),
+                              signatureKey: '${tenant.id}',
+                              showApproval: true,
+                              formKey: Jks.tenantApprovals['${tenant.id}'],
+                              acceptText: "Bon pour pouvoir".tr,
+                            ),
+                          ],
+                        ).paddingSymmetric(horizontal: 8),
                     ],
-                  ),
-                ))));
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }

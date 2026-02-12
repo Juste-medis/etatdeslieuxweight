@@ -27,34 +27,20 @@ class _ShellRouteWrapperState extends State<ShellRouteWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    final _mqSize = MediaQuery.sizeOf(context);
-    final _isLaptop = rf.ResponsiveBreakpoints.of(context).largerThan(
-      BreakpointName.MD.name,
-    );
-    final _theme = Theme.of(context);
-    final _isDark = _theme.brightness == Brightness.dark;
+    final mqSize = MediaQuery.sizeOf(context);
+    final isLaptop = false;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       key: scaffoldKey,
       backgroundColor:
-          _isDark ? AcnooAppColors.kDark1 : AcnooAppColors.kPrimary50,
-      drawer: _mqSize.width > 1240
-          ? null
-          : buildSidebar(_isLaptop && isLargeSidebarExpaned),
-      bottomNavigationBar: _isLaptop ? null : const FooterWidget(),
+          isDark ? AcnooAppColors.kDark1 : AcnooAppColors.kPrimary50,
+      drawer: mqSize.width > 1240 ? null : buildSidebar(isLaptop),
       body: rf.ResponsiveRowColumn(
         layout: rf.ResponsiveRowColumnType.ROW,
         rowCrossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Laptop & Desktop Sidebar
-
-          if (_isLaptop)
-            rf.ResponsiveRowColumnItem(
-              columnFit: FlexFit.loose,
-              child: buildSidebar(!isLargeSidebarExpaned),
-            ),
-
-          // Main Content
           rf.ResponsiveRowColumnItem(
             rowFit: FlexFit.tight,
             child: rf.ResponsiveRowColumn(
@@ -62,40 +48,12 @@ class _ShellRouteWrapperState extends State<ShellRouteWrapper> {
               children: [
                 // Static Topbar
                 rf.ResponsiveRowColumnItem(
-                  child: buildTopbar(_isLaptop),
+                  child: buildTopbar(isLaptop),
                 ),
-
-                // Route Breadcrumb Widget
-                // rf.ResponsiveRowColumnItem(
-                //   child: Padding(
-                //     padding: rf.ResponsiveValue<EdgeInsetsGeometry>(
-                //       context,
-                //       conditionalValues: [
-                //         rf.Condition.smallerThan(
-                //           name: BreakpointName.LG.name,
-                //           value: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                //         )
-                //       ],
-                //       defaultValue: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                //     ).value,
-                //     child: RouteBreadcrumbWidget(
-                //       breadcrumbModel: _getCurrentRouterParam(context),
-                //     ),
-                //   ),
-                // ),
-
-                // Route Pages,
-
                 rf.ResponsiveRowColumnItem(
                   columnFit: FlexFit.tight,
                   child: widget.child,
                 ),
-
-                // Footer
-                if (_isLaptop)
-                  const rf.ResponsiveRowColumnItem(
-                    child: FooterWidget(),
-                  )
               ],
             ),
           ),
@@ -122,14 +80,5 @@ class _ShellRouteWrapperState extends State<ShellRouteWrapper> {
       rootScaffoldKey: scaffoldKey,
       iconOnly: isExpanded,
     );
-  }
-
-  RouteBreadcrumbModel _getCurrentRouterParam(BuildContext context) {
-    return routerParam[GoRouterState.of(context).matchedLocation] ??
-        const RouteBreadcrumbModel(
-          title: '',
-          parentRoute: 'N/A',
-          childRoute: 'N/A',
-        );
   }
 }

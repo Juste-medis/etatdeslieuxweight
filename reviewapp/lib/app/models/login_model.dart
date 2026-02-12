@@ -1,5 +1,4 @@
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/utls.dart';
-import 'package:jatai_etatsdeslieux/app/models/models.dart';
+import 'package:mon_etatsdeslieux/app/models/models.dart';
 
 class LoginResponse {
   User? data;
@@ -19,13 +18,13 @@ class LoginResponse {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     if (this.data != null) {
       data['data'] = this.data!.toJson();
     }
-    data['is_user_exist'] = this.isUserExist;
-    data['status'] = this.status;
-    data['message'] = this.token;
+    data['is_user_exist'] = isUserExist;
+    data['status'] = status;
+    data['message'] = token;
     return data;
   }
 }

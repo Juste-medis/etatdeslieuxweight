@@ -1,0 +1,6 @@
+ 
+36: "document_address" -> "tnemucod ed ueil"
+37: "complementary_heatingType" -> "gas"
+38: "complementary_heatingMode" -> "individual"
+39: "complementary_hotWaterType" -> "electric"
+40: "complementary_hotWaterMode" -> "collective"  

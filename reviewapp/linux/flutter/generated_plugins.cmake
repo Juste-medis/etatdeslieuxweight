@@ -7,7 +7,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_localization
   nb_utils
   open_file_linux
-  printing
+  syncfusion_pdfviewer_linux
   url_launcher_linux
 )
 

@@ -1,9 +1,8 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/field_styles/_dropdown_styles.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/copole.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/utls.dart';
-import 'package:jatai_etatsdeslieux/generated/l10n.dart' as l;
+import 'package:mon_etatsdeslieux/app/core/helpers/field_styles/_dropdown_styles.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/copole.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/utls.dart';
 import 'package:responsive_grid/responsive_grid.dart';
 
 class CustomDropdownButton extends StatelessWidget {
@@ -26,6 +25,8 @@ class CustomDropdownButton extends StatelessWidget {
   final double? iconSize;
   final EdgeInsets? itemPadding;
   final dropdownKey = GlobalKey<DropdownButton2State>();
+  final bool changeOnlyOnClose;
+  dynamic theValue;
 
   CustomDropdownButton({
     super.key,
@@ -47,6 +48,7 @@ class CustomDropdownButton extends StatelessWidget {
     this.itemTextStyle,
     this.iconSize = 20,
     this.itemPadding,
+    this.changeOnlyOnClose = false,
   });
 
   void openDropdown() => dropdownKey.currentState?.callTap();
@@ -63,17 +65,28 @@ class CustomDropdownButton extends StatelessWidget {
       dropdownStyleData: _getDropdownStyleData(context, defaultStyle, theme),
       menuItemStyleData: _getMenuItemStyleData(defaultStyle),
       items: _buildMenuItems(theme),
-      onChanged: onChanged,
+      onChanged: (value) {
+        theValue = value;
+        if (!changeOnlyOnClose) {
+          onChanged!(value);
+        }
+      },
       onMenuStateChange: (isOpen) {
         if (!isOpen && onclose != null) {
           onclose!();
+        }
+        if (!isOpen && changeOnlyOnClose && theValue is int) {
+          onChanged!(theValue);
         }
       },
     );
   }
 
   DropdownStyleData _getDropdownStyleData(
-      BuildContext context, AcnooDropdownStyle defaultStyle, ThemeData theme) {
+    BuildContext context,
+    AcnooDropdownStyle defaultStyle,
+    ThemeData theme,
+  ) {
     return defaultStyle.dropdownStyle.copyWith(
       width:
           dropdownWidth ?? responsiveValue<double>(context, xs: 200, md: 246),
@@ -85,9 +98,7 @@ class CustomDropdownButton extends StatelessWidget {
   }
 
   MenuItemStyleData _getMenuItemStyleData(AcnooDropdownStyle defaultStyle) {
-    return defaultStyle.menuItemStyle.copyWith(
-      padding: EdgeInsets.zero,
-    );
+    return defaultStyle.menuItemStyle.copyWith(padding: EdgeInsets.zero);
   }
 
   List<DropdownMenuItem<dynamic>> _buildMenuItems(ThemeData theme) {
@@ -110,12 +121,20 @@ class CustomDropdownButton extends StatelessWidget {
                     placeholder: "",
                     initialvalue: buttonTitle,
                     onChanged: (text) {
-                      onChanged!(text);
+                      theValue = text;
+                      if (!changeOnlyOnClose) {
+                        onChanged!(text);
+                      }
                     },
                   )
                 : ListTile(
+                    onTap: () {
+                      theValue = items[i]['value'];
+                      onChanged!(items[i]['value']);
+                    },
                     contentPadding: EdgeInsets.symmetric(
-                        horizontal: (whithicon || !hasIcon) ? 10 : 40),
+                      horizontal: (whithicon || !hasIcon) ? 10 : 40,
+                    ),
                     leading: whithicon
                         ? Icon(
                             items[i]['icon'],
@@ -125,9 +144,11 @@ class CustomDropdownButton extends StatelessWidget {
                         : null,
                     title: Text(
                       items[i]['label'],
-                      style: itemTextStyle ??
-                          theme.textTheme.bodyMedium!
-                              .copyWith(fontWeight: FontWeight.w500),
+                      style:
+                          itemTextStyle ??
+                          theme.textTheme.bodyMedium!.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
                     ),
                   ),
           ),
@@ -139,8 +160,12 @@ class CustomDropdownButton extends StatelessWidget {
   }
 
   Widget _buildDefaultButton(BuildContext context, ThemeData theme) {
-    return inventoryActionButton(context,
-        title: buttonTitle, onPressed: openDropdown, icon: buttonIcon);
+    return inventoryActionButton(
+      context,
+      title: buttonTitle,
+      onPressed: openDropdown,
+      icon: buttonIcon,
+    );
   }
 
   ScrollbarThemeData _getScrollbarTheme(ThemeData theme) {
@@ -151,11 +176,12 @@ class CustomDropdownButton extends StatelessWidget {
   }
 }
 
-DropdownMenuItem<String> classicMenuItem(
-    {required String name,
-    required IconData icon,
-    required theme,
-    required void Function() ontap}) {
+DropdownMenuItem<String> classicMenuItem({
+  required String name,
+  required IconData icon,
+  required theme,
+  required void Function() ontap,
+}) {
   return DropdownMenuItem(
     onTap: () {
       ontap();
@@ -166,10 +192,7 @@ DropdownMenuItem<String> classicMenuItem(
       child: _DropdownItemWrapper(
         child: ListTile(
           key: ValueKey(icon),
-          visualDensity: const VisualDensity(
-            horizontal: -4,
-            vertical: -4,
-          ),
+          visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
           contentPadding: EdgeInsets.zero,
           leading: Icon(icon, size: 20),
           title: Text(name),
@@ -184,7 +207,7 @@ DropdownMenuItem<String> classicMenuItem(
 }
 
 class _DropdownItemWrapper extends StatelessWidget {
-  const _DropdownItemWrapper({super.key, required this.child});
+  const _DropdownItemWrapper({required this.child});
   final Widget child;
   @override
   Widget build(BuildContext context) {
@@ -192,9 +215,7 @@ class _DropdownItemWrapper extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: BorderDirectional(
-          bottom: BorderSide(
-            color: _theme.colorScheme.outline,
-          ),
+          bottom: BorderSide(color: _theme.colorScheme.outline),
         ),
       ),
       child: child,

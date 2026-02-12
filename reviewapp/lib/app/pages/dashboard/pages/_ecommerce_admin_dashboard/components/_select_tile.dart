@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jatai_etatsdeslieux/app/core/static/model_keys.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/utls.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 class SelectGrid extends StatelessWidget {
@@ -18,13 +18,15 @@ class SelectGrid extends StatelessWidget {
         if (title != null)
           Text(
             title.capitalizeFirstLetter(),
-            style: theme.textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         if (title != null) const SizedBox(height: 16),
 
         // Multi-column grid selector
         GridView.count(
+          padding: const EdgeInsets.all(0),
           shrinkWrap: true,
           crossAxisCount: isdesktop ? 6 : 2,
           childAspectRatio: isdesktop ? 2 : 1.8,
@@ -67,9 +69,9 @@ class SelectionTile extends StatelessWidget {
             bottom: BorderSide(
               width: 7.2,
               color: isSelected
-                  ? Jks.canEditReview == "canEditReview"
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.primary.withOpacity(0.4)
+                  ? mrv()
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.primary.withOpacity(0.4)
                   : theme.colorScheme.outline,
             ),
           ),
@@ -80,10 +82,13 @@ class SelectionTile extends StatelessWidget {
           children: [
             if (icon != null) Icon(icon),
             if (icon != null) 3.height,
-            Text(title,
-                style: theme.textTheme.titleLarge!.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: isDesktop ? 16 : 14)),
+            Text(
+              title,
+              style: theme.textTheme.titleLarge!.copyWith(
+                fontWeight: FontWeight.w600,
+                fontSize: isDesktop ? 16 : 14,
+              ),
+            ),
           ],
         ).paddingAll(20),
       ),

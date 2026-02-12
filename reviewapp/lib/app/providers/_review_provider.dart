@@ -1,12 +1,16 @@
 // 🐦 Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/utls.dart';
-import 'package:jatai_etatsdeslieux/app/core/network/rest_apis.dart';
-import 'package:jatai_etatsdeslieux/app/core/static/model_keys.dart';
-import 'package:jatai_etatsdeslieux/app/models/_inventory.dart';
-import 'package:jatai_etatsdeslieux/app/models/review.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/extensions/_build_context_extensions.dart';
-import 'package:jatai_etatsdeslieux/app/providers/_theme_provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/constants/htmlcontent.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/utls.dart';
+import 'package:mon_etatsdeslieux/app/core/network/rest_apis.dart';
+import 'package:mon_etatsdeslieux/app/core/services/offlineStorage.dart';
+import 'package:mon_etatsdeslieux/app/core/services/pdfgenerator.dart';
+import 'package:mon_etatsdeslieux/app/core/static/model_keys.dart';
+import 'package:mon_etatsdeslieux/app/models/_inventory.dart';
+import 'package:mon_etatsdeslieux/app/models/review.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/extensions/_build_context_extensions.dart';
+import 'package:mon_etatsdeslieux/app/providers/_theme_provider.dart';
 
 class ReviewProvider extends ChangeNotifier {
   //=================================================================
@@ -15,27 +19,24 @@ class ReviewProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-//Review editing modifiers
-  void seteditingAuthor(InventoryAuthor l) {
-    if (Jks.canEditReview != "canEditReview") {
-      show_common_toast(
-          "Vous ne pouvez pas modifier cette information", Jks.context!);
-      return;
-    }
+  //Review editing modifiers
+  void seteditingAuthor(InventoryAuthor l, {bool liveupdate = true}) {
     editingAuthor = l;
-    notifyListeners();
+    if (liveupdate) {
+      notifyListeners();
+    }
   }
 
-  void seteditingReview(Review? l, {bool quiet = false}) {
+  void seteditingReview(Review? l, {bool quiet = false, source = ""}) {
     editingReview = l;
     if (!quiet) {
       notifyListeners();
     }
   }
 
-  List<Review> _reviews = [];
+  final List<Review> _reviews = [];
   InventoryAuthor editingAuthor = InventoryAuthor(
-    id: "0",
+    id: "new",
     email: '',
     address: '',
   );
@@ -43,54 +44,75 @@ class ReviewProvider extends ChangeNotifier {
   //=================================================================
   String accessCode = "";
 
-  int _currentPage = 1;
-  int _totalPages = 1;
+  int currentPage = 1;
+  int totalPages = 1;
   bool _isLoading = false;
-  bool _hasMore = true;
   Map data = {};
   Map? filtering;
 
   List<Review> get reviews => _reviews;
   bool get isLoading => _isLoading;
-  bool get hasMore => _hasMore;
+  MagicStep currentStep = MagicStep.presentation;
 
-  Future<void> fetchReviews({bool refresh = false}) async {
+  Future<void> fetchReviews({
+    bool refresh = false,
+    String type = "",
+    int page = 1,
+  }) async {
     if (_isLoading && !refresh) return;
 
     _isLoading = true;
+    notifyListeners();
     if (refresh) {
-      _currentPage = 1;
-      _reviews = [];
-      notifyListeners();
+      currentPage = 1;
+      filtering = null;
+    } else {
+      currentPage = page;
+    }
+
+    if (type.isNotEmpty) {
+      filtering = {"status": type};
     }
 
     try {
-      final response =
-          await getreviews(page: _currentPage, limit: "10", filter: filtering);
+      final response = await getreviews(
+        page: currentPage,
+        limit: "10",
+        filter: filtering,
+      );
+      _reviews.clear();
 
       if (response.status == true) {
         _reviews.addAll(response.list);
-        _currentPage = response.currentPage;
-        _totalPages = response.totalPages;
-        notifyListeners();
-
-        _hasMore = _currentPage < _totalPages;
+        currentPage = response.currentPage;
+        totalPages = response.totalPages;
+      }
+      if (refresh) {
+        OfflineStorageService.saveOfflineReviews(_reviews);
       }
     } catch (err) {
-      debugPrint('Error fetching reviews: $err');
+      if (err.toString() == "no_internet") {
+        final offlineReviews = await OfflineStorageService.getOfflineReviews();
+        //sort by date descending
+        offlineReviews.sort(
+          (a, b) => (b.createdAt ?? DateTime.now()).compareTo(
+            a.createdAt ?? DateTime.now(),
+          ),
+        );
+        _reviews.clear();
+        _reviews.addAll(offlineReviews.map((e) => e).toList());
+        // show_common_toast("", Jks.context!);
+        notifyListeners();
+        return;
+      }
       my_inspect(err);
     } finally {
       _isLoading = false;
-      notifyListeners();
     }
+    notifyListeners();
   }
 
   Future<void> addReviewToReviews(Review rere) async {
-    if (Jks.canEditReview != "canEditReview") {
-      show_common_toast(
-          "Vous ne pouvez pas modifier cette information", Jks.context!);
-      return;
-    }
     _reviews.add(rere);
     notifyListeners();
   }
@@ -99,11 +121,22 @@ class ReviewProvider extends ChangeNotifier {
     Review review,
     String section, {
     InventoryAuthor? updateAuthor,
-    required AppThemeProvider wizardState, // Add this parameter
+    canModifyMandataire = false,
+    required AppThemeProvider wizardState,
+    bool force = false, // Add this parameter
   }) async {
-    if (Jks.canEditReview != "canEditReview") {
+    // if (Jks.isSyncingOfflineDatas == true) {
+    //   show_common_toast(
+    //       "Veuillez patienter pendant la synchronisation des données hors ligne",
+    //       Jks.context!);
+    //   return review;
+    // }
+
+    if (!mrv() && !force) {
       show_common_toast(
-          "Vous ne pouvez pas modifier cette information", Jks.context!);
+        "Vous ne pouvez pas modifier cette information",
+        Jks.context!,
+      );
       return review;
     }
     var formData = wizardState.formValues;
@@ -117,38 +150,33 @@ class ReviewProvider extends ChangeNotifier {
       "isMandated": wizardState.isMandated,
       "section": section,
     };
-    if (section == "the_good") {
-      payload["propertyDetails"] = {
-        "_id": review.propertyDetails?.id,
-        'address': formData['property_address'],
-        'complement': formData['property_complement'],
-        'floor': formData['property_floor'],
-        'surface': formData['property_surface'],
-        'roomCount': formData['property_roomCount'],
-        'furnitured': formData['property_furnitured'],
-        'box': formData['property_box'],
-        'cellar': formData['property_cellar'],
-        'garage': formData['property_garage'],
-        'parking': formData['property_parking'],
-      };
-    }
-    if (section == "complementary") {
-      payload["complementaryDetails"] = {
-        'heatingType': formData['complementary_heatingType'],
-        'heatingMode': formData['complementary_heatingMode'],
-        'hotWaterType': formData['complementary_hotWaterType'],
-        'hotWaterMode': formData['complementary_hotWaterMode'],
+    if (section == "the_good" || section == "complementary") {
+      payload["propertyDetails"] = wizardState.domaine.propertyDetails();
+      payload['complementaryDetails'] = {
+        'tenant_entry_date': formData['tenant_entry_date'] != null
+            ? "${formData['tenant_entry_date']}"
+            : null,
+        'document_address': formData['document_address'],
       };
     }
     if (section == "pieces") {
-      payload["inventoryPieces"] =
-          wizardState.inventoryofPieces.map((piece) => piece.toJson()).toList();
+      payload["inventoryPieces"] = wizardState.inventoryofPieces
+          .map((piece) => piece.toJson())
+          .toList();
     }
 
     if (section == "compteurs") {
       payload = {
         ...payload,
         'compteurs': wizardState.domaine.compteurs
+            .map((piece) => piece.toJson())
+            .toList(),
+      };
+    }
+    if (section == "cledeportes") {
+      payload = {
+        ...payload,
+        'cledeportes': wizardState.domaine.clesDePorte
             .map((piece) => piece.toJson())
             .toList(),
       };
@@ -160,33 +188,27 @@ class ReviewProvider extends ChangeNotifier {
           'comments': formData['comments'],
           'security_smoke': formData['security_smoke'],
           'security_smoke_functioning': formData['security_smoke_functioning'],
-          'tenant_new_address': formData['tenant_new_address'],
           'tenant_entry_date': formData['tenant_entry_date'] != null
               ? "${formData['tenant_entry_date']}"
               : null,
-        }
+          for (final l in wizardState.inventoryLocatairesSortant)
+            "new_address_${l.email}": l.meta?["new_address"],
+        },
       };
     }
-    if (section == "cledeportes") {
-      payload = {
-        ...payload,
-        'cledeportes': wizardState.domaine.clesDePorte
-            .map((piece) => piece.toJson())
-            .toList(),
-      };
-    }
+    payload["canModifyMandataire"] = canModifyMandataire;
 
     if (updateAuthor != null) {
       payload["author"] = updateAuthor.toJson();
-      if (wizardState.isMandated) {
+      if (wizardState.isMandated == true && canModifyMandataire == true) {
         payload["mandataire"] = {
-          "_id": review.mandataire?.id,
+          "_id": wizardState.mandataire?.id,
           ...(wizardState.mandataire?.toJson() ?? {}),
         };
-        if (formData["mandataire_type"] == "morale") {
+        if (wizardState.mandataire?.type == "morale") {
           payload["mandataire"]["representant"] = {
-            ...payload["mandataire"],
-            "_id": review.mandataire?.representant?.id,
+            ...?wizardState.mandataire?.representant?.toJson(),
+            "_id": wizardState.mandataire?.representant?.id,
           };
         }
       }
@@ -194,60 +216,160 @@ class ReviewProvider extends ChangeNotifier {
     var rere = Review();
 
     try {
+      rere = await OfflineStorageService.saveOfflineReview(
+        editingReview!,
+        wizardState,
+      );
       var raw = await updatereview(review.id, payload);
       if (raw.status == true) {
-        fetchReviews();
         rere = Review.fromJson(raw.data);
-        int index = _reviews.indexWhere((element) => element.id == review.id);
-
-        if (index != -1) {
-          _reviews[index] = rere;
-          seteditingReview(rere);
-          wizardState.prefillReview(rere);
-
-          if (Jks.quietsavereview == false) {
-            Jks.context!.popRoute();
-            Jks.quietsavereview = null;
-          }
-        }
       }
     } catch (e) {
-      my_inspect(e);
+      if (e.toString() == "no_internet") {
+        if (review.id != null && review.id!.contains("review_")) {
+        } else {
+          OfflineStorageService.journalize(review.id!, payload).then((value) {
+            // show_common_toast(
+            //     "Modifications enregistrées en mode hors ligne", Jks.context!);
+          });
+        }
+      } else {
+        my_inspect(e);
+        show_common_toast(e.toString(), Jks.context!);
+      }
+    }
+
+    int index = _reviews.indexWhere((element) => element.id == review.id);
+
+    if (index != -1) {
+      _reviews[index] = rere;
+      seteditingReview(rere, quiet: true);
+      wizardState.prefillReview(rere, quietly: true);
+
+      if (Jks.quietsavereview == false) {
+        Jks.context!.popRoute();
+        Jks.quietsavereview = null;
+      }
     }
     _isLoading = false;
-    notifyListeners();
-    return rere;
+    // notifyListeners();
+    return rere.id != null ? rere : review;
   }
 
-  Future<void> previewThereview(Review review) async {
+  Future<bool> deleteTheReview(Review thereview) async {
+    if (thereview.procuration != null) {
+      Jks.languageState.showAppNotification(
+        message:
+            "Impossible de supprimer un état des lieux lié à une procuration en cours.",
+        title: "Erreur",
+      );
+      return false;
+    }
+
     _isLoading = true;
+    notifyListeners();
+    Map<String, dynamic> payload = {"proccurationId": thereview.id ?? ""};
+    try {
+      var raw = await removeReview("${thereview.id}", payload);
+      if (raw.status == true) {
+        if (reviews.isNotEmpty) {
+          int index = reviews.indexWhere(
+            (element) => element.id == thereview.id,
+          );
+
+          if (index != -1) {
+            reviews.removeAt(index);
+          }
+        }
+        OfflineStorageService.deleteOfflineReview(thereview.id!);
+
+        seteditingReview(null);
+        _isLoading = false;
+      }
+    } catch (e) {
+      if (e.toString() == "no_internet") {
+        if (thereview.id != null && thereview.id!.contains("review_")) {
+          OfflineStorageService.deleteOfflineReview(thereview.id!);
+          if (reviews.isNotEmpty) {
+            int index = reviews.indexWhere(
+              (element) => element.id == thereview.id,
+            );
+
+            if (index != -1) {
+              reviews.removeAt(index);
+            }
+          }
+          seteditingReview(null);
+        } else {
+          Jks.languageState.showAppNotification(
+            message:
+                "Aucune connexion Internet. Impossible de supprimer l'état des lieux hors ligne.",
+            title: "Erreur",
+          );
+        }
+        simulateRightCenterTap(Jks.context!);
+      }
+      _isLoading = false;
+      notifyListeners();
+      my_inspect(e);
+      return false;
+    }
+    _isLoading = false;
 
     notifyListeners();
-    var payload = {
-      "reviewId": review.id ?? "",
-      "section": "preview",
-    };
-    await previwage(review.id, payload).then((res) async {
-      if (res.status == true) {
-        data["${getReviewExplicitName(review.reviewType!)}_pdfPath"] =
-            res.data["${getReviewExplicitName(review.reviewType!)}_pdfPath"];
-        data[
-            "${getReviewExplicitName(review.reviewType!, reverse: true)}_review"] = res
-                .data[
-            "${getReviewExplicitName(review.reviewType!, reverse: true)}_pdfPath"];
-      }
-    }).catchError((e) {
-      my_inspect(e);
-      // toast(e.toString());
-    });
-    _isLoading = false;
-    notifyListeners();
+    return true;
   }
 
-  Future<void> loadMore() async {
-    if (_hasMore && !_isLoading) {
-      _currentPage++;
-      await fetchReviews();
+  Future<Map> previewThereview(Review review) async {
+    _isLoading = true;
+    Map resultData = {};
+
+    notifyListeners();
+    var payload = {"reviewId": review.id ?? "", "section": "preview"};
+    await previwage(review.id, payload)
+        .then((res) async {
+          if (res.status == true) {
+            if (res.data != null) {
+              data["${getReviewExplicitName(review.reviewType!)}_pdfPath"] = res
+                  .data["${getReviewExplicitName(review.reviewType!)}_pdfPath"];
+              data["${getReviewExplicitName(review.reviewType!, reverse: true)}_pdfPath"] =
+                  res.data["${getReviewExplicitName(review.reviewType!, reverse: true)}_pdfPath"];
+
+              resultData = data;
+            }
+          }
+          _isLoading = false;
+          notifyListeners();
+          return resultData;
+        })
+        .catchError((e) async {
+          if (e.toString() == "no_internet") {
+            PdfGenerator.generateAndSavePdf(review).then((gdata) {
+              data["${getReviewExplicitName(review.reviewType!)}_pdfPath"] =
+                  gdata["${getReviewExplicitName(review.reviewType!)}_pdfPath"];
+              data["${getReviewExplicitName(review.reviewType!, reverse: true)}_pdfPath"] =
+                  gdata["${getReviewExplicitName(review.reviewType!, reverse: true)}_pdfPath"];
+
+              resultData = data;
+
+              _isLoading = false;
+              notifyListeners();
+              return resultData;
+            });
+          } else {
+            my_inspect(e);
+            return {};
+          }
+
+          // toast(e.toString());
+        });
+    return resultData;
+  }
+
+  void updateInventory({MagicStep? step, bool liveupdate = true}) {
+    if (step != null) currentStep = step;
+    if (liveupdate) {
+      notifyListeners();
     }
   }
 
@@ -256,3 +378,5 @@ class ReviewProvider extends ChangeNotifier {
     await fetchReviews(refresh: true);
   }
 }
+
+enum MagicStep { presentation, magicer, analyzing, result }

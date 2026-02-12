@@ -5,12 +5,14 @@ const superagent = require("superagent");
 // Importing models
 const userModel = require("../models/userModel");
 const otpModel = require("../models/otpModel");
-const forgotPassowrdOtpModel = require("../models/forgotPasswordOtpModel");
 const { signupShema, signinShema, edituserShema } = require("../utils/shemas");
 const { z } = require('zod');
 let config = require('../config/config');
-const { sendOtpcodeTO } = require("../utils/utils");
+const { sendOtpcodeTO, isLockedLogin, recordFailedAttempt, resetAttempts, getClientIp, getUserDeviceInfo } = require("../utils/utils");
 const randomstring = require('randomstring');
+const { sendWelcomeMessage, sendMessageToSupportMail } = require("../services/sendmail");
+const messageModel = require("../models/messageModel");
+const loginhistorymodel = require("../models/loginHistory");
 
 module.exports = {
     checkregisteruser: async (req, res) => {
@@ -40,13 +42,13 @@ module.exports = {
             // Check if the email is already registered
             const existingUser = await userModel.findOne({ email });
             if (existingUser) {
-                return res.status(409).json({ status: false, message: "Email is already registered" });
+                return res.status(409).json({ status: false, message: "Cette adresse e-mail est déjà liée à un compte" });
             }
 
             // Check if the phone number is already registered
             const existingPhone = await userModel.findOne({ phone });
             if (existingPhone) {
-                return res.status(409).json({ status: false, message: "Phone number is already registered" });
+                return res.status(409).json({ status: false, message: "Numéro de téléphone déjà utilisé" });
             }
 
             // Hash the password
@@ -61,7 +63,7 @@ module.exports = {
                 country_code,
                 phone,
                 country,
-                type,
+                type: type || 'tenant',
             });
 
             // Save the user to the database
@@ -95,29 +97,53 @@ module.exports = {
         }
     },
     signin: async (req, res) => {
-        // Logic for user sign-in
+
+        const ip = getClientIp(req);
+
         const { email, password } = req.body;
-        console.log({ email, password });
+
         try { signinShema.parse({ email, password }); } catch (e) { throw e; }
 
         let query = { email };
 
-        let user = await userModel.findOne(query)
-
-        if (!user) {
-            throw 'Vous n\'êtes pas inscrit !';
+        const lock = await isLockedLogin(email, ip);
+        if (lock.locked) {
+            return res.status(429).json({
+                message: `Accès bloqué. Veillez réessayer dans ${(lock.retryIn / 60).toFixed(0)} minutes.`
+                , retry_in_seconds: lock.retry_in_seconds
+            });
         }
 
-        // if (!user.itemaccess) {
-        //     user.itemaccess = await ItemAccess.findOne({ ID: 1 })
-        // }
+        async function proceedFailedAttempt(message = "Vous n'êtes pas inscrit !") {
+            const resRec = await recordFailedAttempt(email, ip);
+
+            if (resRec.locked) {
+                return res.status(429).json({ error: 'Trop d’essais, compte bloqué', retry_in_seconds: resRec.retry_in_seconds });
+            }
+
+            throw message;
+        }
+
+        let user = await userModel.findOne(query)
+        if (!user) {
+            await proceedFailedAttempt();
+        }
+        const accessAdmin = req.headers['x-access-admin'] || req.headers['X-Access-Admin'];
+        if (accessAdmin && accessAdmin === 'casper' && (user.level !== 'superroot')) {
+            await proceedFailedAttempt("Accès administrateur refusé pour ce compte.");
+        }
+
+        if (user.level === 'banned') {
+            return res.status(403).json({ status: false, message: "Compte banni. Veuillez contacter le support." });
+        }
+        if (!user.is_active) {
+            return res.status(403).json({ status: false, message: "Compte désactivé. Veuillez contacter le support." });
+        }
 
 
         const correct = await bcrypt.compare(password, user.password)
-
-
-
         if (correct) {
+
             const plainUser = {
                 id: user.ID,
                 _id: user._id,
@@ -139,10 +165,11 @@ module.exports = {
                 gender: user.gender || '',
                 meta: user.meta || {},
                 about: user.about || null,
-                level: user.level || null,
                 type: user.type || null,
                 itemaccess: user.itemaccess || null,
                 verifiedAt: user.verifiedAt || null,
+                createdAt: user.createdAt || null,
+                balances: user.balances || null,
             };
 
             let formfields = await new Promise(function (resolve, reject) {
@@ -151,13 +178,26 @@ module.exports = {
                     resolve({ ...plainUser, token });
                 });
             })
+
+            if (user.verifiedAt === null) {
+                sendOtpcodeTO(plainUser, "signup");
+            }
+
             if (typeof formfields === "object") {
+                loginhistorymodel.create({
+                    user: user._id,
+                    loginAt: new Date().toISOString(),
+                    ...getUserDeviceInfo(req),
+                });
+                await userModel.findOneAndUpdate({ _id: user._id }, { $set: { lastSeenAt: new Date().toISOString() } }, { new: true });
+
                 return res.status(200).json({ data: formfields, token: formfields.token, status: true, okmessage: "Sign-in successful" });
             } else {
                 throw formfields;
             }
 
         } else {
+            await proceedFailedAttempt("Email ou mot de passe incorrect !");
             return res.status(200).json({ status: false, message: "Email ou mot de passe incorrect !" });
         }
 
@@ -167,16 +207,24 @@ module.exports = {
         async (req, res) => {
             const userId = req.user._id;
             const updateData = req.body;
-            console.log(updateData);
-
+            delete updateData.balances
 
             const user = await userModel.findById(userId);
 
             try { edituserShema.parse(updateData); } catch (e) { throw e; }
+
+            if (updateData.email && updateData.email !== user.email) {
+                const existingUser = await userModel.find({ email: updateData.email });
+                if (existingUser.length > 0) {
+                    return res.status(409).json({ status: false, message: "Cette adresse e-mail est déjà liée à un compte" });
+                }
+            }
+
+
+
             if (updateData.password && updateData.user_newPassword && updateData.user_confirmPassword) {
 
 
-                console.log(updateData.password, user.password);
 
                 const correct = await bcrypt.compare(updateData.password, user.password)
 
@@ -207,29 +255,13 @@ module.exports = {
                 ).select('-password');
 
                 if (!user) {
-                    return res.status(404).json({ status: false, message: "User not found" });
+                    return res.status(404).json({ status: false, message: "Utilisateur non trouvé" });
                 }
-
                 return res.status(200).json({ status: true, data: user });
             } catch (error) {
                 return res.status(500).json({ status: false, message: "Server error", error });
             }
         },
-    verifyotp: async (req, res) => {
-        // Logic for verifying OTP
-        const { email, otp } = req.body;
-        try {
-            const otpRecord = await otpModel.findOne({ email, otp });
-            if (otpRecord) {
-                await userModel.updateOne({ email }, { verifiedAt: new Date() });
-                return res.status(200).json({ status: true, data: { message: "OTP verified successfully" } });
-            } else {
-                return res.status(400).json({ status: false, message: "Invalid OTP" });
-            }
-        } catch (error) {
-            return res.status(500).json({ status: false, message: "Server error", error });
-        }
-    },
     interestedCategory: async (req, res) => {
         // Logic for interested category
         const { userId, categories } = req.body;
@@ -271,18 +303,50 @@ module.exports = {
         try {
             const user = await userModel.findOne({ email });
             if (user) {
-                const otp = randomstring.generate({
-                    length: 6,
-                    charset: 'numeric',
-                });
-                await otpModel.create({ email, otp });
+                sendOtpcodeTO(user, "signup");
+
                 // Send OTP to user's email (not implemented here)
-                return res.status(200).json({ status: true, message: "OTP resent successfully" });
+                return res.status(200).json({ status: true, message: "Code OTP renvoyé à votre adresse e-mail" });
             } else {
                 return res.status(404).json({ status: false, message: "User not found" });
             }
         } catch (error) {
             return res.status(500).json({ status: false, message: "Server error", error });
+        }
+    },
+    verifyotp: async (req, res) => {
+        const { email, otp } = req.body;
+        console.log(email, otp);
+
+        try {
+            const otpRecord = await otpModel.findOne({ email, otp, });
+            if (otpRecord) {
+                if (otpRecord.isVerified) {
+                    throw "Code déjà vérifié"
+                }
+                if (otpRecord.isRevoked) {
+                    throw "Code OTP révoqué. Veuillez demander un nouveau code."
+                }
+                if (otpRecord.expires < new Date()) {
+                    throw "Code OTP expiré"
+                }
+
+                otpRecord.isVerified = true;
+                await otpRecord.save();
+
+                const plainUser = await userModel.findOne({ email }).select('verifiedAt firstName lastName email');
+                if (plainUser && plainUser?.verifiedAt === null) {
+                    plainUser.verifiedAt = new Date();
+                    plainUser.save();
+                    sendWelcomeMessage(plainUser,);
+                }
+
+                return res.status(200).json({ status: true, data: { message: "Verification réussie", plainUser } });
+            } else {
+                return res.status(400).json({ status: false, message: "Code OTP invalide" });
+            }
+        } catch (error) {
+            throw error;
         }
     },
     forgotpassword: async (req, res) => {
@@ -291,30 +355,10 @@ module.exports = {
         try {
             const user = await userModel.findOne({ email });
             if (user) {
-                const otp = randomstring.generate({
-                    length: 6,
-                    charset: 'numeric',
-                });
-                await forgotPassowrdOtpModel.create({ email, otp });
-                // Send OTP to user's email (not implemented here)
-                return res.status(200).json({ status: true, message: "OTP sent for password reset" });
+                sendOtpcodeTO(user, "passwordReset");
+                return res.status(200).json({ status: true, message: "OTP envoyé à votre adresse e-mail" });
             } else {
-                return res.status(404).json({ status: false, message: "User not found" });
-            }
-        } catch (error) {
-            return res.status(500).json({ status: false, message: "Server error", error });
-        }
-    },
-    forgotpasswordotpverification: async (req, res) => {
-        // Logic for forgot password OTP verification
-        const { email, otp } = req.body;
-        try {
-            const otpRecord = await forgotPassowrdOtpModel.findOne({ email, otp });
-            if (otpRecord) {
-                await forgotPassowrdOtpModel.deleteOne({ email, otp });
-                return res.status(200).json({ status: true, message: "OTP verified successfully" });
-            } else {
-                return res.status(400).json({ status: false, message: "Invalid OTP" });
+                return res.status(404).json({ status: false, message: "Utilisateur non trouvé" });
             }
         } catch (error) {
             return res.status(500).json({ status: false, message: "Server error", error });
@@ -322,19 +366,45 @@ module.exports = {
     },
     resetpassword: async (req, res) => {
         // Logic for resetting password
-        const { email, newPassword } = req.body;
+        const { email, newPassword, passwordConfirmation, otp } = req.body;
+
+        const otpRecord = await otpModel.findOne({ email, otp, });
+
+        if (!otpRecord) {
+            return res.status(400).json({ status: false, message: "Code OTP invalide" });
+        }
+
+        if (!otpRecord.isVerified) {
+            if (otpRecord.isRevoked) {
+                throw "Code OTP révoqué. Veuillez demander un nouveau code."
+            }
+            if (otpRecord.expires < new Date()) {
+                throw "Code OTP expiré"
+            }
+            otpRecord.isVerified = true;
+            await otpRecord.save();
+        }
+
+        if (newPassword !== passwordConfirmation) {
+            return res.status(400).json({ status: false, message: "Les mots de passe ne correspondent pas" });
+        }
+
+        //attendre 5 seconde avant de continuer
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         try {
             const user = await userModel.findOne({ email });
             if (user) {
                 user.password = hashedPassword;
                 await user.save();
-                return res.status(200).json({ status: true, message: "Password reset successfully" });
+                return res.status(200).json({ status: true, message: "Mot de passe réinitialisé avec succès" });
             } else {
-                return res.status(404).json({ status: false, message: "User not found" });
+                throw "Utilisateur non trouvé";
             }
         } catch (error) {
-            return res.status(500).json({ status: false, message: "Server error", error });
+            throw error;
         }
     },
     getuser: async (req, res) => {
@@ -343,6 +413,7 @@ module.exports = {
         try {
             const user = await userModel.findById(userId).select('-password');
             if (user) {
+                // sendWelcomeMessage(user,);
 
                 return res.status(200).json({ status: true, data: user });
             } else {
@@ -350,6 +421,29 @@ module.exports = {
             }
         } catch (error) {
             return res.status(500).json({ status: false, message: "Server error", error });
+        }
+    },
+    sendMessageToSupport: async (req, res) => {
+        const userId = req?.user?._id;
+        const { subject, message, email, fullName } = req.body;
+        try {
+            const user = await userModel.findById(userId);
+
+            const newMessage = new messageModel({
+                user: user?._id,
+                subject,
+                message,
+                email: email || user.email,
+                fullName: fullName || `${user.firstName} ${user.lastName}`.trim(),
+            });
+            await newMessage.save();
+            sendMessageToSupportMail("tosupport", newMessage);
+            sendMessageToSupportMail("toUser", newMessage);
+
+
+            return res.status(200).json({ status: true, message: "Message envoyé au support avec succès" });
+        } catch (error) {
+            return res.status(500).json({ status: false, message: "Erreur du serveur", error });
         }
     },
     uploadimage: async (req, res) => {
@@ -363,7 +457,13 @@ module.exports = {
         // Add query params for the search
         fields.city = fields.city;
         fields.format = 'json';  // Ensure the response format is JSON
-        fields.addressdetails = 1;  // Optional: To get more detailed address information
+        fields.addressdetails = 1;
+
+        if (fields.type == 'city') {
+            fields.city = fields.q;
+            fields.addressdetails = 0
+            delete fields.q;
+        }
 
 
         // Call the Nominatim search API to get the autocomplete results
@@ -388,22 +488,21 @@ module.exports = {
                 text: "No results found",
             });
         }
-
         // You can modify the response to only include relevant fields for autocomplete
         const autocompleteResults = response.places.map((place) => {
-            let house_number = place.address.house_number;
-            let road = place.address.road || place.address.footway || place.address.path || place.address.track || place.address.street || place.address.suburb || place.address.village || place.address.town || place.address.city;
-            let city = place.address.city || place.address.town || place.address.village || place.address.suburb || place.address.hamlet || place.address.locality;
-            let state = place.address.state || place.address.region || place.address.county || place.address.district || place.address.province || place.address.area;
-            let country = place.address.country || place.address.country_code || place.address.continent || place.address.state_district || place.address.state_code || place.address.postcode || place.address.postalcode || place.address.postal_town || place.address.city_district || place.address.city_block || place.address.city_section || place.address.city_area || place.address.city_part || place.address.city_subdivision || place.address.city_neighborhood || place.address.city_region || place.address.city_zone || place.address.city_sector || place.address.city_quarter;
+            let house_number = place.address?.house_number;
+            let road = place?.address?.road || place.address?.footway || place.address?.path || place.address?.track || place.address?.street || place.address?.suburb || place.address?.village || place.address?.town || place.address?.city;
+            let city = place.address?.city || place.address?.town || place.address?.village || place.address?.suburb || place.address?.hamlet || place.address?.locality;
+            let state = place.address?.state || place.address?.region || place.address?.county || place.address?.district || place.address?.province || place.address?.area;
+            let country = place.address?.country || place.address?.country_code || place.address?.continent || place.address?.state_district || place.address?.state_code || place.address?.postcode || place.address?.postalcode || place.address?.postal_town || place.address?.city_district || place.address?.city_block || place.address?.city_section || place.address?.city_area || place.address?.city_part || place.address?.city_subdivision || place.address?.city_neighborhood || place.address?.city_region || place.address?.city_zone || place.address?.city_sector || place.address?.city_quarter;
 
             return {
-                name: place.display_name,
-                display_name: `${house_number ? `${house_number}, ` : ''}${road ? `${road}, ` : ''}${city ? `${city}, ` : ''}${state ? `${state}, ` : ''}${country ? `${country}` : ''}`,
+                name: fields.type == 'city' ? place.display_name : (place.display_name ?? place.name),
+                display_name: fields.type == 'city' ? place.display_name : `${house_number ? `${house_number}, ` : ''}${road ? `${road}, ` : ''}${city ? `${city}, ` : ''}${state ? `${state}, ` : ''}${country ? `${country}` : ''}`,
                 lat: place.lat,
                 lon: place.lon,
                 id: place.osm_id, // Use this as a unique identifier for the place
-                country: place.address.country
+                country: place.address?.country
             }
 
         });

@@ -8,6 +8,7 @@ class UserProfileAvatar extends StatelessWidget {
     final _theme = Theme.of(context);
     final _dropdownStyle = AcnooDropdownStyle(context);
     final lang = l.S.of(context);
+    final wizardState = context.watch<AppThemeProvider>();
 
     DropdownMenuItem<String> classicMenuItem(
         {required String name,
@@ -32,7 +33,10 @@ class UserProfileAvatar extends StatelessWidget {
                 vertical: 8,
               ),
               leading: Icon(icon, size: 20),
-              title: Text(name),
+              title: Text(
+                name,
+                maxLines: 1,
+              ),
               titleTextStyle: _theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w500,
                 color: _theme.colorScheme.onTertiaryContainer,
@@ -52,8 +56,8 @@ class UserProfileAvatar extends StatelessWidget {
         dropdownStyleData: _dropdownStyle.dropdownStyle.copyWith(
           width: responsiveValue<double>(
             context,
-            xs: 200,
-            md: 246,
+            xs: 250,
+            md: 300,
           ),
           maxHeight: 425,
           offset: const Offset(0, -24),
@@ -63,36 +67,20 @@ class UserProfileAvatar extends StatelessWidget {
           ),
         ),
         menuItemStyleData: _dropdownStyle.menuItemStyle.copyWith(
-          customHeights: [60, 48],
+          customHeights: [48, 48],
           padding: EdgeInsets.zero,
         ),
         items: [
-          // Profile Tile
-          DropdownMenuItem<String>(
-            value: 'user_profile',
-            child: _DropdownItemWrapper(
-              child: ListTile(
-                visualDensity: const VisualDensity(
-                  horizontal: -4,
-                  vertical: -4,
-                ),
-                contentPadding: EdgeInsets.only(bottom: 10, left: 16),
-                title:
-                    Text('${appStore.userFirstName} ${appStore.userLastName}'),
-                titleTextStyle: _theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-                subtitle: Text('${getUserTypeName(appStore.userType)}'),
-                subtitleTextStyle: _theme.textTheme.bodyMedium?.copyWith(
-                  color: _theme.colorScheme.onTertiaryContainer,
-                ),
-              ),
-            ),
-          ),
-
+          classicMenuItem(
+              name:
+                  '${wizardState.currentUser.firstName} ${wizardState.currentUser.lastName}',
+              icon: Icons.person_4_outlined,
+              ontap: () async {
+                simulateScreenTap();
+              }),
           classicMenuItem(
               name: lang.signout,
-              icon: FeatherIcons.power,
+              icon: Icons.power_settings_new_rounded,
               ontap: () async {
                 simulateScreenTap();
               }),
@@ -103,10 +91,14 @@ class UserProfileAvatar extends StatelessWidget {
             final confirmed = await showAwesomeConfirmDialog(
               context: context,
               title: '${lang.signmeout} ',
+              confirmText: "Continuer".tr,
+              cancelText: "Annuler".tr,
               description:
-                  '${lang.youwillbeloggedout}. ${lang.doyouwantToproceed}',
+                  "La deconnexion entraînera la perte irréversible des états des lieux non synchronisés. Voulez-vous poursuivre ?"
+                      .tr,
             );
             if (confirmed ?? false) {
+              Jks.checkingAuth = false;
               await logout(context).whenComplete(() {});
             }
           } else {
@@ -126,8 +118,7 @@ class UserProfileAvatar extends StatelessWidget {
         return SizedBox.square(
           dimension: _size.height / 2,
           child: AvatarWidget(
-            imagePath:
-                'assets/images/static_images/avatars/placeholder_avatar/placeholder_avatar_02.jpeg',
+            imagePath: 'assets/images/static_images/placeholder_avatar_02.svg',
           ),
         );
       },
@@ -136,7 +127,7 @@ class UserProfileAvatar extends StatelessWidget {
 }
 
 class _DropdownItemWrapper extends StatelessWidget {
-  const _DropdownItemWrapper({super.key, required this.child});
+  const _DropdownItemWrapper({required this.child});
   final Widget child;
   @override
   Widget build(BuildContext context) {

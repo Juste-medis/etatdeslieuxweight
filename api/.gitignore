@@ -1,0 +1,8 @@
+node_modules
+data
+dump
+.env
+api/web.zip
+backups
+logs/server.log
+api/firebase-service-account.json.json

@@ -1,3 +1,5 @@
+process.env.TZ = 'Europe/Paris';
+
 global.localmachine = process.env?.SSH_CLIENT ? (process.env?.USER.includes("appnode") ? "remote2" : "remote") : process.cwd().includes("/home/juste") ? "home" : false;
 
 // Importing required modules 
@@ -11,13 +13,11 @@ const MongoStore = require('connect-mongo');
 const terminate = require("./config/terminate")
 const errorHandler = require('./utils/error-handler');
 let Config = require('./config/config')
-const fs = require("fs")
 const http = require("http")
-const https = require('https');
-const httpPort = 80;
-const httpsPort = 443;
 const cors = require('cors');
-
+const adminRoutes = require("./routes/adminRoutes");
+const stripeapp = require("./routes/stripeRoutes");
+const apiRoutes = require("./routes/apiRoutes");
 
 // Configure dotenv
 dotenv.config();
@@ -27,6 +27,10 @@ require("./config/conn");
 
 // Import flash middleware
 const flashmiddleware = require('./config/flash');
+const { backupWithMongodump, keepServeron } = require("./utils/backupdbs");
+const { getUserDeviceInfo } = require("./utils/utils");
+backupWithMongodump();
+keepServeron();
 
 // Create an instance of an Express application
 const app = express();
@@ -51,7 +55,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 // Enable CORS for all routes
 app.use(cors({
-    origin: ['https://jataietatdeslieu.adidome.com', 'http://localhost:37859'],
+    origin: ['https://etatdeslieux.jatai.fr', "https://jatadmin.adidome.com", 'http://localhost:38803', 'http://localhost:5000'],
     methods: '*',
     credentials: true
 }));
@@ -59,39 +63,38 @@ app.use(cors({
 // Configure static files
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/.well-known', express.static(path.join(__dirname, '.well-known')));
 
-// Routes for the Admin section
-const adminRoutes = require("./routes/adminRoutes");
+// Routes for the Admin secti
 app.use("/", adminRoutes);
 app.use("/etat-des-lieux", adminRoutes);
 
 // Routes for the API section
-const apiRoutes = require("./routes/apiRoutes");
 
-// Routes for the Admin Api section
+// Routes for the Admin Api section  
 // app.use('/admin/api', require('./routes/adminApiRoutes'));
 
-
+app.use("/api/stripe", stripeapp);
 app.use("/api", apiRoutes);
+
+app.use((req, res) => {
+    let deviceInfo = getUserDeviceInfo(req);
+    global.logfile({
+        content: `${req.path}-${req.method}-${req.originalUrl}`,
+        deviceInfo
+    });
+    if (req.path == "/resetpassword") {
+        let thenewUrl = `${Config.appUrl}/#/resetpassword?email=${encodeURIComponent(req.query.email)}&otp=${encodeURIComponent(req.query.otp)}`;
+        return res.redirect(thenewUrl);
+    }
+    return res.status(404).json({
+        message: `Route ${req.method} ${req.originalUrl} introuvable`,
+        code: 404
+    });
+});
 app.use(errorHandler);
 
-
-//create server
-const options = {
-    key: fs.readFileSync(Config.opkey),
-    cert: fs.readFileSync(Config.opcert),
-};
-
 const server = http.createServer(app);
-// if (global.localmachine == "remote2") {
-//     http.createServer((req, res) => {
-//         res.writeHead(301, { "Location": "https://" + req.headers.host + req.url });
-//         res.end();
-//     }).listen(httpPort, () => {
-//         console.log(`HTTP -> HTTPS redirection active sur le port ${httpPort}`);
-//     });
-
-// }
 
 server.on("error", (e) => errorHandler(e, server, Config.port));
 
@@ -104,7 +107,6 @@ process.on("uncaughtException", exitHandler(1, "Unexpected Error"));
 process.on("unhandledRejection", exitHandler(1, "Unhandled Promise"));
 process.on("SIGTERM", exitHandler(0, "SIGTERM"));
 process.on("SIGINT", exitHandler(0, "SIGINT"));
-
 
 
 

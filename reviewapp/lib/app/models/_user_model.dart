@@ -1,3 +1,5 @@
+import 'package:mon_etatsdeslieux/app/models/_user_balence.dart';
+
 class User {
   final int? id;
   final String? iid;
@@ -30,6 +32,8 @@ class User {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  final UserBalence? balance;
+
   User({
     this.iid,
     this.id,
@@ -60,6 +64,7 @@ class User {
     this.isActive,
     this.createdAt,
     this.updatedAt,
+    this.balance,
   });
 
   @override
@@ -75,32 +80,105 @@ class User {
       firstName: doc['firstName'] ?? '',
       lastName: doc['lastName'] ?? '',
       level: doc['level'] ?? 'standard', // Default level
-      favorites:
-          doc['favorites'] != null ? List<String>.from(doc['favorites']) : [],
+      favorites: doc['favorites'] != null
+          ? List<String>.from(doc['favorites'])
+          : [],
       images: doc['images'] != null ? List<String>.from(doc['images']) : [],
       lastOnline: doc['lastOnline'] != null
           ? DateTime.fromMillisecondsSinceEpoch(doc['lastOnline'])
           : null, // Convert timestamp to DateTime
-      isBlocked: doc['is_active'] ?? false,
+      isBlocked: doc['isBlocked'] ?? false,
       phoneNumber: doc['phone'] ?? '',
       name: doc['username'] ?? '',
       about: doc['about'] ?? "",
       meta: doc['meta'] ?? {},
       gender: doc['gender'] ?? "woman",
-      dob: doc['dob'] != null ? DateTime.parse(doc['dob']) : null,
-      verifiedAt:
-          doc['verifiedAt'] != null ? DateTime.parse(doc['verifiedAt']) : null,
-      address: doc['location']?['address'] ?? '',
+      dob: doc['user_DOB'] != null ? DateTime.parse(doc['user_DOB']) : null,
+      verifiedAt: doc['verifiedAt'] != null
+          ? DateTime.parse(doc['verifiedAt'])
+          : null,
+      address: doc['location']?['address'] ?? doc['address'] ?? '',
       imageUrl: doc['imageUrl'],
       type: doc['type'] ?? 'tenant',
       placeOfBirth: doc['placeOfBirth'] ?? '',
       avatar: doc['avatar'],
       countryCode: doc['country_code'] ?? '33',
       country: doc['country'] ?? 'France',
-      createdAt:
-          doc['createdAt'] != null ? DateTime.parse(doc['createdAt']) : null,
-      updatedAt:
-          doc['updatedAt'] != null ? DateTime.parse(doc['updatedAt']) : null,
+      createdAt: doc['createdAt'] != null
+          ? DateTime.parse(doc['createdAt'])
+          : null,
+      updatedAt: doc['updatedAt'] != null
+          ? DateTime.parse(doc['updatedAt'])
+          : null,
+      balance: doc['balances'] != null
+          ? UserBalence.fromJson(doc['balances'])
+          : const UserBalence(),
+    );
+  }
+
+  User copyWith({
+    int? id,
+    String? iid,
+    String? name,
+    String? email,
+    String? firstName,
+    String? lastName,
+    String? level,
+    DateTime? lastOnline,
+    bool? isBlocked,
+    String? address,
+    String? countryCode,
+    String? gender,
+    DateTime? dob,
+    DateTime? verifiedAt,
+    String? phoneNumber,
+    int? lastmsg,
+    Map? meta,
+    String? about,
+    String? imageUrl,
+    List<String>? images,
+    List<String>? favorites,
+    String? type,
+    String? placeOfBirth,
+    String? avatar,
+    String? country,
+    DateTime? birthdate,
+    bool? isActive,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    UserBalence? balance,
+  }) {
+    return User(
+      id: id ?? this.id,
+      iid: iid ?? this.iid,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      level: level ?? this.level,
+      lastOnline: lastOnline ?? this.lastOnline,
+      isBlocked: isBlocked ?? this.isBlocked,
+      address: address ?? this.address,
+      countryCode: countryCode ?? this.countryCode,
+      gender: gender ?? this.gender,
+      dob: dob ?? this.dob,
+      verifiedAt: verifiedAt ?? this.verifiedAt,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      lastmsg: lastmsg ?? this.lastmsg,
+      meta: meta ?? this.meta,
+      about: about ?? this.about,
+      imageUrl: imageUrl ?? this.imageUrl,
+      images: images ?? this.images,
+      favorites: favorites ?? this.favorites,
+      type: type ?? this.type,
+      placeOfBirth: placeOfBirth ?? this.placeOfBirth,
+      avatar: avatar ?? this.avatar,
+      country: country ?? this.country,
+      birthdate: birthdate ?? this.birthdate,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      balance: balance ?? this.balance,
     );
   }
 
@@ -108,12 +186,14 @@ class User {
     final Map<String, dynamic> data = {};
 
     if (id != null) data['ID'] = id;
+    if (id != null) data['_id'] = iid;
     if (email != null) data['email'] = email;
     if (firstName != null) data['firstName'] = firstName;
     if (lastName != null) data['lastName'] = lastName;
     if (name != null) data['username'] = name;
-    if (name != null)
+    if (name != null) {
       data['fullName'] = '${firstName ?? ""} ${lastName ?? ""}'.trim();
+    }
     if (phoneNumber != null) data['phone'] = phoneNumber;
     if (isBlocked != null) data['isBlocked'] = isBlocked;
     if (lastOnline != null) {
@@ -137,6 +217,7 @@ class User {
     if (createdAt != null) data['createdAt'] = createdAt!.toIso8601String();
     if (updatedAt != null) data['updatedAt'] = updatedAt!.toIso8601String();
 
+    if (balance != null) data['balance'] = balance!.toJson();
     return data;
   }
 }

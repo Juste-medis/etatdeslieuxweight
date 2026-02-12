@@ -2,12 +2,47 @@
 
 import 'dart:async';
 
-import 'package:jatai_etatsdeslieux/app/core/helpers/constants/constant.dart';
-import 'package:jatai_etatsdeslieux/app/core/network/rest_apis.dart';
-import 'package:jatai_etatsdeslieux/app/models/_message_model.dart';
-import 'package:jatai_etatsdeslieux/app/models/models.dart';
+import 'package:flutter/foundation.dart';
+import 'package:mon_etatsdeslieux/app/core/services/offlineStorage.dart';
+import 'package:mon_etatsdeslieux/app/models/models.dart';
 import 'package:flutter/material.dart';
-import 'package:nb_utils/nb_utils.dart' as nb_utils;
+import 'package:mon_etatsdeslieux/app/providers/providers.dart';
+import 'package:nb_utils/nb_utils.dart';
+
+StreamSubscription? subscription;
+
+void startInternetListening({bool forceRestart = false}) {
+  if (kIsWeb) {
+    Jks.isNetworkAvailable = true;
+  }
+  if (subscription != null) {
+    if (!forceRestart) return;
+    subscription!.cancel();
+    subscription = null;
+  }
+
+  subscription = Connectivity().onConnectivityChanged.listen(
+    (List<ConnectivityResult> result) {
+      if (result.isNotEmpty && result.first != ConnectivityResult.none) {
+        if (!Jks.isNetworkAvailable) {
+          // if (Jks.isNetworkAvailable) return;
+          Jks.isNetworkAvailable = true;
+          OfflineStorageService.syncOfflineDatas();
+        }
+      } else {
+        Jks.isNetworkAvailable = false;
+      }
+    },
+    onError: (_) {
+      Jks.isNetworkAvailable = false;
+    },
+    cancelOnError: false,
+  );
+}
+
+void stopListening() {
+  subscription?.cancel();
+}
 
 class CommonKeys {
   static String id = 'id';
@@ -23,81 +58,60 @@ class CommonKeys {
   static String dateTime = 'datetime';
 }
 
-class ServiceTypesKeys {
-  static String reservation = 'reservation';
-  static String payable = 'payable';
-  static String contact = 'contact';
-}
-
 class Jks {
-  Future<bool> netChecker() async {
-    // return kReleaseMode ? await isNetworkAvailable() : true;
-    return true;
-  }
-
-  static Future<User?> get_current_user() async {
-    int? userId = nb_utils.getIntAsync(USER_ID, defaultValue: 0);
-    if (userId != 0) {
-      User res = await getUser(userId: '$userId');
-
-      if (res.id != null) {
-        return res;
-      }
-    }
-    return null;
-  }
-
-  static dynamic Function() update_current_user = () async {
-    int? userId = nb_utils.getIntAsync(USER_ID, defaultValue: 0);
-    if (userId != 0) {
-      User res = await getUser(userId: '$userId');
-
-      if (res.id != null) {
-        return res;
-      }
-    }
-    return null;
-  };
-
   static dynamic Function() createAnswer = () async {};
   static dynamic Function() closeCall = () async {};
   static Future<void> Function() savereviewStep = () async {};
   static List<VoidCallback> overlayentriesClosers = [];
+  static Map ldImages = {};
 
   static dynamic callApiForYou;
-  static dynamic source;
+  static bool checkingAuth = false;
+  static dynamic dowloadreviewName;
   static dynamic uploadFile;
   static dynamic onclickAddMedia;
+  static dynamic reglerpayment;
+  static dynamic wizardNextStep = () {};
   static dynamic items;
+  static dynamic proc;
+
   static int idnotifications = 1;
   static bool? quietsavereview;
+  static bool isNetworkAvailable = false;
+  static bool isSyncingOfflineDatas = false;
   static String canEditReview = "canEditReview";
+  static String canEditProccuration = "canEditProccuration";
   static Timer? typingTimer;
   static User? currentUser;
-  static Room? callinlingRoom;
+  static String thingsAfterDate = "";
+  static bool updatafterClose = false;
+
   // static ProductDetails? product;
 
   static BuildContext? context;
+  static Map? appSettings;
   static dynamic reviewState;
+  static dynamic wizardState;
+  static dynamic proccurationState;
+  static dynamic paymentState;
+  static AppLanguageProvider languageState = AppLanguageProvider();
+
   static List? imageUrl;
   static User currencUser = User();
   static Map? imagesIndexes = {};
-  static Map? toastcolor = {};
+  static Map remoteIds = {};
   static User? payingUser;
-  static Map? pSp = {
-    "procuationspk": false,
-    "content": null,
-    "thingtype": null,
-  };
+  static Map? griffes = {};
+  static Map<String, GlobalKey<FormState>> tenantApprovals = {};
+  static Map? pSp = {"content": null, "thingtype": null, "extension": null};
   static var temptoken = "";
 
-  static var socket;
   static void initPsp() {
-    pSp = {
-      "procuationspk": false,
-      "content": null,
-      "thingtype": null,
-    };
+    pSp = {"content": null, "thingtype": null, "extension": null};
+  }
+
+  static void initGriffes() {
+    griffes = {};
   }
 }
 
@@ -126,62 +140,4 @@ class UserKeys {
   static String loginType = 'login_type';
   static String accessToken = 'accessToken';
   static String country = 'country';
-}
-
-class BookingServiceKeys {
-  static String description = 'description';
-  static String couponId = 'coupon_id';
-  static String date = 'date';
-  static String totalAmount = 'total_amount';
-}
-
-class CouponKeys {
-  static String code = 'code';
-  static String discount = 'discount';
-  static String discountType = 'discount_type';
-  static String expireDate = 'expire_date';
-}
-
-class PubsTypeKeys {
-  static const String joboffer = 'joboffer';
-  static const String provider = 'provider';
-  static const String service = 'service';
-}
-
-class BookService {
-  static String amount = 'amount';
-  static String totalAmount = 'total_amount';
-  static String quantity = 'quantity';
-  static String bookingAddressId = 'booking_address_id';
-}
-
-class BookingStatusKeys {
-  static String pending = 'pending';
-  static String accept = 'accept';
-  static String onGoing = 'on_going';
-  static String inProgress = 'in_progress';
-  static String hold = 'hold';
-  static String rejected = 'rejected';
-  static String failed = 'failed';
-  static String complete = 'completed';
-  static String cancelled = 'cancelled';
-}
-
-class BookingUpdateKeys {
-  static String reason = 'reason';
-  static String startAt = 'start_at';
-  static String endAt = 'end_at';
-  static String date = 'date';
-
-  static String durationDiff = 'duration_diff';
-}
-
-class NotificationKey {
-  static String type = 'type';
-  static String page = 'page';
-}
-
-class CurrentLocationKey {
-  static String latitude = 'latitude';
-  static String longitude = 'longitude';
 }

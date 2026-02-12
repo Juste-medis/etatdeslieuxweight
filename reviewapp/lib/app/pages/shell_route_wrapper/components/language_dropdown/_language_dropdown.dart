@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 // 📦 Package imports:
 import 'package:collection/collection.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:jatai_etatsdeslieux/app/core/helpers/utils/copole.dart';
+import 'package:mon_etatsdeslieux/app/core/helpers/utils/copole.dart';
 
 // 🌎 Project imports:
 import '../../../../core/helpers/field_styles/field_styles.dart';
@@ -23,23 +23,24 @@ class LanguageDropdownWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _theme = Theme.of(context);
-    final _mqSize = MediaQuery.sizeOf(context);
+    final theme = Theme.of(context);
+    final mqSize = MediaQuery.sizeOf(context);
 
-    final _dropdownStyle = AcnooDropdownStyle(context);
+    final dropdownStyle = AcnooDropdownStyle(context);
 
-    final _item = supportedLanguage.entries
-        .map((item) => DropdownMenuItem<Locale>(
-              value: item.value,
-              child: buildDropdownTile(context, item: item),
-            ))
+    final item = supportedLanguage.entries
+        .map(
+          (item) => DropdownMenuItem<Locale>(
+            value: item.value,
+            child: buildDropdownTile(context, item: item),
+          ),
+        )
         .toList();
 
-    final _selectedChild =
-        _item.firstWhereOrNull((e) => e.value == value)?.child;
+    final selectedChild = item.firstWhereOrNull((e) => e.value == value)?.child;
 
     return Theme(
-      data: _theme.copyWith(
+      data: theme.copyWith(
         scrollbarTheme: ScrollbarThemeData(
           thumbVisibility: WidgetStateProperty.all<bool?>(false),
           trackVisibility: WidgetStateProperty.all<bool?>(false),
@@ -49,15 +50,15 @@ class LanguageDropdownWidget extends StatelessWidget {
         underline: const SizedBox.shrink(),
         isDense: true,
         isExpanded: true,
-        customButton: OutlinedDropdownButton(child: _selectedChild),
-        style: _theme.textTheme.bodyMedium,
-        iconStyleData: _dropdownStyle.iconStyle,
-        dropdownStyleData: _dropdownStyle.dropdownStyle.copyWith(
-          width: _mqSize.width > 480 ? 150 : null,
+        customButton: OutlinedDropdownButton(child: selectedChild),
+        style: theme.textTheme.bodyMedium,
+        iconStyleData: dropdownStyle.iconStyle,
+        dropdownStyleData: dropdownStyle.dropdownStyle.copyWith(
+          width: mqSize.width > 480 ? 300 : 200,
         ),
-        menuItemStyleData: _dropdownStyle.menuItemStyle,
+        menuItemStyleData: dropdownStyle.menuItemStyle,
         value: value,
-        items: _item,
+        items: item,
         onChanged: onChanged,
       ),
     );
